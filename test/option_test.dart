@@ -1,21 +1,21 @@
-import 'package:fp_dart/function.dart';
-import 'package:fp_dart/option.dart' as O;
+import 'package:fpdt/function.dart';
+import 'package:fpdt/option.dart' as O;
 import 'package:test/test.dart';
 
 void main() {
-  group('of', () {
+  group('fromNullable', () {
     test('return Some for non-null values', () {
-      expect(O.of(123), O.some(123));
+      expect(O.fromNullable(123), O.some(123));
     });
 
     test('returns None for null values', () {
-      expect(O.of<int>(null), O.none());
+      expect(O.fromNullable<int>(null), O.none());
     });
   });
 
   group('fold', () {
     test('executes ifSome on Some', () {
-      final result = O.of(123).chain(O.fold(
+      final result = O.fromNullable(123).chain(O.fold(
             () => 'none',
             (value) => 'some',
           ));
@@ -23,7 +23,7 @@ void main() {
     });
 
     test('executes ifNone on None', () {
-      final result = O.of<int>(null).chain(O.fold(
+      final result = O.fromNullable<int>(null).chain(O.fold(
             () => 'none',
             (value) => 'some',
           ));
@@ -33,28 +33,28 @@ void main() {
 
   group('isSome', () {
     test('true for Some', () {
-      expect(O.of(123).chain(O.isSome), true);
+      expect(O.fromNullable(123).chain(O.isSome), true);
     });
 
     test('false for None', () {
-      expect(O.of(null).chain(O.isSome), false);
+      expect(O.fromNullable(null).chain(O.isSome), false);
     });
   });
 
   group('isNone', () {
     test('false for Some', () {
-      expect(O.of(123).chain(O.isNone), false);
+      expect(O.fromNullable(123).chain(O.isNone), false);
     });
 
     test('true for None', () {
-      expect(O.of(null).chain(O.isNone), true);
+      expect(O.fromNullable(null).chain(O.isNone), true);
     });
   });
 
   group('orElse', () {
     test('does nothing for Some', () {
       expect(
-        O.of(123).chain(O.orElse(() => O.some(-1))),
+        O.fromNullable(123).chain(O.orElse(() => O.some(-1))),
         O.some(123),
       );
     });

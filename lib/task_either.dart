@@ -1,9 +1,9 @@
-import 'package:fp_dart/either.dart' as E;
-import 'package:fp_dart/function.dart';
-import 'package:fp_dart/option.dart' as O;
-import 'package:fp_dart/task.dart' as T;
+import 'package:fpdt/either.dart' as E;
+import 'package:fpdt/function.dart';
+import 'package:fpdt/option.dart' as O;
+import 'package:fpdt/task.dart' as T;
 
-export 'package:fp_dart/task.dart' show delay;
+export 'package:fpdt/task.dart' show delay;
 
 typedef TaskEither<L, R> = T.Task<E.Either<L, R>>;
 

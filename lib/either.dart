@@ -1,5 +1,5 @@
-import 'package:fp_dart/function.dart';
-import 'package:fp_dart/option.dart' as O;
+import 'package:fpdt/function.dart';
+import 'package:fpdt/option.dart' as O;
 
 Either<L, R> left<L, R>(L value) => Left(value);
 Either<L, R> right<L, R>(R value) => Right(value);

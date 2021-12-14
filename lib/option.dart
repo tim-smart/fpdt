@@ -1,7 +1,7 @@
-library fp_dart;
+library fpdt;
 
-import 'package:fp_dart/either.dart' as E;
-import 'package:fp_dart/function.dart';
+import 'package:fpdt/either.dart' as E;
+import 'package:fpdt/function.dart';
 
 Option<T> none<T>() => const None();
 Option<T> some<T>(T value) => Some(value);
