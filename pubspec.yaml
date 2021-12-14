@@ -1,0 +1,11 @@
+name: fp_dart
+description: A new Flutter package project.
+version: 0.0.1
+homepage: https://github.com/tim-smart/fp_dart
+
+environment:
+  sdk: ">=2.14.0 <3.0.0"
+
+dev_dependencies:
+  flutter_lints: ^1.0.0
+  test: any
