@@ -1,5 +1,3 @@
-library fpdt;
-
 import 'package:fpdt/either.dart' as E;
 import 'package:fpdt/function.dart';
 import 'package:fpdt/tuple.dart';
