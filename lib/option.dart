@@ -2,6 +2,7 @@ library fpdt;
 
 import 'package:fpdt/either.dart' as E;
 import 'package:fpdt/function.dart';
+import 'package:fpdt/tuple.dart';
 
 Option<T> none<T>() => const None();
 Option<T> some<T>(T value) => Some(value);
@@ -56,6 +57,17 @@ Option<R> Function(
         none,
         (a) => b.chain(
             fold(none, (b) => c.chain(fold(none, (c) => Some(f(a, b, c))))))));
+
+Option<R> Function(Tuple2<Option<A>, Option<B>> tuple) mapTuple2<A, B, R>(
+  R Function(A a, B b) f,
+) =>
+    (t) => map2(f)(t.first, t.second);
+
+Option<R> Function(Tuple3<Option<A>, Option<B>, Option<C>> tuple)
+    mapTuple3<A, B, C, R>(
+  R Function(A a, B b, C c) f,
+) =>
+        (t) => map3(f)(t.first, t.second, t.third);
 
 Option<R> Function(Option<T> option) flatMap<T, R>(
   Option<R> Function(T value) f,
