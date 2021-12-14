@@ -140,26 +140,26 @@ void main() {
 
   group('tryCatchK', () {
     test('runs the function on right', () async {
-      final r = await TE.right(123).chain(TE.tryCatchK(
+      final r = await TE.right(123).chain(TE.flatMap(TE.tryCatchK(
             (i) async => i * 2,
             (err, stack) => 'fail',
-          ))();
+          )))();
       expect(r, E.right(246));
     });
 
     test('does nothing on left', () async {
-      final r = await TE.left('left').chain(TE.tryCatchK(
+      final r = await TE.left('left').chain(TE.flatMap(TE.tryCatchK(
             (i) async => i * 2,
             (err, stack) => 'fail',
-          ))();
+          )))();
       expect(r, E.left('left'));
     });
 
     test('errors are handled', () async {
-      final r = await TE.right(123).chain(TE.tryCatchK(
+      final r = await TE.right(123).chain(TE.flatMap(TE.tryCatchK(
             (i) async => throw 'error',
             (err, stack) => 'fail',
-          ))();
+          )))();
       expect(r, E.left('fail'));
     });
   });

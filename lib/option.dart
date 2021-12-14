@@ -5,7 +5,7 @@ import 'package:fp_dart/function.dart';
 
 Option<T> none<T>() => const None();
 Option<T> some<T>(T value) => Some(value);
-Option<T> of<T>(T? value) => value != null ? some(value) : none();
+Option<T> fromNullable<T>(T? value) => value != null ? some(value) : none();
 
 R Function(Option<T> option) fold<T, R>(
   R Function() ifNone,

@@ -10,6 +10,12 @@ typedef TaskEither<L, R> = T.Task<E.Either<L, R>>;
 TaskEither<L, R> right<L, R>(R a) => () => Future.value(E.right(a));
 TaskEither<L, R> left<L, R>(L a) => () => Future.value(E.left(a));
 
+Future<R> toFuture<R>(TaskEither<dynamic, R> taskEither) =>
+    taskEither.chain(fold(
+      (l) => throw l,
+      identity,
+    ))();
+
 TaskEither<L, R2> Function(TaskEither<L, R> taskEither) pure<L, R, R2>(R2 a) =>
     (taskEither) => () => Future.value(E.right(a));
 
@@ -69,11 +75,11 @@ T.Task<R> Function(TaskEither<L, R> taskEither) getOrElse<L, R>(
           identity,
         )));
 
-TaskEither<L, R2> Function(TaskEither<L, R> taskEither) tryCatchK<L, R, R2>(
+TaskEither<L, R2> Function(R value) tryCatchK<L, R, R2>(
   Future<R2> Function(R value) task,
   L Function(dynamic err, StackTrace stackTrace) onError,
 ) =>
-    flatMap((r) => tryCatch(() => task(r), onError));
+    (r) => tryCatch(() => task(r), onError);
 
 TaskEither<L, R2> Function(TaskEither<L, R> taskEither) map<L, R, R2>(
   R2 Function(R value) f,

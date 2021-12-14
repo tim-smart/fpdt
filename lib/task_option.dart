@@ -8,7 +8,7 @@ typedef TaskOption<A> = T.Task<O.Option<A>>;
 
 TaskOption<A> some<A>(A a) => () => Future.value(O.some(a));
 TaskOption<A> none<A>() => () => Future.value(O.none());
-TaskOption<A> of<A>(A? a) => () => Future.value(O.of(a));
+TaskOption<A> fromNullable<A>(A? a) => () => Future.value(O.fromNullable(a));
 
 TaskOption<B> Function(TaskOption<A> taskOption) pure<A, B>(B b) =>
     (taskOption) => () => Future.value(O.some(b));
@@ -16,7 +16,7 @@ TaskOption<B> Function(TaskOption<A> taskOption) pure<A, B>(B b) =>
 TaskOption<A> fromOption<A>(O.Option<A> option) => () => Future.value(option);
 
 TaskOption<A> Function(T.Task<A?> task) fromTask<A>() =>
-    (task) => task.chain(T.map(O.of));
+    (task) => task.chain(T.map(O.fromNullable));
 
 T.Task<B> Function(TaskOption<A> taskOption) fold<A, B>(
   B Function() onNone,
@@ -56,10 +56,10 @@ T.Task<A> Function(TaskOption<A> taskOption) getOrElse<A>(
           identity,
         )));
 
-TaskOption<B> Function(TaskOption<A> taskOption) tryCatchK<A, B>(
+TaskOption<B> Function(A value) tryCatchK<A, B>(
   Future<B> Function(A value) task,
 ) =>
-    flatMap((r) => tryCatch(() => task(r)));
+    (a) => tryCatch(() => task(a));
 
 TaskOption<B> Function(TaskOption<A> taskOption) map<A, B>(
   B Function(A value) f,

@@ -1,5 +1,5 @@
 name: fp_dart
-description: A new Flutter package project.
+description: A collection of functions and monads for functional programming in dart.
 version: 0.0.1
 homepage: https://github.com/tim-smart/fp_dart
 
