@@ -125,6 +125,18 @@ void main() {
     });
   });
 
+  group('orElse', () {
+    test('does nothing on right', () async {
+      final r = await TE.right(123).chain(TE.orElse(TE.right(-1)))();
+      expect(r, E.right(123));
+    });
+
+    test('returns the transformed result on left', () async {
+      final r = await TE.left('left').chain(TE.orElse(TE.right('else')))();
+      expect(r, E.right('else'));
+    });
+  });
+
   group('getOrElse', () {
     test('returns a task', () async {
       final r = await TE.right(123).chain(TE.getOrElse((_) => -1))();

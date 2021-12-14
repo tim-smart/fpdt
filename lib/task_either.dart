@@ -67,6 +67,11 @@ TaskEither<L, R> Function(TaskEither<L, R> taskEither) alt<L, R>(
           E.right,
         )));
 
+TaskEither<L, R> Function(TaskEither<L, R> taskEither) orElse<L, R>(
+  TaskEither<L, R> orElse,
+) =>
+    alt((_) => orElse);
+
 T.Task<R> Function(TaskEither<L, R> taskEither) getOrElse<L, R>(
   R Function(L left) orElse,
 ) =>
