@@ -59,7 +59,7 @@ TaskEither<L, R2> Function(TaskEither<L, R> taskEither) flatMap<L, R, R2>(
           (r) => f(r)(),
         )));
 
-TaskEither<L, R> Function(TaskEither<L, R> taskEither) orElse<L, R>(
+TaskEither<L, R> Function(TaskEither<L, R> taskEither) alt<L, R>(
   TaskEither<L, R> Function(L left) orElse,
 ) =>
     (taskEither) => () => taskEither().then((e) => e.chain(E.fold(
@@ -80,6 +80,13 @@ TaskEither<L, R2> Function(R value) tryCatchK<L, R, R2>(
   L Function(dynamic err, StackTrace stackTrace) onError,
 ) =>
     (r) => tryCatch(() => task(r), onError);
+
+TaskEither<L, R2> Function(TaskEither<L, R> taskEither)
+    chainTryCatchK<L, R, R2>(
+  Future<R2> Function(R value) task,
+  L Function(dynamic err, StackTrace stackTrace) onError,
+) =>
+        flatMap((r) => tryCatch(() => task(r), onError));
 
 TaskEither<L, R2> Function(TaskEither<L, R> taskEither) map<L, R, R2>(
   R2 Function(R value) f,

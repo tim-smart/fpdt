@@ -113,15 +113,14 @@ void main() {
     });
   });
 
-  group('orElse', () {
+  group('alt', () {
     test('does nothing on right', () async {
-      final r = await TE.right(123).chain(TE.orElse((_) => TE.right(-1)))();
+      final r = await TE.right(123).chain(TE.alt((_) => TE.right(-1)))();
       expect(r, E.right(123));
     });
 
     test('returns the transformed result on left', () async {
-      final r =
-          await TE.left('left').chain(TE.orElse((i) => TE.right('$i-y')))();
+      final r = await TE.left('left').chain(TE.alt((i) => TE.right('$i-y')))();
       expect(r, E.right('left-y'));
     });
   });
@@ -160,6 +159,32 @@ void main() {
             (i) async => throw 'error',
             (err, stack) => 'fail',
           )))();
+      expect(r, E.left('fail'));
+    });
+  });
+
+  group('chainTryCatchK', () {
+    test('runs the function on right', () async {
+      final r = await TE.right(123).chain(TE.chainTryCatchK(
+            (i) async => i * 2,
+            (err, stack) => 'fail',
+          ))();
+      expect(r, E.right(246));
+    });
+
+    test('does nothing on left', () async {
+      final r = await TE.left('left').chain(TE.chainTryCatchK(
+            (i) async => i * 2,
+            (err, stack) => 'fail',
+          ))();
+      expect(r, E.left('left'));
+    });
+
+    test('errors are handled', () async {
+      final r = await TE.right(123).chain(TE.chainTryCatchK(
+            (i) async => throw 'error',
+            (err, stack) => 'fail',
+          ))();
       expect(r, E.left('fail'));
     });
   });
