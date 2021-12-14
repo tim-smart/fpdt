@@ -19,6 +19,8 @@ Option<R> Function(Option<T> option) foldOption<T, R>(
 ) =>
     (option) => option._foldOption(ifNone, ifSome);
 
+T? toNullable<T>(Option<T> option) => option._fold(() => null, (v) => v);
+
 E.Either<L, R> Function(Option<R> option) toEither<L, R>(L Function() orElse) =>
     fold(() => E.left(orElse()), E.right);
 

@@ -194,4 +194,14 @@ void main() {
       );
     });
   });
+
+  group('toNullable', () {
+    test('returns value with Some', () {
+      expect(O.some(123).chain(O.toNullable), 123);
+    });
+
+    test('returns null with None', () {
+      expect(O.none().chain(O.toNullable), null);
+    });
+  });
 }
