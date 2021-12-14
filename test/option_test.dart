@@ -1,4 +1,5 @@
 import 'package:fpdt/function.dart';
+import 'package:fpdt/either.dart' as E;
 import 'package:fpdt/option.dart' as O;
 import 'package:test/test.dart';
 
@@ -10,6 +11,32 @@ void main() {
 
     test('returns None for null values', () {
       expect(O.fromNullable<int>(null), O.none());
+    });
+  });
+
+  group('fromNullableK', () {
+    test('return Some for non-null values', () {
+      final g = O.fromNullableK((int i) => i * 2);
+      expect(g(123), O.some(246));
+    });
+
+    test('returns None for null values', () {
+      final g = O.fromNullableK((int i) => null);
+      expect(g(123), O.none());
+    });
+  });
+
+  group('chainNullableK', () {
+    test('return Some for non-null values', () {
+      expect(O.some(1).chain(O.chainNullableK((i) => i * 2)), O.some(2));
+    });
+
+    test('returns None for null values', () {
+      expect(O.some(1).chain(O.chainNullableK((i) => null)), O.none());
+    });
+
+    test('does nothing for None', () {
+      expect(O.none().chain(O.chainNullableK((i) => i * 2)), O.none());
     });
   });
 
@@ -51,17 +78,17 @@ void main() {
     });
   });
 
-  group('orElse', () {
+  group('alt', () {
     test('does nothing for Some', () {
       expect(
-        O.fromNullable(123).chain(O.orElse(() => O.some(-1))),
+        O.fromNullable(123).chain(O.alt(() => O.some(-1))),
         O.some(123),
       );
     });
 
     test('returns new option if None', () {
       expect(
-        O.none<int>().chain(O.orElse(() => O.some(-1))),
+        O.none<int>().chain(O.alt(() => O.some(-1))),
         O.some(-1),
       );
     });
@@ -202,6 +229,40 @@ void main() {
 
     test('returns null with None', () {
       expect(O.none().chain(O.toNullable), null);
+    });
+  });
+
+  group('tryCatch', () {
+    test('returns Some on success', () {
+      expect(O.tryCatch(() => 123), O.some(123));
+    });
+
+    test('returns None on error', () {
+      expect(O.tryCatch(() => throw 'fail'), O.none());
+    });
+  });
+
+  group('tryCatchK', () {
+    test('returns Some on success', () {
+      expect(O.some(1).chain(O.tryCatchK((i) => i * 2)), O.some(2));
+    });
+
+    test('returns None on error', () {
+      expect(O.some(1).chain(O.tryCatchK((i) => throw 'fail')), O.none());
+    });
+
+    test('does nothing on None', () {
+      expect(O.none().chain(O.tryCatchK((i) => i * 2)), O.none());
+    });
+  });
+
+  group('fromEither', () {
+    test('return Some for Right', () {
+      expect(E.right(123).chain(O.fromEither), O.some(123));
+    });
+
+    test('return None for Left', () {
+      expect(E.left('left').chain(O.fromEither), O.none());
     });
   });
 }

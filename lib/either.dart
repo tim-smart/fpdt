@@ -19,9 +19,6 @@ Either<NL, NR> Function(Either<L, R> either) foldEither<L, R, NL, NR>(
 bool isLeft<L, R>(Either<L, R> either) => either._isLeft();
 bool isRight<L, R>(Either<L, R> either) => either._isRight();
 
-O.Option<R> toOption<L, R>(Either<L, R> either) =>
-    either._fold((_) => O.none(), O.some);
-
 Either<R, L> swap<L, R>(Either<L, R> either) => either._fold(right, left);
 
 Either<L, NR> Function(Either<L, R> either) map<L, R, NR>(
@@ -42,7 +39,7 @@ Either<dynamic, R> tryCatch<R>(R Function() f) {
   }
 }
 
-Either<L, R> Function(Either<L, R> either) orElse<L, R>(
+Either<L, R> Function(Either<L, R> either) alt<L, R>(
   Either<L, R> Function(L left) orElse,
 ) =>
     (e) => e._fold(orElse, right);
@@ -60,6 +57,11 @@ Either<L, R> Function(Either<L, R> either) filter<L, R>(
           identity,
           (r) => predicate(r.value) ? r : left(orElse(r.value)),
         );
+
+Either<L, R> Function(O.Option<R> option) fromOption<L, R>(
+  L Function() onNone,
+) =>
+    O.fold(() => left(onNone()), right);
 
 abstract class Either<L, R> {
   const Either();

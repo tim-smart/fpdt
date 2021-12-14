@@ -7,9 +7,9 @@ Option<T> none<T>() => const None();
 Option<T> some<T>(T value) => Some(value);
 Option<T> fromNullable<T>(T? value) => value != null ? some(value) : none();
 
-R Function(Option<T> option) fold<T, R>(
-  R Function() ifNone,
-  R Function(T value) ifSome,
+B Function(Option<A> option) fold<A, B>(
+  B Function() ifNone,
+  B Function(A value) ifSome,
 ) =>
     (option) => option._fold(ifNone, ifSome);
 
@@ -24,7 +24,7 @@ T? toNullable<T>(Option<T> option) => option._fold(() => null, (v) => v);
 E.Either<L, R> Function(Option<R> option) toEither<L, R>(L Function() orElse) =>
     fold(() => E.left(orElse()), E.right);
 
-Option<T> Function(Option<T> option) orElse<T>(
+Option<T> Function(Option<T> option) alt<T>(
   Option<T> Function() f,
 ) =>
     foldOption(f, identity);
@@ -69,6 +69,32 @@ Option<T> Function(Option<T> option) filter<T>(
 
 bool isNone<T>(Option<T> option) => option._isNone();
 bool isSome<T>(Option<T> option) => option._isSome();
+
+Option<T> tryCatch<T>(T Function() f) {
+  try {
+    return some(f());
+  } catch (_) {
+    return none();
+  }
+}
+
+Option<B> Function(Option<A> option) tryCatchK<A, B>(B Function(A value) f) =>
+    flatMap((a) => tryCatch(() => f(a)));
+
+Option<B> Function(A value) fromNullableK<A, B>(
+  B? Function(A value) f,
+) =>
+    (a) => fromNullable(f(a));
+
+Option<B> Function(Option<A> option) chainNullableK<A, B>(
+  B? Function(A value) f,
+) =>
+    flatMap((a) => fromNullable(f(a)));
+
+Option<R> fromEither<L, R>(E.Either<L, R> either) =>
+    either.chain(E.fold((_) => none(), some));
+
+Option<A> flatten<A>(Option<Option<A>> option) => option._fold(none, (o) => o);
 
 abstract class Option<T> {
   const Option();
