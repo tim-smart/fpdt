@@ -32,6 +32,47 @@ void main() {
     });
   });
 
+  group('fromNullable', () {
+    test('resolve to a right if non-null', () async {
+      final r = await TE.fromNullable(123, () => 'left')();
+      expect(r, E.right(123));
+    });
+
+    test('resolves to a left if none', () async {
+      final r = await TE.fromNullable(null, () => 'left')();
+      expect(r, E.left('left'));
+    });
+  });
+
+  group('fromNullableK', () {
+    test('resolve to a right if non-null', () async {
+      final r = await 123.chain(TE.fromNullableK(() => 'left'))();
+      expect(r, E.right(123));
+    });
+
+    test('resolves to a left if none', () async {
+      final r = await null.chain(TE.fromNullableK(() => 'left'))();
+      expect(r, E.left('left'));
+    });
+  });
+
+  group('chainNullableK', () {
+    test('resolve to a right if non-null', () async {
+      final r = await TE.right(123).chain(TE.chainNullableK(() => 'left'))();
+      expect(r, E.right(123));
+    });
+
+    test('resolves to a left if none', () async {
+      final r = await TE.right(null).chain(TE.chainNullableK(() => 'left'))();
+      expect(r, E.left('left'));
+    });
+
+    test('does nothing if left', () async {
+      final r = await TE.left('fail').chain(TE.chainNullableK(() => 'left'))();
+      expect(r, E.left('fail'));
+    });
+  });
+
   group('fromEither', () {
     test('resolve to a right if right', () async {
       final r = await E.right(123).chain(TE.fromEither)();

@@ -20,6 +20,35 @@ void main() {
     });
   });
 
+  group('fromNullable', () {
+    test('resolve to a some if non-null', () async {
+      final r = await TO.fromNullable(123)();
+      expect(r, O.some(123));
+    });
+
+    test('resolves to a none if null', () async {
+      final r = await TO.fromNullable(null)();
+      expect(r, O.none());
+    });
+  });
+
+  group('chainNullable', () {
+    test('resolve to a some if non-null', () async {
+      final r = await TO.some(123).chain(TO.chainNullable)();
+      expect(r, O.some(123));
+    });
+
+    test('resolves to a none if null', () async {
+      final r = await TO.some(null).chain(TO.chainNullable)();
+      expect(r, O.none());
+    });
+
+    test('does nothing if none', () async {
+      final r = await TO.none().chain(TO.chainNullable)();
+      expect(r, O.none());
+    });
+  });
+
   group('fromOption', () {
     test('resolve to a some if some', () async {
       final r = await O.some(123).chain(TO.fromOption)();
