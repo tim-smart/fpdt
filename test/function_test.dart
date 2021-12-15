@@ -14,6 +14,19 @@ void main() {
       expect(g(O.some(1)), 4);
       expect(g(O.some(0)), null);
     });
+    test('various arities', () {
+      int zero() => 0;
+      int one(int a) => a;
+      int two(int a, int b) => a + b;
+      int three(int a, int b, int c) => a + b + c;
+      int four(int a, int b, int c, int d) => a + b + c + d;
+
+      expect(zero.compose((a) => a + 1)(), 1);
+      expect(one.compose(identity)(1), 1);
+      expect(two.compose(identity)(1, 1), 2);
+      expect(three.compose(identity)(1, 1, 1), 3);
+      expect(four.compose(identity)(1, 1, 1, 1), 4);
+    });
 
     test('multiple artity 3', () {
       String addPrint(String name, int a, int b) =>
