@@ -1,3 +1,5 @@
+typedef Lazy<A> = A Function();
+
 T identity<T>(T value) => value;
 
 extension ChainExtension<T> on T {
