@@ -73,14 +73,14 @@ T.Task<R> Function(TaskEither<L, R> taskEither) getOrElse<L, R>(
     T.map(E.getOrElse(orElse));
 
 TaskEither<L, R2> Function(R value) tryCatchK<L, R, R2>(
-  Future<R2> Function(R value) task,
+  FutureOr<R2> Function(R value) task,
   L Function(dynamic err, StackTrace stackTrace) onError,
 ) =>
     (r) => tryCatch(() => task(r), onError);
 
 TaskEither<L, R2> Function(TaskEither<L, R> taskEither)
     chainTryCatchK<L, R, R2>(
-  Future<R2> Function(R value) task,
+  FutureOr<R2> Function(R value) task,
   L Function(dynamic err, StackTrace stackTrace) onError,
 ) =>
         flatMap(tryCatchK(task, onError));
