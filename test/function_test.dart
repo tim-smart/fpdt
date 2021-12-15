@@ -3,7 +3,7 @@ import 'package:fpdt/option.dart' as O;
 import 'package:test/test.dart';
 
 void main() {
-  group('flow', () {
+  group('compose', () {
     test('can compose functions together', () {
       final g = O
           .map((int i) => i * 2)
