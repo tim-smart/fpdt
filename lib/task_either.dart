@@ -22,7 +22,7 @@ TaskEither<L, R2> Function(TaskEither<L, R> taskEither) pure<L, R, R2>(R2 a) =>
 TaskEither<L, R> Function(O.Option<R> option) fromOption<L, R>(
   L Function() onNone,
 ) =>
-    (option) => () => Future.value(option.chain(O.toEither(onNone)));
+    E.fromOption<L, R>(onNone).compose(fromEither);
 
 TaskEither<L, R> fromEither<L, R>(E.Either<L, R> either) =>
     () => Future.value(either);
@@ -42,8 +42,7 @@ T.Task<A> Function(TaskEither<L, R> taskEither) fold<L, R, A>(
   A Function(L left) onLeft,
   A Function(R right) onRight,
 ) =>
-    (taskEither) =>
-        () => taskEither().then(E.fold(onLeft, onRight));
+    T.map(E.fold(onLeft, onRight));
 
 TaskEither<L, R> tryCatch<L, R>(
   T.Task<R> task,
@@ -54,18 +53,12 @@ TaskEither<L, R> tryCatch<L, R>(
 TaskEither<L, R2> Function(TaskEither<L, R> taskEither) flatMap<L, R, R2>(
   TaskEither<L, R2> Function(R value) f,
 ) =>
-    (taskEither) => () => taskEither().then(E.fold(
-        E.left,
-        (r) => f(r)(),
-      ));
+    T.flatMap(E.fold(left, f));
 
 TaskEither<L, R> Function(TaskEither<L, R> taskEither) alt<L, R>(
   TaskEither<L, R> Function(L left) orElse,
 ) =>
-    (taskEither) => () => taskEither().then(E.fold(
-      (l) => orElse(l)(),
-      E.right,
-    ));
+    T.flatMap(E.fold(orElse, right));
 
 TaskEither<L, R> Function(TaskEither<L, R> taskEither) orElse<L, R>(
   TaskEither<L, R> orElse,
@@ -75,10 +68,7 @@ TaskEither<L, R> Function(TaskEither<L, R> taskEither) orElse<L, R>(
 T.Task<R> Function(TaskEither<L, R> taskEither) getOrElse<L, R>(
   R Function(L left) orElse,
 ) =>
-    (taskEither) => () => taskEither().then(E.fold(
-        orElse,
-        identity,
-      ));
+    T.map(E.getOrElse(orElse));
 
 TaskEither<L, R2> Function(R value) tryCatchK<L, R, R2>(
   Future<R2> Function(R value) task,
@@ -96,10 +86,10 @@ TaskEither<L, R2> Function(TaskEither<L, R> taskEither)
 TaskEither<L, R2> Function(TaskEither<L, R> taskEither) map<L, R, R2>(
   R2 Function(R value) f,
 ) =>
-    (taskEither) => () => taskEither().then((e) => e.chain(E.map(f)));
+    T.map(E.map(f));
 
 TaskEither<L, R> Function(TaskEither<L, R> taskEither) filter<L, R>(
   bool Function(R value) predicate,
   L Function(R value) orElse,
 ) =>
-    flatMap((r) => predicate(r) ? right(r) : left(orElse(r)));
+    T.map(E.filter(predicate, orElse));
