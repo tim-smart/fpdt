@@ -14,6 +14,9 @@ TaskOption<A> none<A>() => () => Future.value(O.none());
 TaskOption<A> fromNullable<A>(A? a) => () => Future.value(O.fromNullable(a));
 TaskOption<A> Function(A? value) fromNullableWith<A>() => fromNullable;
 
+TaskOption<A> chainNullable<A>(TaskOption<A?> taskOption) =>
+    taskOption.chain(flatMap(fromNullable));
+
 TaskOption<B> Function(TaskOption<A> taskOption) pure<A, B>(B b) =>
     (taskOption) => () => Future.value(O.some(b));
 

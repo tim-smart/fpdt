@@ -7,24 +7,56 @@ import 'package:fpdt/task.dart' as T;
 
 export 'package:fpdt/task.dart' show tap, delay, sequence, sequenceSeq;
 
+/// Represents a [T.Task] that resolves to an [E.Either].
+/// The underlying type is a [Function] that returns a [Future<E.Either>].
 typedef TaskEither<L, R> = Future<E.Either<L, R>> Function();
 
+/// Create a [TaskEither] that resolves to an [E.Right].
 TaskEither<L, R> right<L, R>(R a) => () => Future.value(E.right(a));
+
+/// Create a [TaskEither] that resolves to an [E.Left].
 TaskEither<L, R> left<L, R>(L a) => () => Future.value(E.left(a));
 
+/// Convert a [TaskEither] into a [Future], that throws an error on [E.Left].
 Future<R> toFuture<R>(TaskEither<dynamic, R> taskEither) =>
     taskEither.chain(fold(
       (l) => throw l,
       identity,
     ))();
 
+/// Replace the [TaskEither] with one that resolves to an [E.Right] containing
+/// the given value.
 TaskEither<L, R2> Function(TaskEither<L, R> taskEither) pure<L, R, R2>(R2 a) =>
     (taskEither) => right(a);
 
+/// Create a [TaskEither] from an [O.Option]. If it is [O.None], then the
+/// [TaskEither] will resolve to a [E.Left] containing the result from executing
+/// `onNone`.
 TaskEither<L, R> Function(O.Option<R> option) fromOption<L, R>(
   L Function() onNone,
 ) =>
     E.fromOption<L, R>(onNone).compose(fromEither);
+
+/// Create a [TaskEither] from a nullable value. `onNone` is executed if the
+/// given value is `null`.
+TaskEither<L, R> fromNullable<L, R>(
+  R? value,
+  L Function() onNone,
+) =>
+    O.fromNullable(value).chain(fromOption(onNone));
+
+/// Create a [TaskEither] from a nullable value. `onNone` is executed if the
+/// value (given to the returned function) is `null`.
+TaskEither<L, R> Function(R? value) fromNullableK<L, R>(
+  L Function() onNone,
+) =>
+    (r) => fromNullable(r, onNone);
+
+/// Chainable variant of [fromNullableK].
+TaskEither<L, R> Function(TaskEither<L, R?> value) chainNullableK<L, R>(
+  L Function() onNone,
+) =>
+    flatMap(fromNullableK(onNone));
 
 TaskEither<L, R> fromEither<L, R>(E.Either<L, R> either) =>
     () => Future.value(either);
