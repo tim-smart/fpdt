@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:fpdt/either.dart' as E;
+import 'package:fpdt/function.dart';
 import 'package:fpdt/option.dart' as O;
 import 'package:fpdt/task.dart' as T;
 
@@ -33,7 +36,7 @@ T.Task<B> Function(TaskOption<A> taskOption) fold<A, B>(
 ) =>
     T.map(O.fold(onNone, onSome));
 
-TaskOption<A> tryCatch<A>(T.Task<A> task) => () async {
+TaskOption<A> tryCatch<A>(Lazy<FutureOr<A>> task) => () async {
       try {
         return O.some(await task());
       } catch (_) {
@@ -62,12 +65,12 @@ T.Task<A> Function(TaskOption<A> taskOption) getOrElse<A>(
     T.map(O.getOrElse(orElse));
 
 TaskOption<B> Function(A value) tryCatchK<A, B>(
-  Future<B> Function(A value) task,
+  FutureOr<B> Function(A value) task,
 ) =>
     (a) => tryCatch(() => task(a));
 
 TaskOption<B> Function(TaskOption<A> taskOption) chainTryCatchK<A, B>(
-  Future<B> Function(A value) task,
+  FutureOr<B> Function(A value) task,
 ) =>
     flatMap(tryCatchK(task));
 

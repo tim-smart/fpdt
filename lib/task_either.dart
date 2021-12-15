@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:fpdt/either.dart' as E;
 import 'package:fpdt/function.dart';
 import 'package:fpdt/option.dart' as O;
@@ -27,7 +29,7 @@ TaskEither<L, R> Function(O.Option<R> option) fromOption<L, R>(
 TaskEither<L, R> fromEither<L, R>(E.Either<L, R> either) =>
     () => Future.value(either);
 
-TaskEither<L, R> Function(T.Task<R> task) fromTask<L, R>(
+TaskEither<L, R> Function(Lazy<FutureOr<R>> task) fromTask<L, R>(
   L Function(dynamic err, StackTrace stackTrace) onError,
 ) =>
     (task) => () async {
@@ -45,7 +47,7 @@ T.Task<A> Function(TaskEither<L, R> taskEither) fold<L, R, A>(
     T.map(E.fold(onLeft, onRight));
 
 TaskEither<L, R> tryCatch<L, R>(
-  T.Task<R> task,
+  Lazy<FutureOr<R>> task,
   L Function(dynamic err, StackTrace stackTrace) onError,
 ) =>
     task.chain(fromTask(onError));
