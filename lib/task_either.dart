@@ -17,7 +17,7 @@ Future<R> toFuture<R>(TaskEither<dynamic, R> taskEither) =>
     ))();
 
 TaskEither<L, R2> Function(TaskEither<L, R> taskEither) pure<L, R, R2>(R2 a) =>
-    (taskEither) => () => Future.value(E.right(a));
+    (taskEither) => right(a);
 
 TaskEither<L, R> Function(O.Option<R> option) fromOption<L, R>(
   L Function() onNone,
