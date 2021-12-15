@@ -3,7 +3,7 @@ import 'package:fpdt/function.dart';
 import 'package:fpdt/option.dart' as O;
 import 'package:fpdt/task.dart' as T;
 
-export 'package:fpdt/task.dart' show delay;
+export 'package:fpdt/task.dart' show tap, delay, sequence, sequenceSeq;
 
 typedef TaskEither<L, R> = Future<E.Either<L, R>> Function();
 
@@ -81,7 +81,7 @@ TaskEither<L, R2> Function(TaskEither<L, R> taskEither)
   Future<R2> Function(R value) task,
   L Function(dynamic err, StackTrace stackTrace) onError,
 ) =>
-    flatMap(tryCatchK(task, onError));
+        flatMap(tryCatchK(task, onError));
 
 TaskEither<L, R2> Function(TaskEither<L, R> taskEither) map<L, R, R2>(
   R2 Function(R value) f,

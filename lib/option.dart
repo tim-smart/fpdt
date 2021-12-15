@@ -48,6 +48,14 @@ Option<R> Function(Option<T> option) map<T, R>(
 ) =>
     fold(none, (value) => Some(f(value)));
 
+Option<A> Function(Option<A> option) tap<A>(
+  void Function(A value) f,
+) =>
+    map((a) {
+      f(a);
+      return a;
+    });
+
 Option<R> Function(Option<A> optionA, Option<B> optionB) map2<A, B, R>(
   R Function(A a, B b) f,
 ) =>

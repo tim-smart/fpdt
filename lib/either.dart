@@ -26,6 +26,14 @@ Either<L, NR> Function(Either<L, R> either) map<L, R, NR>(
 ) =>
     fold(left, (r) => right(f(r)));
 
+Either<L, R> Function(Either<L, R> either) tap<L, R>(
+  void Function(R value) f,
+) =>
+    map((r) {
+      f(r);
+      return r;
+    });
+
 Either<L, NR> Function(Either<L, R> either) flatMap<L, R, NR>(
   Either<L, NR> Function(R value) f,
 ) =>
