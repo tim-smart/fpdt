@@ -256,15 +256,29 @@ void main() {
 
   group('tryCatchK', () {
     test('returns Some on success', () {
-      expect(O.some(1).chain(O.tryCatchK((i) => i * 2)), O.some(2));
+      expect(O.some(1).chain(O.flatMap(O.tryCatchK((i) => i * 2))), O.some(2));
     });
 
     test('returns None on error', () {
-      expect(O.some(1).chain(O.tryCatchK((i) => throw 'fail')), O.none());
+      expect(O.some(1).chain(O.flatMap(O.tryCatchK((i) => throw 'fail'))), O.none());
     });
 
     test('does nothing on None', () {
-      expect(O.none().chain(O.tryCatchK((i) => i * 2)), O.none());
+      expect(O.none().chain(O.flatMap(O.tryCatchK((i) => i * 2))), O.none());
+    });
+  });
+
+  group('chainTryCatchK', () {
+    test('returns Some on success', () {
+      expect(O.some(1).chain(O.chainTryCatchK((i) => i * 2)), O.some(2));
+    });
+
+    test('returns None on error', () {
+      expect(O.some(1).chain(O.chainTryCatchK((i) => throw 'fail')), O.none());
+    });
+
+    test('does nothing on None', () {
+      expect(O.none().chain(O.chainTryCatchK((i) => i * 2)), O.none());
     });
   });
 

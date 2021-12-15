@@ -99,8 +99,11 @@ Option<T> tryCatch<T>(T Function() f) {
   }
 }
 
-Option<B> Function(Option<A> option) tryCatchK<A, B>(B Function(A value) f) =>
-    flatMap((a) => tryCatch(() => f(a)));
+Option<B> Function(A a) tryCatchK<A, B>(B Function(A value) f) =>
+    (a) => tryCatch(() => f(a));
+
+Option<B> Function(Option<A> a) chainTryCatchK<A, B>(B Function(A value) f) =>
+    flatMap(tryCatchK(f));
 
 Option<B> Function(A value) fromNullableK<A, B>(
   B? Function(A value) f,
@@ -110,7 +113,7 @@ Option<B> Function(A value) fromNullableK<A, B>(
 Option<B> Function(Option<A> option) chainNullableK<A, B>(
   B? Function(A value) f,
 ) =>
-    flatMap((a) => fromNullable(f(a)));
+    flatMap(fromNullableK(f));
 
 Option<R> fromEither<L, R>(E.Either<L, R> either) =>
     either.chain(E.fold((_) => none(), some));
