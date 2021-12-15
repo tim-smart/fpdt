@@ -6,6 +6,9 @@ Option<T> none<T>() => const None();
 Option<T> some<T>(T value) => Some(value);
 Option<T> fromNullable<T>(T? value) => value != null ? some(value) : none();
 
+Option<T> Function(T? value) fromNullableWith<T>() =>
+    (value) => value != null ? some(value) : none();
+
 Option<T> fromPredicate<T>(T value, bool Function(T value) predicate) =>
     predicate(value) ? some(value) : none();
 

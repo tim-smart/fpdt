@@ -14,6 +14,18 @@ void main() {
     });
   });
 
+  group('fromNullableWith', () {
+    test('return Some for non-null values', () {
+      final g = O.fromNullableWith<int>().compose(O.map((i) => i * 2));
+      expect(g(123), O.some(246));
+    });
+
+    test('returns None for null values', () {
+      final g = O.fromNullableWith<int>().compose(O.map((i) => i * 2));
+      expect(g(null), O.none());
+    });
+  });
+
   group('fromNullableK', () {
     test('return Some for non-null values', () {
       final g = O.fromNullableK((int i) => i * 2);
