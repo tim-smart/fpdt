@@ -6,6 +6,14 @@ Option<T> none<T>() => const None();
 Option<T> some<T>(T value) => Some(value);
 Option<T> fromNullable<T>(T? value) => value != null ? some(value) : none();
 
+Option<T> fromPredicate<T>(T value, bool Function(T value) predicate) =>
+    predicate(value) ? some(value) : none();
+
+Option<T> Function(T value) fromPredicateK<T>(
+  bool Function(T value) predicate,
+) =>
+    (value) => fromPredicate(value, predicate);
+
 B Function(Option<A> option) fold<A, B>(
   B Function() ifNone,
   B Function(A value) ifSome,
