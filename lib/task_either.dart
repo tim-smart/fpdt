@@ -5,7 +5,7 @@ import 'package:fpdt/task.dart' as T;
 
 export 'package:fpdt/task.dart' show delay;
 
-typedef TaskEither<L, R> = T.Task<E.Either<L, R>>;
+typedef TaskEither<L, R> = Future<E.Either<L, R>> Function();
 
 TaskEither<L, R> right<L, R>(R a) => () => Future.value(E.right(a));
 TaskEither<L, R> left<L, R>(L a) => () => Future.value(E.left(a));
@@ -43,7 +43,7 @@ T.Task<A> Function(TaskEither<L, R> taskEither) fold<L, R, A>(
   A Function(R right) onRight,
 ) =>
     (taskEither) =>
-        () => taskEither().then((e) => e.chain(E.fold(onLeft, onRight)));
+        () => taskEither().then(E.fold(onLeft, onRight));
 
 TaskEither<L, R> tryCatch<L, R>(
   T.Task<R> task,
@@ -54,18 +54,18 @@ TaskEither<L, R> tryCatch<L, R>(
 TaskEither<L, R2> Function(TaskEither<L, R> taskEither) flatMap<L, R, R2>(
   TaskEither<L, R2> Function(R value) f,
 ) =>
-    (taskEither) => () => taskEither().then((e) => e.chain(E.fold(
-          E.left,
-          (r) => f(r)(),
-        )));
+    (taskEither) => () => taskEither().then(E.fold(
+        E.left,
+        (r) => f(r)(),
+      ));
 
 TaskEither<L, R> Function(TaskEither<L, R> taskEither) alt<L, R>(
   TaskEither<L, R> Function(L left) orElse,
 ) =>
-    (taskEither) => () => taskEither().then((e) => e.chain(E.fold(
-          (l) => orElse(l)(),
-          E.right,
-        )));
+    (taskEither) => () => taskEither().then(E.fold(
+      (l) => orElse(l)(),
+      E.right,
+    ));
 
 TaskEither<L, R> Function(TaskEither<L, R> taskEither) orElse<L, R>(
   TaskEither<L, R> orElse,
@@ -75,10 +75,10 @@ TaskEither<L, R> Function(TaskEither<L, R> taskEither) orElse<L, R>(
 T.Task<R> Function(TaskEither<L, R> taskEither) getOrElse<L, R>(
   R Function(L left) orElse,
 ) =>
-    (taskEither) => () => taskEither().then((e) => e.chain(E.fold(
-          orElse,
-          identity,
-        )));
+    (taskEither) => () => taskEither().then(E.fold(
+        orElse,
+        identity,
+      ));
 
 TaskEither<L, R2> Function(R value) tryCatchK<L, R, R2>(
   Future<R2> Function(R value) task,
@@ -91,7 +91,7 @@ TaskEither<L, R2> Function(TaskEither<L, R> taskEither)
   Future<R2> Function(R value) task,
   L Function(dynamic err, StackTrace stackTrace) onError,
 ) =>
-        flatMap((r) => tryCatch(() => task(r), onError));
+    flatMap((r) => tryCatch(() => task(r), onError));
 
 TaskEither<L, R2> Function(TaskEither<L, R> taskEither) map<L, R, R2>(
   R2 Function(R value) f,
