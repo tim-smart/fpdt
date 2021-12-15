@@ -43,11 +43,28 @@ T Function(Option<T> option) getOrElse<T>(
 ) =>
     fold(orElse, identity);
 
+/// Transform the wrapped value if the [O.Option] is a [O.Some], using the
+/// provided function.
+///
+/// ```
+/// expect(
+///   O.some(1).chain(O.map((i) => i * 2)),
+///   equals(O.some(2)),
+/// );
+/// ```
 Option<R> Function(Option<T> option) map<T, R>(
   R Function(T value) f,
 ) =>
     fold(none, (value) => Some(f(value)));
 
+/// Execute a side effect on the wrapped value, if the [O.Option] is a [O.Some].
+///
+/// ```
+/// expect(
+///   O.some(1).chain(O.tap(print)), // Prints '1' to the console
+///   equals(O.some(1)),
+/// );
+/// ```
 Option<A> Function(Option<A> option) tap<A>(
   void Function(A value) f,
 ) =>
@@ -73,6 +90,19 @@ Option<R> Function(
         none,
         (a) => b.chain(
             fold(none, (b) => c.chain(fold(none, (c) => Some(f(a, b, c))))))));
+
+Option<R> Function(Option<A> optionA) map2K<A, B, R>(
+  Option<B> optionB,
+  R Function(A a, B b) f,
+) =>
+    (optionA) => map2(f)(optionA, optionB);
+
+Option<R> Function(Option<A> optionA) map3K<A, B, C, R>(
+  Option<B> optionB,
+  Option<C> optionC,
+  R Function(A a, B b, C c) f,
+) =>
+    (optionA) => map3(f)(optionA, optionB, optionC);
 
 Option<R> Function(Tuple2<Option<A>, Option<B>> tuple) mapTuple2<A, B, R>(
   R Function(A a, B b) f,

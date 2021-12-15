@@ -1,6 +1,7 @@
 import 'package:fpdt/function.dart';
 import 'package:fpdt/either.dart' as E;
 import 'package:fpdt/option.dart' as O;
+import 'package:fpdt/tuple.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -234,6 +235,36 @@ void main() {
     });
   });
 
+  group('mapTuple*', () {
+    test('transforms the value if all options are some', () {
+      expect(
+        tuple2(O.some(1), O.some(2)).chain(O.mapTuple2((a, b) => a + b)),
+        O.some(3),
+      );
+
+      expect(
+        tuple3(O.some(1), O.some(2), O.some(3))
+            .chain(O.mapTuple3((a, b, c) => a + b + c)),
+        O.some(6),
+      );
+    });
+  });
+
+  group('map*K', () {
+    test('transforms the value if all options are some', () {
+      expect(
+        O.some(1).chain(O.map2K(O.some(2), (a, int b) => a + b)),
+        O.some(3),
+      );
+
+      expect(
+        O.some(1).chain(
+            O.map3K(O.some(2), O.some(3), (a, int b, int c) => a + b + c)),
+        O.some(6),
+      );
+    });
+  });
+
   group('toNullable', () {
     test('returns value with Some', () {
       expect(O.some(123).chain(O.toNullable), 123);
@@ -260,7 +291,8 @@ void main() {
     });
 
     test('returns None on error', () {
-      expect(O.some(1).chain(O.flatMap(O.tryCatchK((i) => throw 'fail'))), O.none());
+      expect(O.some(1).chain(O.flatMap(O.tryCatchK((i) => throw 'fail'))),
+          O.none());
     });
 
     test('does nothing on None', () {
