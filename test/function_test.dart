@@ -40,6 +40,11 @@ void main() {
       expect(g('first call', 1, 3), 'Result for first call: 4 - it was four!');
       expect(g('second call', 1, 2), null);
     });
+
+    test('optional named parameters', () {
+      int test(int a, {int b = 1}) => a + b;
+      expect(test.compose(identity)(1), 2);
+    });
   });
 
   group('chain', () {
