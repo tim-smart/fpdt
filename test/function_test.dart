@@ -15,7 +15,7 @@ void main() {
       expect(g(O.some(0)), null);
     });
 
-    test('multiple artity 2', () {
+    test('multiple artity 3', () {
       String addPrint(String name, int a, int b) =>
           'Result for $name: ${a + b}';
 
