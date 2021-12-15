@@ -14,6 +14,7 @@ void main() {
       expect(g(O.some(1)), 4);
       expect(g(O.some(0)), null);
     });
+
     test('various arities', () {
       int zero() => 0;
       int one(int a) => a;
