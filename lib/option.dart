@@ -22,12 +22,6 @@ B Function(Option<A> option) fold<A, B>(
 ) =>
     (option) => option._fold(ifNone, ifSome);
 
-Option<R> Function(Option<T> option) foldOption<T, R>(
-  Option<R> Function() ifNone,
-  Option<R> Function(Some<T> value) ifSome,
-) =>
-    (option) => option._foldOption(ifNone, ifSome);
-
 T? toNullable<T>(Option<T> option) => option._fold(() => null, (v) => v);
 
 E.Either<L, R> Function(Option<R> option) toEither<L, R>(L Function() orElse) =>
@@ -36,7 +30,7 @@ E.Either<L, R> Function(Option<R> option) toEither<L, R>(L Function() orElse) =>
 Option<T> Function(Option<T> option) alt<T>(
   Option<T> Function() f,
 ) =>
-    foldOption(f, identity);
+    fold(f, some);
 
 T Function(Option<T> option) getOrElse<T>(
   T Function() orElse,
@@ -123,7 +117,7 @@ Option<R> Function(Option<T> option) flatMap<T, R>(
 Option<T> Function(Option<T> option) filter<T>(
   bool Function(T value) predicate,
 ) =>
-    foldOption(none, (a) => predicate(a.value) ? a : none());
+    flatMap(fromPredicateK(predicate));
 
 bool isNone<T>(Option<T> option) => option._isNone();
 bool isSome<T>(Option<T> option) => option._isSome();
@@ -161,10 +155,6 @@ abstract class Option<T> {
   const Option();
 
   R _fold<R>(R Function() ifNone, R Function(T value) ifSome);
-  Option<R> _foldOption<R>(
-    Option<R> Function() ifNone,
-    Option<R> Function(Some<T> value) ifSome,
-  );
   bool _isNone();
   bool _isSome();
 
@@ -187,13 +177,6 @@ class Some<T> extends Option<T> {
   R _fold<R>(R Function() ifNone, R Function(T value) ifSome) => ifSome(value);
 
   @override
-  Option<R> _foldOption<R>(
-    Option<R> Function() ifNone,
-    Option<R> Function(Some<T> value) ifSome,
-  ) =>
-      ifSome(this);
-
-  @override
   bool operator ==(other) => other is Some && other.value == value;
 
   @override
@@ -205,13 +188,6 @@ class None<T> extends Option<T> {
 
   @override
   R _fold<R>(R Function() ifNone, R Function(T value) ifSome) => ifNone();
-
-  @override
-  Option<R> _foldOption<R>(
-    Option<R> Function() ifNone,
-    Option<R> Function(Some<T> value) ifSome,
-  ) =>
-      ifNone();
 
   @override
   bool _isSome() => false;

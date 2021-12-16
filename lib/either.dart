@@ -1,31 +1,74 @@
 import 'package:fpdt/function.dart';
 import 'package:fpdt/option.dart' as O;
 
+/// Returns an [Either] that resolves to a [Left] value.
 Either<L, R> left<L, R>(L value) => Left(value);
+
+/// Returns an [Either] that resolves to a [Right] value.
 Either<L, R> right<L, R>(R value) => Right(value);
 
+/// Transforms an [Either] using the `ifLeft` and `ifRight` functions.
+///
+/// ```
+/// expect(
+///   right(1).chain(fold(
+///     (_) => -1,
+///     (number) => number + 1,
+///   )),
+///   equals(2),
+/// );
+/// ```
+///
+/// ```
+/// expect(
+///   left('fail').chain(fold(
+///     (left) => 'caught: $left',
+///     (right) => 'yay!',
+///   )),
+///   equals('caught: fail'),
+/// );
+/// ```
 T Function(Either<L, R> either) fold<L, R, T>(
   T Function(L left) ifLeft,
   T Function(R right) ifRight,
 ) =>
     (either) => either._fold(ifLeft, ifRight);
 
-Either<NL, NR> Function(Either<L, R> either) foldEither<L, R, NL, NR>(
-  Either<NL, NR> Function(Left<L, R> left) ifLeft,
-  Either<NL, NR> Function(Right<L, R> right) ifRight,
-) =>
-    (either) => either._foldEither(ifLeft, ifRight);
-
+/// Returns `true` if the [Either] is a [Left].
 bool isLeft<L, R>(Either<L, R> either) => either._isLeft();
+
+/// Returns `true` if the [Either] is a [Right].
 bool isRight<L, R>(Either<L, R> either) => either._isRight();
 
+/// Swaps the [Left] and [Right] type values.
+///
+/// ```
+/// expect(swap(right(123)), equals(left(123)));
+/// expect(swap(left('hi')), equals(right('hi')));
+/// ```
 Either<R, L> swap<L, R>(Either<L, R> either) => either._fold(right, left);
 
+/// Transforms the wrapped value if the [Either] is a [Right].
+///
+/// ```
+/// expect(
+///   right(1).chain(map((i) => i * 2)),
+///   equals(right(2)),
+/// );
+/// ```
 Either<L, NR> Function(Either<L, R> either) map<L, R, NR>(
   NR Function(R value) f,
 ) =>
     fold(left, (r) => right(f(r)));
 
+/// Perform a side effect on the [Either], if it is a [Right].
+///
+/// ```
+/// expect(
+///   right(1).chain(tap(print)), // Prints '1' to the console
+///   equals(right(1)),
+/// );
+/// ```
 Either<L, R> Function(Either<L, R> either) tap<L, R>(
   void Function(R value) f,
 ) =>
@@ -50,21 +93,64 @@ Either<dynamic, R> tryCatch<R>(R Function() f) {
 Either<L, R> Function(Either<L, R> either) alt<L, R>(
   Either<L, R> Function(L left) orElse,
 ) =>
-    (e) => e._fold(orElse, right);
+    fold(orElse, right);
 
 R Function(Either<L, R> either) getOrElse<L, R>(
   R Function(L left) orElse,
 ) =>
-    (e) => e._fold(orElse, identity);
+    fold(orElse, identity);
 
 Either<L, R> Function(Either<L, R> either) filter<L, R>(
   bool Function(R right) predicate,
   L Function(R left) orElse,
 ) =>
-    (e) => e._foldEither(
-          identity,
-          (r) => predicate(r.value) ? r : left(orElse(r.value)),
-        );
+    flatMap(fromPredicateK(predicate, orElse));
+
+/// Create an [Either] from a function that returns a [bool].
+///
+/// If the function returns true, then the returned [Either] will be a [Right]
+/// containing the given `value`.
+///
+/// If the function returns `false`, then the returned [Either] will be a [Left]
+/// containing the value returned from executing the `orElse` function.
+///
+/// ```
+/// expect(
+///   fromPredicate(2, (i) => i > 1, (_) => 'number too small'),
+///   equals(right(2)),
+/// );
+/// ```
+///
+/// ```
+/// expect(
+///   fromPredicate(0, (i) => i > 1, (_) => 'number too small'),
+///   equals(left('number too small')),
+/// );
+/// ```
+Either<L, R> fromPredicate<L, R>(
+  R value,
+  bool Function(R value) predicate,
+  L Function(R value) orElse,
+) =>
+    predicate(value) ? right(value) : left(orElse(value));
+
+/// Wrapper for [fromPredicate], that returns a function which transforms a
+/// value into an [Either].
+///
+/// ```
+/// final transform = fromPredicateK(
+///   (int number) => number > 1,
+///   (_) => 'number too small',
+/// );
+///
+/// expect(transform(2), right(2));
+/// expect(transform(0), left('number too small'));
+/// ```
+Either<L, R> Function(R value) fromPredicateK<L, R>(
+  bool Function(R value) predicate,
+  L Function(R value) orElse,
+) =>
+    (r) => fromPredicate(r, predicate, orElse);
 
 Either<L, R> Function(O.Option<R> option) fromOption<L, R>(
   L Function() onNone,
@@ -75,10 +161,6 @@ abstract class Either<L, R> {
   const Either();
 
   T _fold<T>(T Function(L left) ifLeft, T Function(R value) ifRight);
-  Either<NL, NR> _foldEither<NL, NR>(
-    Either<NL, NR> Function(Left<L, R> left) ifLeft,
-    Either<NL, NR> Function(Right<L, R> right) ifRight,
-  );
   bool _isLeft();
   bool _isRight();
 }
@@ -90,13 +172,6 @@ class Left<L, R> extends Either<L, R> {
   @override
   T _fold<T>(T Function(L left) ifLeft, T Function(R value) ifRight) =>
       ifLeft(value);
-
-  @override
-  Either<NL, NR> _foldEither<NL, NR>(
-    Either<NL, NR> Function(Left<L, R> left) ifLeft,
-    Either<NL, NR> Function(Right<L, R> right) ifRight,
-  ) =>
-      ifLeft(this);
 
   @override
   bool _isLeft() => true;
@@ -121,13 +196,6 @@ class Right<L, R> extends Either<L, R> {
   @override
   T _fold<T>(T Function(L left) ifLeft, T Function(R value) ifRight) =>
       ifRight(value);
-
-  @override
-  Either<NL, NR> _foldEither<NL, NR>(
-    Either<NL, NR> Function(Left<L, R> left) ifLeft,
-    Either<NL, NR> Function(Right<L, R> right) ifRight,
-  ) =>
-      ifRight(this);
 
   @override
   bool _isLeft() => false;
