@@ -81,17 +81,14 @@ void main() async {
   // Because try {} catch (e) {} is optional, errors may not be handled correctly.
   // assert(validateHelloImperativeE(null) == 'hello - valid!');
 
-  // Here is a functional equivilent using [Option] and [Either].
-  E.Either<ArgumentError, String> validateHelloFunctionalE(String? s) => O
-      // First we convert it to an Option
-      .fromNullable(s)
-      // Then we convert it to an Either. If the string was null, the option
-      // would be None, and `fromOption` will set use the result of the provided
-      // and wrap it in a Left.
+  // Here is a functional equivilent using [Either].
+  E.Either<ArgumentError, String> validateHelloFunctionalE(String? s) => E
+      // If the string was null, the result of `orElse` function will be wrapped
+      // in a Left and returned.
       //
-      // If the string was present, the option would be a Some, and the function
-      // will not be executed.
-      .chain(E.fromOption(() => ArgumentError.notNull('s')))
+      // If the string was present, the value will be wrapped in a Right and
+      // returned.
+      .fromNullable(s, () => ArgumentError.notNull('s'))
       .chain(E.map((s) => s.trim()))
       // If the filter predicate (function that returns a bool) fails, then
       // the second argument will determine the Left value.
@@ -116,9 +113,9 @@ void main() async {
       'Error was: Invalid argument(s) (s): Must not be null');
 
   // A version using composition
-  final maybeStringE = O
-      .fromNullableWith<String>()
-      .compose(E.fromOption(() => ArgumentError.notNull('s')))
+  final maybeStringE = E
+      .fromNullableWith<ArgumentError, String>(
+          () => ArgumentError.notNull('string'))
       .compose(E.map((s) => s.trim()))
       .compose(E.filter(
         (s) => s.isNotEmpty,

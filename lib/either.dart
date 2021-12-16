@@ -178,6 +178,11 @@ Either<L, R> fromNullable<L, R>(
 ) =>
     value != null ? right(value) : left(orElse());
 
+Either<L, R> Function(R? value) fromNullableWith<L, R>(
+  Lazy<L> orElse,
+) =>
+    (value) => fromNullable(value, orElse);
+
 /// A wrapper for [fromNullable], that returns a function that accepts a
 /// value to be transformed.
 ///
