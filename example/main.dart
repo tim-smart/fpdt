@@ -1,4 +1,5 @@
 import 'package:fpdt/function.dart';
+import 'package:fpdt/either.dart' as E;
 import 'package:fpdt/option.dart' as O;
 
 void main() async {
@@ -58,4 +59,85 @@ void main() async {
   assert(maybeInt('123') == O.some(123));
   assert(maybeInt('hello') == O.none());
   assert(maybeInt(null) == O.none());
+
+  // === Either
+
+  // Here is another version of `validateHelloImperative` that throws
+  // exceptions.
+  String validateHelloImperativeE(String? s) {
+    if (s == null) throw ArgumentError.notNull();
+
+    s = s.trim();
+    if (s.isEmpty) throw ArgumentError.value(s, 's');
+
+    if (!s.startsWith('hello')) throw ArgumentError.value(s);
+
+    return '$s - valid!';
+  }
+
+  assert(validateHelloImperativeE('    hello') == 'hello - valid!');
+
+  // The following would crash our program, unless we wrap it in a try catch.
+  // Because try {} catch (e) {} is optional, errors may not be handled correctly.
+  // assert(validateHelloImperativeE(null) == 'hello - valid!');
+
+  // Here is a functional equivilent using [Option] and [Either].
+  E.Either<ArgumentError, String> validateHelloFunctionalE(String? s) => O
+      // First we convert it to an Option
+      .fromNullable(s)
+      // Then we convert it to an Either. If the string was null, the option
+      // would be None, and `fromOption` will set use the result of the provided
+      // and wrap it in a Left.
+      //
+      // If the string was present, the option would be a Some, and the function
+      // will not be executed.
+      .chain(E.fromOption(() => ArgumentError.notNull('s')))
+      .chain(E.map((s) => s.trim()))
+      // If the filter predicate (function that returns a bool) fails, then
+      // the second argument will determine the Left value.
+      .chain(E.filter(
+        (s) => s.isNotEmpty,
+        (s) => ArgumentError.value(s, 's', 'was empty'),
+      ))
+      .chain(E.filter(
+        (s) => s.startsWith('hello'),
+        (s) => ArgumentError.value(s, 's', 'does not start with hello'),
+      ))
+      .chain(E.map((s) => '$s - valid!'));
+
+  // It is similar to the Option version, but allows us handle errors very
+  // concisely. It also forces us to handles errors correctly.
+  assert(validateHelloFunctionalE('    hello') == E.right('hello - valid!'));
+  assert(validateHelloFunctionalE('    hello')
+          .chain(E.getOrElse((left) => 'Error was: $left')) ==
+      'hello - valid!');
+  assert(validateHelloFunctionalE(null)
+          .chain(E.getOrElse((left) => 'Error was: $left')) ==
+      'Error was: Invalid argument(s) (s): Must not be null');
+
+  // A version using composition
+  final maybeStringE = O
+      .fromNullableWith<String>()
+      .compose(E.fromOption(() => ArgumentError.notNull('s')))
+      .compose(E.map((s) => s.trim()))
+      .compose(E.filter(
+        (s) => s.isNotEmpty,
+        (s) => ArgumentError.value(s, 's', 'was empty'),
+      ));
+  final maybeHelloStringE = maybeStringE.compose(E.filter(
+    (s) => s.startsWith('hello'),
+    (s) => ArgumentError.value(s, 's', 'does not start with hello'),
+  ));
+  final validateHelloComposeE =
+      maybeHelloStringE.compose(E.map((s) => '$s - valid!'));
+
+  assert(validateHelloComposeE('   hello') == E.right('hello - valid!'));
+  assert(E.isLeft(validateHelloComposeE(null)) == true);
+
+  // And an Either version of our maybeInt function
+  final maybeIntE = maybeStringE.compose(E.chainNullableK(
+    int.tryParse,
+    (s) => ArgumentError.value(s, 's', 'did not contain an int'),
+  ));
+  assert(maybeIntE('    1234 ') == E.right(1234));
 }

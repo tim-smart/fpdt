@@ -1,4 +1,5 @@
 import 'package:fpdt/either.dart' as E;
+import 'package:fpdt/function.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -14,6 +15,53 @@ void main() {
 
     test('returns left for predicate fails', () {
       expect(transform(0), E.left('number too small'));
+    });
+  });
+
+  group('fromNullable', () {
+    test('returns right for non nullable values', () {
+      expect(E.fromNullable('hello', () => 'null'), E.right('hello'));
+    });
+
+    test('returns left for nullable values', () {
+      expect(E.fromNullable(null, () => 'null'), E.left('null'));
+    });
+  });
+
+  group('fromNullableK', () {
+    final transform = E.fromNullableK(
+      (int i) => i < 1 ? null : i.toStringAsFixed(2),
+      (i) => '$i was less than one',
+    );
+
+    test('returns right for non nullable values', () {
+      expect(transform(2), E.right('2.00'));
+    });
+
+    test('returns left for nullable values', () {
+      expect(transform(0), E.left('0 was less than one'));
+    });
+  });
+
+  group('chainNullableK', () {
+    test('returns right for non nullable values', () {
+      expect(
+        E.right(2).chain(E.chainNullableK(
+              (i) => i < 1 ? null : i.toStringAsFixed(2),
+              (i) => '$i was less than one',
+            )),
+        E.right('2.00'),
+      );
+    });
+
+    test('returns left for nullable values', () {
+      expect(
+        E.right(0).chain(E.chainNullableK(
+              (i) => i < 1 ? null : i.toStringAsFixed(2),
+              (i) => '$i was less than one',
+            )),
+        E.left('0 was less than one'),
+      );
     });
   });
 }

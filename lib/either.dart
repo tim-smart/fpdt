@@ -102,7 +102,7 @@ R Function(Either<L, R> either) getOrElse<L, R>(
 
 Either<L, R> Function(Either<L, R> either) filter<L, R>(
   bool Function(R right) predicate,
-  L Function(R left) orElse,
+  L Function(R right) orElse,
 ) =>
     flatMap(fromPredicateK(predicate, orElse));
 
@@ -156,6 +156,77 @@ Either<L, R> Function(O.Option<R> option) fromOption<L, R>(
   L Function() onNone,
 ) =>
     O.fold(() => left(onNone()), right);
+
+/// Create an [Either] from a nullable value.
+/// If the value is `null`, then the result of the `orElse` function is used
+/// as a [Left] value.
+///
+/// ```
+/// expect(
+///   fromNullable('hello', () => 'it was null'),
+///   right('hello'),
+/// );
+///
+/// expect(
+///   fromNullable(null, () => 'it was null'),
+///   left('it was null'),
+/// );
+/// ```
+Either<L, R> fromNullable<L, R>(
+  R? value,
+  Lazy<L> orElse,
+) =>
+    value != null ? right(value) : left(orElse());
+
+/// A wrapper for [fromNullable], that returns a function that accepts a
+/// value to be transformed.
+///
+/// ```
+/// final transform = fromNullableK(
+///   (String s) => s == 'hello' ? s : null,
+///   () => 'it was not hello',
+/// );
+///
+/// expect(
+///   transform('hello'),
+///   right('hello'),
+/// );
+///
+/// expect(
+///   transform('asdf'),
+///   left('it was not hello'),
+/// );
+/// ```
+Either<L, R> Function(A value) fromNullableK<A, L, R>(
+  R? Function(A value) f,
+  L Function(A value) orElse,
+) =>
+    (value) => fromNullable(f(value), () => orElse(value));
+
+/// A wrapper for [fromNullableK], that allows for chaining.
+///
+/// ```
+/// expect(
+///   right('hello').chain(chainNullableK(
+///     (s) => s == 'hello' ? s : null,
+///     () => 'it was not hello',
+///   )),
+///   right('hello'),
+/// );
+///
+/// expect(
+///   right('asdf').chain(chainNullableK(
+///     (s) => s == 'hello' ? s : null,
+///     () => 'it was not hello',
+///   )),
+///   left('it was not hello'),
+/// );
+/// ```
+Either<L, R2> Function(Either<L, R> value) chainNullableK<L, R, R2>(
+  R2? Function(R right) f,
+  L Function(R right) orElse,
+) =>
+    flatMap(fromNullableK(f, orElse));
 
 abstract class Either<L, R> {
   const Either();
