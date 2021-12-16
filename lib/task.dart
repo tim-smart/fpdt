@@ -55,11 +55,33 @@ Task<B> Function(Task<A> task) flatMap<A, B>(Task<B> Function(A value) f) =>
 Task<B> Function(Task<A> task) call<A, B>(Task<B> chain) =>
     flatMap((_) => chain);
 
+/// Returns a task that maps an [Iterable] of [Task]'s, into a list of results.
+///
+/// The tasks are run in parallel.
+///
+/// ```
+/// expect(
+///   await [fromThunk(() => 'one'), fromThunk(() => 'two')]
+///     .chain(sequence)(),
+///   ['one', 'two'],
+/// );
+/// ```
 Task<List<A>> sequence<A>(
   Iterable<Task<A>> tasks,
 ) =>
     () => Future.wait(tasks.map((f) => f()));
 
+/// Returns a task the flattens an [Iterable] of [Task]'s, into a list of results.
+///
+/// The tasks are run sequentially - one after the other.
+///
+/// ```
+/// expect(
+///   await [fromThunk(() => 'one'), fromThunk(() => 'two')]
+///     .chain(sequenceSeq)(),
+///   ['one', 'two'],
+/// );
+/// ```
 Task<List<A>> sequenceSeq<A>(Iterable<Task<A>> tasks) => () => tasks.fold(
       Future.sync(() => []),
       (acc, task) => acc.then((list) => task().then((a) => [...list, a])),
