@@ -1,6 +1,6 @@
 # fpdt
 
-![Pub Version](https://img.shields.io/pub/v/fpdt?style=for-the-badge)
+[<img src="https://img.shields.io/pub/v/fpdt?style=for-the-badge" alt="Pub.dev" />](https://pub.dev/packages/fpdt)
 
 A collection of functions and monads for functional programming in dart.
 
