@@ -49,7 +49,7 @@ void main() {
     });
 
     test('does nothing for None', () {
-      expect(O.none().chain(O.chainNullableK((i) => i * 2)), O.none());
+      expect(O.none<int>().chain(O.chainNullableK((i) => i * 2)), O.none());
     });
   });
 

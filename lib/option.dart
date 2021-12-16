@@ -4,7 +4,7 @@ import 'package:fpdt/tuple.dart';
 
 /// Returns an [Option] that resolves to a [None].
 /// Represents a value that does not exists.
-Option<T> none<T>() => const None();
+Option<T> none<T>() => None<T>();
 
 /// Returns an [Option] that resolves to a [Some], which wraps the given value.
 /// Represents a value that does exist.
@@ -104,7 +104,8 @@ T? toNullable<T>(Option<T> option) => option._fold(() => null, (v) => v);
 ///   some('hello'),
 /// );
 /// ```
-Option<T> Function(Option<T> option) alt<T>(Lazy<Option<T>> f) => fold(f, some);
+Option<T> Function(Option<T> option) alt<T>(Lazy<Option<T>> f) =>
+    (option) => option._bindNone(f);
 
 /// Unwrap the [Option]'s value if it is [Some], otherwise it calls the `orElse`
 /// function to determine the fallback value.
@@ -134,7 +135,7 @@ T Function(Option<T> option) getOrElse<T>(Lazy<T> orElse) =>
 Option<R> Function(Option<T> option) map<T, R>(
   R Function(T value) f,
 ) =>
-    fold(none, (value) => Some(f(value)));
+    (o) => o._bindSome((a) => some(f(a)));
 
 /// Execute a side effect on the wrapped value, if the [O.Option] is a [O.Some].
 ///
@@ -164,8 +165,7 @@ Option<A> Function(Option<A> option) tap<A>(
 Option<R> Function(Option<A> optionA, Option<B> optionB) map2<A, B, R>(
   R Function(A a, B b) f,
 ) =>
-    (a, b) =>
-        a.chain(fold(none, (a) => b.chain(fold(none, (b) => Some(f(a, b))))));
+    (a, b) => a._bindSome((a) => b._bindSome((b) => some(f(a, b))));
 
 /// Creates a function that accepts three [Option]'s, and if they are all [Some],
 /// then the transformer function is called with the unwrapped values.
@@ -183,10 +183,8 @@ Option<R> Function(
 ) map3<A, B, C, R>(
   R Function(A a, B b, C c) f,
 ) =>
-    (a, b, c) => a.chain(fold(
-        none,
-        (a) => b.chain(
-            fold(none, (b) => c.chain(fold(none, (c) => Some(f(a, b, c))))))));
+    (a, b, c) => a._bindSome(
+        (a) => b._bindSome((b) => c._bindSome((c) => some(f(a, b, c)))));
 
 /// A wrapper around [map2], useful for chaining.
 /// The second [Option] is passed as the first argument.
@@ -279,7 +277,7 @@ Option<R> Function(Tuple3<Option<A>, Option<B>, Option<C>> tuple)
 Option<B> Function(Option<A> option) flatMap<A, B>(
   Option<B> Function(A value) f,
 ) =>
-    fold(none, f);
+    (o) => o._bindSome(f);
 
 /// Using the given `predicate`, conditionally convert the [Option] to a [None].
 ///
@@ -304,7 +302,7 @@ Option<T> Function(Option<T> option) filter<T>(
 /// expect(isNone(none()), true);
 /// expect(isNone(some()), false);
 /// ```
-bool isNone<T>(Option<T> option) => option._isNone();
+bool isNone<T>(Option<T> option) => option._isNone;
 
 /// Returns `true` if the [Option] is a [Some].
 ///
@@ -312,7 +310,7 @@ bool isNone<T>(Option<T> option) => option._isNone();
 /// expect(isSome(some()), true);
 /// expect(isSome(none()), false);
 /// ```
-bool isSome<T>(Option<T> option) => option._isSome();
+bool isSome<T>(Option<T> option) => option._isSome;
 
 /// Returns the value as a [Some] if the function succeeds.
 /// If it raises an exception, then it will return [None].
@@ -405,37 +403,46 @@ Option<R> fromEither<L, R>(E.Either<L, R> either) =>
 /// expect(some(some(1)), some(1));
 /// expect(some(none()), none());
 /// ```
-Option<A> flatten<A>(Option<Option<A>> option) => option._fold(none, (o) => o);
+Option<A> flatten<A>(Option<Option<A>> option) => option._bindSome((o) => o);
 
 /// Represents a value that could be missing - an \[option\]al value.
 ///
 /// If the value is present, then it will be wrapped in a [Some] instance.
 /// If the value is missing, then it will represented with a [None] instance.
-abstract class Option<T> {
+abstract class Option<A> {
   const Option();
 
-  R _fold<R>(R Function() ifNone, R Function(T value) ifSome);
-  bool _isNone();
-  bool _isSome();
+  bool get _isNone;
+  bool get _isSome;
+
+  B _fold<B>(B Function() ifNone, B Function(A value) ifSome);
+  Option<B> _bindSome<B>(Option<B> Function(A value) ifSome);
+  Option<A> _bindNone(Option<A> Function() ifNone);
 
   @override
   String toString() => _fold(() => 'None', (a) => 'Some($a)');
 }
 
 /// Represents a present value. The [value] property contains the wrapped value.
-class Some<T> extends Option<T> {
+class Some<A> extends Option<A> {
   const Some(this.value);
 
-  final T value;
+  final A value;
 
   @override
-  bool _isSome() => true;
+  final _isSome = true;
 
   @override
-  bool _isNone() => false;
+  final _isNone = false;
 
   @override
-  R _fold<R>(R Function() ifNone, R Function(T value) ifSome) => ifSome(value);
+  B _fold<B>(B Function() ifNone, B Function(A value) ifSome) => ifSome(value);
+
+  @override
+  Option<B> _bindSome<B>(Option<B> Function(A value) ifSome) => ifSome(value);
+
+  @override
+  Option<A> _bindNone(Option<A> Function() ifNone) => this;
 
   @override
   bool operator ==(other) => other is Some && other.value == value;
@@ -445,17 +452,24 @@ class Some<T> extends Option<T> {
 }
 
 /// Represents a missing value.
-class None<T> extends Option<T> {
+class None<A> extends Option<A> {
   const None();
 
   @override
-  R _fold<R>(R Function() ifNone, R Function(T value) ifSome) => ifNone();
+  R _fold<R>(R Function() ifNone, R Function(A value) ifSome) => ifNone();
 
   @override
-  bool _isSome() => false;
+  Option<B> _bindSome<B>(Option<B> Function(A value) ifSome) =>
+      this as Option<B>;
 
   @override
-  bool _isNone() => true;
+  Option<A> _bindNone(Option<A> Function() ifNone) => ifNone();
+
+  @override
+  final _isSome = false;
+
+  @override
+  final _isNone = true;
 
   @override
   bool operator ==(other) => other is None;
