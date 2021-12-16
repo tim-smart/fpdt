@@ -24,6 +24,16 @@ Future<R> toFuture<R>(TaskEither<dynamic, R> taskEither) =>
       identity,
     ))();
 
+/// Convert a [TaskEither] into a [Future<void>], that runs the side effect on
+/// [E.Left].
+Future<void> Function(TaskEither<L, dynamic> taskEither) toFutureVoid<L>(
+  void Function(L value) onLeft,
+) =>
+    (te) => te.chain(fold(
+          onLeft,
+          (_) {},
+        ))();
+
 /// Replace the [TaskEither] with one that resolves to an [E.Right] containing
 /// the given value.
 TaskEither<L, R2> Function(TaskEither<L, R> taskEither) pure<L, R, R2>(R2 a) =>

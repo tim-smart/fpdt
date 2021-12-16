@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:fpdt/function.dart';
 import 'package:fpdt/either.dart' as E;
 import 'package:fpdt/option.dart' as O;
@@ -17,6 +19,32 @@ void main() {
     test('resolves to a Left', () async {
       final r = await TE.left('fail')();
       expect(r, E.left('fail'));
+    });
+  });
+
+  group('toFuture', () {
+    test('resolves to value on right', () async {
+      final te = TE.right(123);
+      expect(await TE.toFuture(te), 123);
+    });
+
+    test('resolves to an error on left', () async {
+      final te = TE.left('fail');
+      await expectLater(() => TE.toFuture(te), throwsA('fail'));
+    });
+  });
+
+  group('toFutureVoid', () {
+    test('resolves to void on right', () async {
+      final c = Completer.sync();
+      await TE.right(123).chain(TE.toFutureVoid(c.complete));
+      expect(c.isCompleted, false);
+    });
+
+    test('resolves to void on left and runs the effect', () async {
+      final c = Completer.sync();
+      await TE.left('fail').chain(TE.toFutureVoid(c.complete));
+      expect(c.isCompleted, true);
     });
   });
 
