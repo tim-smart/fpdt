@@ -35,10 +35,10 @@ T Function(Either<L, R> either) fold<L, R, T>(
     (either) => either._fold(ifLeft, ifRight);
 
 /// Returns `true` if the [Either] is a [Left].
-bool isLeft<L, R>(Either<L, R> either) => either._isLeft();
+bool isLeft<L, R>(Either<L, R> either) => either._isLeft;
 
 /// Returns `true` if the [Either] is a [Right].
-bool isRight<L, R>(Either<L, R> either) => either._isRight();
+bool isRight<L, R>(Either<L, R> either) => either._isRight;
 
 /// Swaps the [Left] and [Right] type values.
 ///
@@ -77,34 +77,162 @@ Either<L, R> Function(Either<L, R> either) tap<L, R>(
       return r;
     });
 
+/// Transforms [Right] values with the given function, that returns another [Either].
+/// The resulting [Either] is then flattened / replaces the existing value.
+///
+/// ```
+/// expect(
+///   right('hello').chain(flatMap((s) => right('$s world!'))),
+///   right('hello world!'),
+/// );
+/// expect(
+///   right('hello').chain(flatMap((s) => left('fail'))),
+///   left('fail'),
+/// );
+/// ```
 Either<L, NR> Function(Either<L, R> either) flatMap<L, R, NR>(
   Either<L, NR> Function(R value) f,
 ) =>
     fold(left, f);
 
-Either<dynamic, R> tryCatch<R>(R Function() f) {
+/// Runs the given function, and the result is wrapped in a [Right].
+/// If it raises an error, then the `onError` callback determines the [Left]
+/// value.
+///
+/// ```
+/// expect(
+///   tryCatch(() => 123, (err, stack) => 'fail'),
+///   right(123),
+/// );
+/// expect(
+///   tryCatch(() => throw 'error', (err, stack) => 'fail'),
+///   left('fail'),
+/// );
+/// ```
+Either<L, R> tryCatch<L, R>(
+  Lazy<R> f,
+  L Function(dynamic error, StackTrace stack) onError,
+) {
   try {
     return right(f());
-  } catch (err) {
-    return left(err);
+  } catch (err, stack) {
+    return left(onError(err, stack));
   }
 }
 
+/// Runs the given function, and the result is wrapped in a [Right].
+/// If it raises an error, then the `onError` callback determines the [Left]
+/// value.
+///
+/// The function accepts an externally passed value.
+///
+/// ```
+/// final catcher = tryCatchK(
+///   (int i) => i > 5 ? i : throw 'error',
+///   (err, stack) => 'number too small',
+/// );
+///
+/// expect(
+///   catcher(10),
+///   right(10),
+/// );
+/// expect(
+///   catcher(3),
+///   left('number too small'),
+/// );
+/// ```
+Either<L, R> Function(A value) tryCatchK<A, L, R>(
+  R Function(A value) f,
+  L Function(dynamic error, StackTrace stack) onError,
+) =>
+    (value) => tryCatch(() => f(value), onError);
+
+/// Runs the given function, and the result is wrapped in a [Right].
+/// If it raises an error, then the `onError` callback determines the [Left]
+/// value.
+///
+/// The returned function accepts an [Either], and the transformation is only
+/// run if is a [Right] value.
+///
+/// ```
+/// final catcher = chainTryCatchK(
+///   (int i) => i > 5 ? i : throw 'error',
+///   (err, stack) => 'number too small',
+/// );
+///
+/// expect(
+///   right(10).chain(catcher),
+///   right(10),
+/// );
+/// expect(
+///   right(3).chain(catcher),
+///   left('number too small'),
+/// );
+/// ```
+Either<L, R2> Function(Either<L, R> value) chainTryCatchK<L, R, R2>(
+  R2 Function(R right) f,
+  L Function(dynamic error, StackTrace stack) onError,
+) =>
+    flatMap(tryCatchK(f, onError));
+
+/// Recieves an [Either], and if it is a [Left] value replaces it with an
+/// \[alt\]ernative [Either] determined by executing the `onLeft` callback.
+///
+/// ```
+/// expect(
+///   left('fail').chain(alt((s) => right('caught the $s'))),
+///   right('caught the fail'),
+/// );
+/// expect(
+///   right('yay').chain(alt((s) => right('caught the $s'))),
+///   right('yay'),
+/// );
+/// ```
 Either<L, R> Function(Either<L, R> either) alt<L, R>(
-  Either<L, R> Function(L left) orElse,
+  Either<L, R> Function(L left) onLeft,
 ) =>
-    fold(orElse, right);
+    fold(onLeft, right);
 
-R Function(Either<L, R> either) getOrElse<L, R>(
-  R Function(L left) orElse,
-) =>
-    fold(orElse, identity);
-
+/// Maybe converts an [Either] to a [Left], determined by the given `predicate`.
+///
+/// ```
+/// final greaterThanFiveFilter = filter(
+///   (int i) => i > 5,
+///   (i) => '$i is too small',
+/// );
+///
+/// expect(
+///   right(10).chain(greaterThanFiveFilter),
+///   right(10),
+/// );
+/// expect(
+///   right(3).chain(greaterThanFiveFilter),
+///   left('3 is too small'),
+/// );
+/// ```
 Either<L, R> Function(Either<L, R> either) filter<L, R>(
   bool Function(R right) predicate,
   L Function(R right) orElse,
 ) =>
     flatMap(fromPredicateK(predicate, orElse));
+
+/// Unwraps an [Either]. If it is a [Right] value, then it returns the unwrapped
+/// value. If it is a [Left], then the `onLeft` callback determines the fallback.
+///
+/// ```
+/// expect(
+///   right('hello').chain(getOrElse((left) => 'fallback')),
+///   'hello',
+/// );
+/// expect(
+///   left('fail').chain(getOrElse((left) => 'fallback')),
+///   'fallback',
+/// );
+/// ```
+R Function(Either<L, R> either) getOrElse<L, R>(
+  R Function(L left) onLeft,
+) =>
+    fold(onLeft, identity);
 
 /// Create an [Either] from a function that returns a [bool].
 ///
@@ -152,6 +280,21 @@ Either<L, R> Function(R value) fromPredicateK<L, R>(
 ) =>
     (r) => fromPredicate(r, predicate, orElse);
 
+/// Converts an [O.Option] into an [Either].
+/// If the [O.Option] is [O.Some], then a [Right] is returned with the wrapped
+/// value.
+/// Otherwise, `onNone` will determine the [Left] value to return.
+///
+/// ```
+/// expect(
+///   O.some('hello').chain(fromOption(() => 'fail')),
+///   right('hello'),
+/// );
+/// expect(
+///   O.none().chain(fromOption(() => 'fail')),
+///   left('fail'),
+/// );
+/// ```
 Either<L, R> Function(O.Option<R> option) fromOption<L, R>(
   L Function() onNone,
 ) =>
@@ -178,6 +321,16 @@ Either<L, R> fromNullable<L, R>(
 ) =>
     value != null ? right(value) : left(orElse());
 
+/// A [fromNullable] variant that enforces the left and right types.
+/// Useful for function composition.
+///
+/// ```
+/// final transform = fromNullableWith<String, int>(() => 'number was missing')
+///   .compose(map((i) => i * 2));
+///
+/// expect(transform(1), right(2));
+/// expect(transform(null), left('number was missing'));
+/// ```
 Either<L, R> Function(R? value) fromNullableWith<L, R>(
   Lazy<L> orElse,
 ) =>
@@ -233,12 +386,16 @@ Either<L, R2> Function(Either<L, R> value) chainNullableK<L, R, R2>(
 ) =>
     flatMap(fromNullableK(f, orElse));
 
+/// Represents a value than can be one of two things - [Left] or [Right].
+///
+/// Commonly used for function results that can either be an error, or the
+/// intended value.
 abstract class Either<L, R> {
   const Either();
 
   T _fold<T>(T Function(L left) ifLeft, T Function(R value) ifRight);
-  bool _isLeft();
-  bool _isRight();
+  bool get _isLeft;
+  bool get _isRight;
 }
 
 class Left<L, R> extends Either<L, R> {
@@ -250,10 +407,10 @@ class Left<L, R> extends Either<L, R> {
       ifLeft(value);
 
   @override
-  bool _isLeft() => true;
+  final _isLeft = true;
 
   @override
-  bool _isRight() => false;
+  final _isRight = false;
 
   @override
   String toString() => 'Left($value)';
@@ -274,10 +431,10 @@ class Right<L, R> extends Either<L, R> {
       ifRight(value);
 
   @override
-  bool _isLeft() => false;
+  final _isLeft = false;
 
   @override
-  bool _isRight() => true;
+  final _isRight = true;
 
   @override
   String toString() => 'Right($value)';
