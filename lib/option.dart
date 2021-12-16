@@ -2,6 +2,9 @@ import 'package:fpdt/either.dart' as E;
 import 'package:fpdt/function.dart';
 import 'package:fpdt/tuple.dart';
 
+/// Constant version of [None] as `Option<Never>`;
+const Option<Never> kNone = None();
+
 /// Returns an [Option] that resolves to a [None].
 /// Represents a value that does not exists.
 Option<T> none<T>() => None<T>();
@@ -17,7 +20,7 @@ Option<T> some<T>(T value) => Some(value);
 /// expect(fromNullable(123), some(123));
 /// expect(fromNullable(null), none());
 /// ```
-Option<T> fromNullable<T>(T? value) => value != null ? some(value) : none();
+Option<T> fromNullable<T>(T? value) => value != null ? some(value) : kNone;
 
 /// A wrapper around [fromNullable], that allows the type to be enforced.
 /// Useful for function composition.
@@ -40,7 +43,7 @@ Option<T> Function(T? value) fromNullableWith<T>() => fromNullable;
 /// expect(fromPredicate('hello', (str) => str == 'hello'), some('hello'));
 /// ```
 Option<T> fromPredicate<T>(T value, bool Function(T value) predicate) =>
-    predicate(value) ? some(value) : none();
+    predicate(value) ? some(value) : kNone;
 
 /// Wrapper around [fromPredicate] that can be curried with the value.
 ///
@@ -323,7 +326,7 @@ Option<T> tryCatch<T>(T Function() f) {
   try {
     return some(f());
   } catch (_) {
-    return none();
+    return kNone;
   }
 }
 
@@ -395,7 +398,7 @@ Option<B> Function(Option<A> option) chainNullableK<A, B>(
 /// expect(E.left('fail').chain(fromEither), none());
 /// ```
 Option<R> fromEither<L, R>(E.Either<L, R> either) =>
-    either.chain(E.fold((_) => none(), some));
+    either.chain(E.fold((_) => kNone, some));
 
 /// Flatten's nested [Option] to a single level.
 ///
