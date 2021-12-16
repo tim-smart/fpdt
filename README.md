@@ -16,6 +16,8 @@ Includes:
 - Iterable extension helpers
 - `Unit`
 
+Note that the API will be unstable until version `0.1.0` is reached.
+
 ## Documentation
 
 API docs: https://pub.dev/documentation/fpdt/latest/
