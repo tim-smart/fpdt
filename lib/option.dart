@@ -152,12 +152,30 @@ Option<A> Function(Option<A> option) tap<A>(
       return a;
     });
 
+/// Creates a function that accepts two [Option]'s, and if both of them are [Some],
+/// then the transformer function is called with the unwrapped values.
+///
+/// ```
+/// final transform = map2((int a, int b) => a + b);
+///
+/// expect(transform(some(1), some(2)), some(3));
+/// expect(transform(some(1), none()), none());
+/// ```
 Option<R> Function(Option<A> optionA, Option<B> optionB) map2<A, B, R>(
   R Function(A a, B b) f,
 ) =>
     (a, b) =>
         a.chain(fold(none, (a) => b.chain(fold(none, (b) => Some(f(a, b))))));
 
+/// Creates a function that accepts three [Option]'s, and if they are all [Some],
+/// then the transformer function is called with the unwrapped values.
+///
+/// ```
+/// final transform = map3((int a, int b, int c) => a + b + c);
+///
+/// expect(transform(some(1), some(2), some(3)), some(6));
+/// expect(transform(some(1), some(2), none()), none());
+/// ```
 Option<R> Function(
   Option<A> optionA,
   Option<B> optionB,
@@ -170,12 +188,40 @@ Option<R> Function(
         (a) => b.chain(
             fold(none, (b) => c.chain(fold(none, (c) => Some(f(a, b, c))))))));
 
+/// A wrapper around [map2], useful for chaining.
+/// The second [Option] is passed as the first argument.
+///
+/// ```
+/// expect(
+///   some(1).chain(map2K(some(2), (a, int b) => a + b)),
+///   some(3),
+/// );
+/// expect(
+///   some(1).chain(map2K(none(), (a, int b) => a + b)),
+///   none(),
+/// );
+/// ```
 Option<R> Function(Option<A> optionA) map2K<A, B, R>(
   Option<B> optionB,
   R Function(A a, B b) f,
 ) =>
     (optionA) => map2(f)(optionA, optionB);
 
+/// A wrapper around [map3], useful for chaining.
+/// The remaining [Option]'s are passed as arguments.
+///
+/// ```
+/// expect(
+///   some(1)
+///     .chain(map2K(some(2), some(3), (a, int b, int c) => a + b + c)),
+///   some(6),
+/// );
+/// expect(
+///   some(1)
+///     .chain(map2K(some(2), none(), (a, int b, int c) => a + b + c)),
+///   none(),
+/// );
+/// ```
 Option<R> Function(Option<A> optionA) map3K<A, B, C, R>(
   Option<B> optionB,
   Option<C> optionC,
@@ -183,11 +229,35 @@ Option<R> Function(Option<A> optionA) map3K<A, B, C, R>(
 ) =>
     (optionA) => map3(f)(optionA, optionB, optionC);
 
+/// A variant of [map2], that accepts the two [Option]'s as a [Tuple2].
+///
+/// ```
+/// expect(
+///   tuple2(some(1), some(2)).chain(mapTuple2((a, b) => a + b)),
+///   some(3),
+/// );
+/// expect(
+///   tuple2(some(1), none()).chain(mapTuple2((a, b) => a + b)),
+///   none(),
+/// );
+/// ```
 Option<R> Function(Tuple2<Option<A>, Option<B>> tuple) mapTuple2<A, B, R>(
   R Function(A a, B b) f,
 ) =>
     (t) => map2(f)(t.first, t.second);
 
+/// A variant of [map3], that accepts the [Option]'s as a [Tuple3].
+///
+/// ```
+/// expect(
+///   tuple3(some(1), some(2), some(3)).chain(mapTuple3((a, b, c) => a + b + c)),
+///   some(6),
+/// );
+/// expect(
+///   tuple3(some(1), some(2), none()).chain(mapTuple3((a, b, c) => a + b + c)),
+///   none(),
+/// );
+/// ```
 Option<R> Function(Tuple3<Option<A>, Option<B>, Option<C>> tuple)
     mapTuple3<A, B, C, R>(
   R Function(A a, B b, C c) f,
@@ -211,14 +281,46 @@ Option<B> Function(Option<A> option) flatMap<A, B>(
 ) =>
     fold(none, f);
 
+/// Using the given `predicate`, conditionally convert the [Option] to a [None].
+///
+/// ```
+/// expect(
+///   some('hello').chain(filter((s) => s == 'hello')),
+///   some('hello'),
+/// );
+/// expect(
+///   some('asdf').chain(filter((s) => s == 'hello')),
+///   none(),
+/// );
+/// ```
 Option<T> Function(Option<T> option) filter<T>(
   bool Function(T value) predicate,
 ) =>
     flatMap(fromPredicateK(predicate));
 
+/// Returns `true` if the [Option] is a [None].
+///
+/// ```
+/// expect(isNone(none()), true);
+/// expect(isNone(some()), false);
+/// ```
 bool isNone<T>(Option<T> option) => option._isNone();
+
+/// Returns `true` if the [Option] is a [Some].
+///
+/// ```
+/// expect(isSome(some()), true);
+/// expect(isSome(none()), false);
+/// ```
 bool isSome<T>(Option<T> option) => option._isSome();
 
+/// Returns the value as a [Some] if the function succeeds.
+/// If it raises an exception, then it will return [None].
+///
+/// ```
+/// expect(tryCatch(() => 'hello'), some('hello'));
+/// expect(tryCatch(() => throw 'fail'), none());
+/// ```
 Option<T> tryCatch<T>(T Function() f) {
   try {
     return some(f());
@@ -227,27 +329,88 @@ Option<T> tryCatch<T>(T Function() f) {
   }
 }
 
+/// A variant of [tryCatch], that allows for passing in external values.
+///
+/// ```
+/// final catcher = tryCatchK((int i) => i > 5 ? throw 'fail' : i);
+/// expect(catcher(10), some(10));
+/// expect(catcher(3), none());
+/// ```
 Option<B> Function(A a) tryCatchK<A, B>(B Function(A value) f) =>
     (a) => tryCatch(() => f(a));
 
+/// A variant of [tryCatchK], that allows for passing in an [Option].
+/// If the [Option] is [Some], then the value is unwrapped and passed into
+/// the function.
+///
+/// ```
+/// expect(
+///   some(10).chain(chainTryCatchK((i) => i > 5 ? throw 'fail' : i)),
+///   some(10),
+/// );
+/// expect(
+///   some(3).chain(chainTryCatchK((i) => i > 5 ? throw 'fail' : i)),
+///   none(),
+/// );
+/// ```
 Option<B> Function(Option<A> a) chainTryCatchK<A, B>(B Function(A value) f) =>
     flatMap(tryCatchK(f));
 
+/// Returns an function that transforms a value and can return a nullable result.
+/// If the result is `null`, then [None] is returned. Otherwise it is wrapped in
+/// [Some].
+///
+/// ```
+/// final transform = fromNullableK((int i) => i > 5 ? i : null);
+///
+/// expect(transform(10), some(10));
+/// expect(transform(3), none());
+/// ```
 Option<B> Function(A value) fromNullableK<A, B>(
   B? Function(A value) f,
 ) =>
     (a) => fromNullable(f(a));
 
+/// Returns an function that transforms an [Option].
+/// If the given transformer returns `null`, then [None] is returned.
+///
+/// ```
+/// expect(
+///   some(10).chain(chainNullableK((i) => i > 5 ? i : null)),
+///   some(10),
+/// );
+/// expect(
+///   some(3).chain(chainNullableK((i) => i > 5 ? i : null)),
+///   none(),
+/// );
+/// ```
 Option<B> Function(Option<A> option) chainNullableK<A, B>(
   B? Function(A value) f,
 ) =>
     flatMap(fromNullableK(f));
 
+/// Transforms an [E.Either] into an [Option].
+/// [Right] becomes [Some], and [Left] becomes [None].
+///
+/// ```
+/// expect(E.right('hello').chain(fromEither), some('hello'));
+/// expect(E.left('fail').chain(fromEither), none());
+/// ```
 Option<R> fromEither<L, R>(E.Either<L, R> either) =>
     either.chain(E.fold((_) => none(), some));
 
+/// Flatten's nested [Option] to a single level.
+///
+/// ```
+/// expect(some(some(1)), some(1));
+/// expect(some(none()), none());
+/// ```
 Option<A> flatten<A>(Option<Option<A>> option) => option._fold(none, (o) => o);
 
+/// Represents a value that could be missing - an \[option\]al value.
+///
+/// If the value is present, then it will be wrapped in a [Some] instance.
+/// If the value is missing, then it will represented with a [None] instance.
 abstract class Option<T> {
   const Option();
 
@@ -259,6 +422,7 @@ abstract class Option<T> {
   String toString() => _fold(() => 'None', (a) => 'Some($a)');
 }
 
+/// Represents a present value. The [value] property contains the wrapped value.
 class Some<T> extends Option<T> {
   const Some(this.value);
 
@@ -280,6 +444,7 @@ class Some<T> extends Option<T> {
   int get hashCode => value.hashCode;
 }
 
+/// Represents a missing value.
 class None<T> extends Option<T> {
   const None();
 
