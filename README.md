@@ -1,3 +1,26 @@
 # fpdt
 
+![Pub Version](https://img.shields.io/pub/v/fpdt?style=for-the-badge)
+
 A collection of functions and monads for functional programming in dart.
+
+Includes:
+
+- Function extensions - `chain` and `compose`.
+- `Option`
+- `Either`
+- `Task`
+- `TaskEither`
+- `TaskOption`
+- Tuples
+- Iterable extension helpers
+- `Unit`
+
+## Documentation
+
+API docs: https://pub.dev/documentation/fpdt/latest/
+
+Not every function is documented (help is welcome!), but progress is being made.
+
+The `example/` and `test/` directories are also useful for seeing how this
+library can be used.
