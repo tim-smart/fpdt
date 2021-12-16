@@ -2,39 +2,124 @@ import 'package:fpdt/either.dart' as E;
 import 'package:fpdt/function.dart';
 import 'package:fpdt/tuple.dart';
 
+/// Returns an [Option] that resolves to a [None].
+/// Represents a value that does not exists.
 Option<T> none<T>() => const None();
+
+/// Returns an [Option] that resolves to a [Some], which wraps the given value.
+/// Represents a value that does exist.
 Option<T> some<T>(T value) => Some(value);
+
+/// Returns an [Option] that returns [Some] or [None], depending on whether it
+/// is `null` or not.
+///
+/// ```
+/// expect(fromNullable(123), some(123));
+/// expect(fromNullable(null), none());
+/// ```
 Option<T> fromNullable<T>(T? value) => value != null ? some(value) : none();
 
+/// A wrapper around [fromNullable], that allows the type to be enforced.
+/// Useful for function composition.
+///
+/// ```
+/// final maybeString = fromNullableWith<String>();
+///
+/// expect(maybeString('hello'), some('hello'));
+/// expect(maybeString(null), none());
+/// maybeString(123); // <- compiler error
+/// ```
 Option<T> Function(T? value) fromNullableWith<T>() => fromNullable;
 
+/// Returns a [Some] or [None] if the predicate returns `true` or `false`
+/// respectively.
+///
+/// ```
+/// expect(fromPredicate('hello', (_) => true), some('hello'));
+/// expect(fromPredicate('hello', (_) => false), none());
+/// expect(fromPredicate('hello', (str) => str == 'hello'), some('hello'));
+/// ```
 Option<T> fromPredicate<T>(T value, bool Function(T value) predicate) =>
     predicate(value) ? some(value) : none();
 
+/// Wrapper around [fromPredicate] that can be curried with the value.
+///
+/// ```
+/// final greaterThanTwo = fromPredicateK((int i) => i > 2);
+///
+/// expect(greaterThanTwo(3), some(3));
+/// expect(greaterThanTwo(1), none());
+/// ```
 Option<T> Function(T value) fromPredicateK<T>(
   bool Function(T value) predicate,
 ) =>
     (value) => fromPredicate(value, predicate);
 
+/// Transforms an [Option] into a value, using the `ifNone` and `ifSome`
+/// functions.
+///
+/// ```
+/// expect(
+///   some(1).chain(fold(
+///     () => 'no',
+///     (number) => 'got $number',
+///   )),
+///   'got 1',
+/// );
+/// expect(
+///   none().chain(fold(
+///     () => 'no',
+///     (number) => 'got $number',
+///   )),
+///   'no',
+/// );
+/// ```
 B Function(Option<A> option) fold<A, B>(
   B Function() ifNone,
   B Function(A value) ifSome,
 ) =>
     (option) => option._fold(ifNone, ifSome);
 
+/// Transforms the [Option] into a nullable value. [Some] unwraps to the value,
+/// while [None] becomes `null`.
+///
+/// ```
+/// expect(some('hello').chain(toNullable), 'hello');
+/// expect(none().chain(toNullable), null);
+/// ```
 T? toNullable<T>(Option<T> option) => option._fold(() => null, (v) => v);
 
-E.Either<L, R> Function(Option<R> option) toEither<L, R>(L Function() orElse) =>
-    fold(() => E.left(orElse()), E.right);
+/// If the [Option] is a [None], then the result of the given function will
+/// determine the \[alt\]ernate / replacement [Option].
+///
+/// If it was [Some], then it does nothing.
+///
+/// ```
+/// expect(
+///   none().chain(alt(() => some('fallback'))),
+///   some('fallback'),
+/// );
+/// expect(
+///   some('hello').chain(alt(() => some('fallback'))),
+///   some('hello'),
+/// );
+/// ```
+Option<T> Function(Option<T> option) alt<T>(Lazy<Option<T>> f) => fold(f, some);
 
-Option<T> Function(Option<T> option) alt<T>(
-  Option<T> Function() f,
-) =>
-    fold(f, some);
-
-T Function(Option<T> option) getOrElse<T>(
-  T Function() orElse,
-) =>
+/// Unwrap the [Option]'s value if it is [Some], otherwise it calls the `orElse`
+/// function to determine the fallback value.
+///
+/// ```
+/// expect(
+///   some('hello').chain(getOrElse(() => 'fallback')),
+///   some('hello'),
+/// );
+/// expect(
+///   none().chain(getOrElse(() => 'fallback')),
+///   some('fallback'),
+/// );
+/// ```
+T Function(Option<T> option) getOrElse<T>(Lazy<T> orElse) =>
     fold(orElse, identity);
 
 /// Transform the wrapped value if the [O.Option] is a [O.Some], using the
@@ -109,8 +194,20 @@ Option<R> Function(Tuple3<Option<A>, Option<B>, Option<C>> tuple)
 ) =>
         (t) => map3(f)(t.first, t.second, t.third);
 
-Option<R> Function(Option<T> option) flatMap<T, R>(
-  Option<R> Function(T value) f,
+/// Transform the [Option] into another [Option], using the given function.
+///
+/// ```
+/// expect(
+///   some(1).chain(flatMap((i) => some(i + 2))),
+///   some(3),
+/// );
+/// expect(
+///   some(1).chain(flatMap((i) => none())),
+///   none(),
+/// );
+/// ```
+Option<B> Function(Option<A> option) flatMap<A, B>(
+  Option<B> Function(A value) f,
 ) =>
     fold(none, f);
 
