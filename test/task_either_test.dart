@@ -234,13 +234,20 @@ void main() {
           )))();
       expect(r, E.left('left'));
     });
+  });
 
-    test('errors are handled', () async {
-      final r = await TE.right(123).chain(TE.flatMap(TE.tryCatchK(
-            (i) async => throw 'error',
-            (err, stack) => 'fail',
-          )))();
-      expect(r, E.left('fail'));
+  group('tryCatchK2', () {
+    final task = TE.tryCatchK2(
+      (int a, int b) => a > 5 ? a + b : throw 'error',
+      (err, stack) => 'fail',
+    );
+
+    test('resolves to right on success', () async {
+      expect(await task(10, 5)(), E.right(15));
+    });
+
+    test('resolves to left on error', () async {
+      expect(await task(3, 5)(), E.left('fail'));
     });
   });
 

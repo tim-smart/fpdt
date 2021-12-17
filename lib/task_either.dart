@@ -114,11 +114,51 @@ T.Task<R> Function(TaskEither<L, R> taskEither) getOrElse<L, R>(
 ) =>
     T.map(E.getOrElse(orElse));
 
-TaskEither<L, R2> Function(R value) tryCatchK<L, R, R2>(
-  FutureOr<R2> Function(R value) task,
+/// A variant of [tryCatch] that accepts an external parameter.
+///
+/// ```
+/// final readFile = tryCatchK(
+///   (File file) => file.read(),
+///   (err, stack) => 'Failed to read file',
+/// );
+///
+/// expect(
+///   await readFile(File('exists.txt')),
+///   right('contents'),
+/// );
+/// expect(
+///   await readFile(File('does not exist.txt')),
+///   left('Failed to read file'),
+/// );
+/// ```
+TaskEither<L, R> Function(A value) tryCatchK<A, L, R>(
+  FutureOr<R> Function(A value) task,
   L Function(dynamic err, StackTrace stackTrace) onError,
 ) =>
-    (r) => tryCatch(() => task(r), onError);
+    (a) => tryCatch(() => task(a), onError);
+
+/// A variant of [tryCatch] that accepts two external parameters.
+///
+/// ```
+/// final readFileChunk = tryCatchK2(
+///   (File file, int bytes) => file.read(bytes),
+///   (err, stack) => 'Failed to read file',
+/// );
+///
+/// expect(
+///   await readFileChunk(File('exists.txt'), 5),
+///   right('hello'),
+/// );
+/// expect(
+///   await readFileChunk(File('does not exist.txt'), 5),
+///   left('Failed to read file'),
+/// );
+/// ```
+TaskEither<L, R> Function(A a, B b) tryCatchK2<A, B, L, R>(
+  FutureOr<R> Function(A a, B b) task,
+  L Function(dynamic err, StackTrace stackTrace) onError,
+) =>
+    (a, b) => tryCatch(() => task(a, b), onError);
 
 TaskEither<L, R2> Function(
   TaskEither<L, R> taskEither,
