@@ -1,3 +1,7 @@
+## 0.0.26
+
+- Fix `None` stripping away type information
+
 ## 0.0.25
 
 - Add json_serializable support
