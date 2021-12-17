@@ -1,3 +1,7 @@
+## 0.0.28
+
+- Add `flatMapFirst` to tasks.
+
 ## 0.0.27
 
 - Fix `alt` type issues
