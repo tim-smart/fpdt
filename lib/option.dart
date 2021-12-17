@@ -2,9 +2,6 @@ import 'package:fpdt/either.dart' as E;
 import 'package:fpdt/function.dart';
 import 'package:fpdt/tuple.dart';
 
-/// Constant version of [None] as `Option<Never>`;
-const Option<Never> kNone = None();
-
 /// Returns an [Option] that resolves to a [None].
 /// Represents a value that does not exists.
 Option<T> none<T>() => None<T>();
