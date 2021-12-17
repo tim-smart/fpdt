@@ -59,7 +59,7 @@ Either<R, L> swap<L, R>(Either<L, R> either) => either._fold(right, left);
 Either<L, NR> Function(Either<L, R> either) map<L, R, NR>(
   NR Function(R value) f,
 ) =>
-    (e) => e._bindRight((r) => right(f(r)));
+    fold(left, (r) => right(f(r)));
 
 /// Perform a side effect on the [Either], if it is a [Right].
 ///
@@ -93,7 +93,7 @@ Either<L, R> Function(Either<L, R> either) tap<L, R>(
 Either<L, NR> Function(Either<L, R> either) flatMap<L, R, NR>(
   Either<L, NR> Function(R value) f,
 ) =>
-    (e) => e._bindRight(f);
+    fold(left, f);
 
 /// Runs the given function, and the result is wrapped in a [Right].
 /// If it raises an error, then the `onError` callback determines the [Left]
@@ -191,7 +191,7 @@ Either<L, R2> Function(Either<L, R> value) chainTryCatchK<L, R, R2>(
 Either<L, R> Function(Either<L, R> either) alt<L, R>(
   Either<L, R> Function(L left) onLeft,
 ) =>
-    (e) => e._bindLeft(onLeft);
+    fold(onLeft, right);
 
 /// Maybe converts an [Either] to a [Left], determined by the given `predicate`.
 ///
@@ -397,8 +397,6 @@ abstract class Either<L, R> {
   bool get _isRight;
 
   A _fold<A>(A Function(L left) ifLeft, A Function(R value) ifRight);
-  Either<L2, R> _bindLeft<L2>(Either<L2, R> Function(L left) ifLeft);
-  Either<L, R2> _bindRight<R2>(Either<L, R2> Function(R right) ifRight);
 }
 
 class Left<L, R> extends Either<L, R> {
@@ -408,14 +406,6 @@ class Left<L, R> extends Either<L, R> {
   @override
   T _fold<T>(T Function(L left) ifLeft, T Function(R value) ifRight) =>
       ifLeft(value);
-
-  @override
-  Either<L2, R> _bindLeft<L2>(Either<L2, R> Function(L left) ifLeft) =>
-      ifLeft(value);
-
-  @override
-  Either<L, R2> _bindRight<R2>(Either<L, R2> Function(R right) ifRight) =>
-      this as Either<L, R2>;
 
   @override
   final _isLeft = true;
@@ -439,14 +429,6 @@ class Right<L, R> extends Either<L, R> {
 
   @override
   T _fold<T>(T Function(L left) ifLeft, T Function(R value) ifRight) =>
-      ifRight(value);
-
-  @override
-  Either<L2, R> _bindLeft<L2>(Either<L2, R> Function(L left) ifLeft) =>
-      this as Either<L2, R>;
-
-  @override
-  Either<L, R2> _bindRight<R2>(Either<L, R2> Function(R right) ifRight) =>
       ifRight(value);
 
   @override

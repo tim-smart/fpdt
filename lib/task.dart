@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:fpdt/function.dart';
 
 /// Type alias representing a [Task]. It is a lazy future - a function that
@@ -27,19 +29,6 @@ Task<A> Function(Task<A> task) delay<A>(Duration d) =>
 Task<R> Function(Task<T> task) map<T, R>(R Function(T value) f) =>
     (t) => () => t().then(f);
 
-/// Perform a side effect on the value of a [Task].
-///
-/// ```
-/// expect(
-///   await fromThunk(() => 'hi').chain(tap(print))(),
-///   equals('hi'),
-/// );
-/// ```
-Task<A> Function(Task<A> task) tap<A>(void Function(A value) f) => map((a) {
-      f(a);
-      return a;
-    });
-
 /// Transforms a value from a [Task] into another [Task], then flattens the result.
 ///
 /// ```
@@ -51,6 +40,17 @@ Task<A> Function(Task<A> task) tap<A>(void Function(A value) f) => map((a) {
 /// ```
 Task<B> Function(Task<A> task) flatMap<A, B>(Task<B> Function(A value) f) =>
     (t) => () => t().then((v) => f(v)());
+
+/// Perform a side effect on the value of a [Task].
+///
+/// ```
+/// expect(
+///   await fromThunk(() => 'hi').chain(tap(print))(),
+///   equals('hi'),
+/// );
+/// ```
+Task<A> Function(Task<A> task) tap<A>(FutureOr<void> Function(A value) f) =>
+    (t) => () => t().then((a) => Future.value(f(a)).then((_) => a));
 
 Task<B> Function(Task<A> task) call<A, B>(Task<B> chain) =>
     flatMap((_) => chain);

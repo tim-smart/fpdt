@@ -5,7 +5,7 @@ import 'package:fpdt/function.dart';
 import 'package:fpdt/option.dart' as O;
 import 'package:fpdt/task.dart' as T;
 
-export 'package:fpdt/task.dart' show tap, delay, sequence, sequenceSeq;
+export 'package:fpdt/task.dart' show delay, sequence, sequenceSeq;
 
 typedef TaskOption<A> = Future<O.Option<A>> Function();
 
@@ -52,6 +52,11 @@ TaskOption<B> Function(TaskOption<A> taskOption) flatMap<A, B>(
 ) =>
     T.flatMap(O.fold(none, f));
 
+TaskOption<A> Function(TaskOption<A> taskEither) flatMapFirst<A>(
+  TaskOption<dynamic> Function(A value) f,
+) =>
+    flatMap((r) => f(r).chain(map((_) => r)));
+
 TaskOption<A> Function(TaskOption<A> taskOption) alt<A>(
   TaskOption<A> Function() orElse,
 ) =>
@@ -81,6 +86,11 @@ TaskOption<B> Function(TaskOption<A> taskOption) map<A, B>(
   B Function(A value) f,
 ) =>
     T.map(O.map(f));
+
+TaskOption<A> Function(TaskOption<A> taskOption) tap<A>(
+  FutureOr<void> Function(A value) f,
+) =>
+    T.tap(O.fold(() {}, f));
 
 TaskOption<A> Function(TaskOption<A> taskOption) filter<A>(
   bool Function(A value) predicate,

@@ -164,6 +164,27 @@ void main() {
     });
   });
 
+  group('flatMapFirst', () {
+    test('runs the function on right, and discards the result', () async {
+      final r =
+          await TE.right(123).chain(TE.flatMapFirst((i) => TE.right(i * 2)))();
+      expect(r, E.right(123));
+    });
+
+    test('does not discord left values', () async {
+      final r =
+          await TE.right(123).chain(TE.flatMapFirst((i) => TE.left('fail')))();
+      expect(r, E.left('fail'));
+    });
+
+    test('does nothing on left', () async {
+      final r = await TE
+          .left('left')
+          .chain(TE.flatMapFirst((i) => TE.right(i * 2)))();
+      expect(r, E.left('left'));
+    });
+  });
+
   group('tryCatch', () {
     test('resolves to a right when there is no error', () async {
       final r = await TE.tryCatch(

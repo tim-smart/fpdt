@@ -122,6 +122,24 @@ void main() {
     });
   });
 
+  group('flatMapFirst', () {
+    test('runs the task then returns the result of the first', () async {
+      final r =
+          await TO.some(123).chain(TO.flatMapFirst((i) => TO.some(i * 2)))();
+      expect(r, O.some(123));
+    });
+
+    test('preserves none values', () async {
+      final r = await TO.some(123).chain(TO.flatMapFirst((i) => TO.none()))();
+      expect(r, O.none());
+    });
+
+    test('does nothing on None', () async {
+      final r = await TO.none().chain(TO.flatMapFirst((i) => TO.some(i * 2)))();
+      expect(r, O.none());
+    });
+  });
+
   group('tryCatch', () {
     test('resolves to a some when there is no error', () async {
       final r = await TO.tryCatch(() async => 123)();

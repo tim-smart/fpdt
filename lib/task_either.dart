@@ -5,7 +5,7 @@ import 'package:fpdt/function.dart';
 import 'package:fpdt/option.dart' as O;
 import 'package:fpdt/task.dart' as T;
 
-export 'package:fpdt/task.dart' show tap, delay, sequence, sequenceSeq;
+export 'package:fpdt/task.dart' show delay, sequence, sequenceSeq;
 
 /// Represents a [T.Task] that resolves to an [E.Either].
 /// The underlying type is a [Function] that returns a [Future<E.Either>].
@@ -99,6 +99,11 @@ TaskEither<L, R2> Function(TaskEither<L, R> taskEither) flatMap<L, R, R2>(
 ) =>
     T.flatMap(E.fold(left, f));
 
+TaskEither<L, R> Function(TaskEither<L, R> taskEither) flatMapFirst<L, R>(
+  TaskEither<L, dynamic> Function(R value) f,
+) =>
+    flatMap((r) => f(r).chain(map((_) => r)));
+
 TaskEither<L, R> Function(TaskEither<L, R> taskEither) alt<L, R>(
   TaskEither<L, R> Function(L left) orElse,
 ) =>
@@ -172,6 +177,11 @@ TaskEither<L, R2> Function(TaskEither<L, R> taskEither) map<L, R, R2>(
   R2 Function(R value) f,
 ) =>
     T.map(E.map(f));
+
+TaskEither<L, R> Function(TaskEither<L, R> taskEither) tap<L, R>(
+  FutureOr<void> Function(R value) f,
+) =>
+    T.tap(E.fold(identity, f));
 
 TaskEither<L, R> Function(TaskEither<L, R> taskEither) filter<L, R>(
   bool Function(R value) predicate,
