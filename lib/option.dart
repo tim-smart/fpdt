@@ -138,7 +138,7 @@ T Function(Option<T> option) getOrElse<T>(Lazy<T> orElse) =>
 Option<R> Function(Option<T> option) map<T, R>(
   R Function(T value) f,
 ) =>
-    (o) => o._bindSome((a) => some(f(a)));
+    flatMap((a) => some(f(a)));
 
 /// Execute a side effect on the wrapped value, if the [O.Option] is a [O.Some].
 ///
