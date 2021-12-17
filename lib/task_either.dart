@@ -71,28 +71,28 @@ TaskEither<L, R> Function(TaskEither<L, R?> value) chainNullableK<L, R>(
 TaskEither<L, R> fromEither<L, R>(E.Either<L, R> either) =>
     () => Future.value(either);
 
+TaskEither<L, R> tryCatch<L, R>(
+  Lazy<FutureOr<R>> task,
+  L Function(dynamic err, StackTrace stackTrace) onError,
+) =>
+    () async {
+      try {
+        return E.right(await task());
+      } catch (err, stack) {
+        return E.left(onError(err, stack));
+      }
+    };
+
 TaskEither<L, R> Function(Lazy<FutureOr<R>> task) fromTask<L, R>(
   L Function(dynamic err, StackTrace stackTrace) onError,
 ) =>
-    (task) => () async {
-          try {
-            return E.right(await task());
-          } catch (err, stack) {
-            return E.left(onError(err, stack));
-          }
-        };
+    (task) => tryCatch(task, onError);
 
 T.Task<A> Function(TaskEither<L, R> taskEither) fold<L, R, A>(
   A Function(L left) onLeft,
   A Function(R right) onRight,
 ) =>
     T.map(E.fold(onLeft, onRight));
-
-TaskEither<L, R> tryCatch<L, R>(
-  Lazy<FutureOr<R>> task,
-  L Function(dynamic err, StackTrace stackTrace) onError,
-) =>
-    task.chain(fromTask(onError));
 
 TaskEither<L, R2> Function(TaskEither<L, R> taskEither) flatMap<L, R, R2>(
   TaskEither<L, R2> Function(R value) f,
@@ -120,12 +120,13 @@ TaskEither<L, R2> Function(R value) tryCatchK<L, R, R2>(
 ) =>
     (r) => tryCatch(() => task(r), onError);
 
-TaskEither<L, R2> Function(TaskEither<L, R> taskEither)
-    chainTryCatchK<L, R, R2>(
+TaskEither<L, R2> Function(
+  TaskEither<L, R> taskEither,
+) chainTryCatchK<L, R, R2>(
   FutureOr<R2> Function(R value) task,
   L Function(dynamic err, StackTrace stackTrace) onError,
 ) =>
-        flatMap(tryCatchK(task, onError));
+    flatMap(tryCatchK(task, onError));
 
 TaskEither<L, R2> Function(TaskEither<L, R> taskEither) map<L, R, R2>(
   R2 Function(R value) f,
