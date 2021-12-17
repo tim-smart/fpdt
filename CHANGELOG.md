@@ -1,3 +1,7 @@
+## 0.0.23
+
+- Add `lazy` to `function.dart`.
+
 ## 0.0.22
 
 - Add `tryCatchK2` for `TaskEither`.
