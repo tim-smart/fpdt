@@ -2,9 +2,12 @@ import 'package:fpdt/either.dart' as E;
 import 'package:fpdt/function.dart';
 import 'package:fpdt/tuple.dart';
 
+/// A constant version on [None], as `Option<Never>`.
+const Option<Never> kNone = None();
+
 /// Returns an [Option] that resolves to a [None].
 /// Represents a value that does not exists.
-Option<T> none<T>() => None<T>();
+Option<T> none<T>() => kNone;
 
 /// Returns an [Option] that resolves to a [Some], which wraps the given value.
 /// Represents a value that does exist.
@@ -17,7 +20,7 @@ Option<T> some<T>(T value) => Some(value);
 /// expect(fromNullable(123), some(123));
 /// expect(fromNullable(null), none());
 /// ```
-Option<T> fromNullable<T>(T? value) => value != null ? some(value) : none();
+Option<T> fromNullable<T>(T? value) => value != null ? some(value) : kNone;
 
 /// A wrapper around [fromNullable], that allows the type to be enforced.
 /// Useful for function composition.
@@ -40,7 +43,7 @@ Option<T> Function(T? value) fromNullableWith<T>() => fromNullable;
 /// expect(fromPredicate('hello', (str) => str == 'hello'), some('hello'));
 /// ```
 Option<T> fromPredicate<T>(T value, bool Function(T value) predicate) =>
-    predicate(value) ? some(value) : none();
+    predicate(value) ? some(value) : kNone;
 
 /// Wrapper around [fromPredicate] that can be curried with the value.
 ///
@@ -105,7 +108,7 @@ T? toNullable<T>(Option<T> option) => option._fold(() => null, identity);
 /// );
 /// ```
 Option<T> Function(Option<T> option) alt<T>(Lazy<Option<T>> f) =>
-    (option) => option._bindNone(f);
+    (option) => isNone(option) ? f() : option;
 
 /// Unwrap the [Option]'s value if it is [Some], otherwise it calls the `orElse`
 /// function to determine the fallback value.
@@ -323,7 +326,7 @@ Option<T> tryCatch<T>(T Function() f) {
   try {
     return some(f());
   } catch (_) {
-    return none();
+    return kNone;
   }
 }
 
@@ -395,7 +398,7 @@ Option<B> Function(Option<A> option) chainNullableK<A, B>(
 /// expect(E.left('fail').chain(fromEither), none());
 /// ```
 Option<R> fromEither<L, R>(E.Either<L, R> either) =>
-    either.chain(E.fold((_) => none(), some));
+    either.chain(E.fold((_) => kNone, some));
 
 /// Flatten's nested [Option] to a single level.
 ///
@@ -417,7 +420,6 @@ abstract class Option<T> {
 
   B _fold<B>(B Function() ifNone, B Function(T value) ifSome);
   Option<B> _bindSome<B>(Option<B> Function(T value) ifSome);
-  Option<T> _bindNone(Option<T> Function() ifNone);
 
   /// Adds support for the `json_serializable` package.
   factory Option.fromJson(
@@ -452,9 +454,6 @@ class Some<A> extends Option<A> {
   Option<B> _bindSome<B>(Option<B> Function(A value) ifSome) => ifSome(value);
 
   @override
-  Option<A> _bindNone(Option<A> Function() ifNone) => this;
-
-  @override
   Object? toJson(Object? Function(A v) toJsonT) => toJsonT(value);
 
   @override
@@ -472,10 +471,7 @@ class None<A> extends Option<A> {
   R _fold<R>(R Function() ifNone, R Function(A value) ifSome) => ifNone();
 
   @override
-  Option<B> _bindSome<B>(Option<B> Function(A value) ifSome) => none();
-
-  @override
-  Option<A> _bindNone(Option<A> Function() ifNone) => ifNone();
+  Option<B> _bindSome<B>(Option<B> Function(A value) ifSome) => kNone;
 
   @override
   final _isSome = false;
