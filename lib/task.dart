@@ -41,6 +41,21 @@ Task<R> Function(Task<T> task) map<T, R>(R Function(T value) f) =>
 Task<B> Function(Task<A> task) flatMap<A, B>(Task<B> Function(A value) f) =>
     (t) => () => t().then((v) => f(v)());
 
+/// Runs the returned [Task], but resolves to the result of the previous task.
+/// I.e. discards the result.
+///
+/// ```
+/// expect(
+///   await fromThunk(() => 'hi')
+///       .chain(flatMapFirst((s) => fromThunk(() => s.toUpperCase())))(),
+///   equals('hi'),
+/// );
+/// ```
+Task<A> Function(Task<A> task) flatMapFirst<A>(
+  Task<dynamic> Function(A value) f,
+) =>
+    (t) => () => t().then((v) => f(v)().then((_) => v));
+
 /// Perform a side effect on the value of a [Task].
 ///
 /// ```
