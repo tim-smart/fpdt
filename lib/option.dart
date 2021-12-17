@@ -20,7 +20,7 @@ Option<T> some<T>(T value) => Some(value);
 /// expect(fromNullable(123), some(123));
 /// expect(fromNullable(null), none());
 /// ```
-Option<T> fromNullable<T>(T? value) => value != null ? some(value) : kNone;
+Option<T> fromNullable<T>(T? value) => value != null ? some(value) : none();
 
 /// A wrapper around [fromNullable], that allows the type to be enforced.
 /// Useful for function composition.
@@ -43,7 +43,7 @@ Option<T> Function(T? value) fromNullableWith<T>() => fromNullable;
 /// expect(fromPredicate('hello', (str) => str == 'hello'), some('hello'));
 /// ```
 Option<T> fromPredicate<T>(T value, bool Function(T value) predicate) =>
-    predicate(value) ? some(value) : kNone;
+    predicate(value) ? some(value) : none();
 
 /// Wrapper around [fromPredicate] that can be curried with the value.
 ///
@@ -326,7 +326,7 @@ Option<T> tryCatch<T>(T Function() f) {
   try {
     return some(f());
   } catch (_) {
-    return kNone;
+    return none();
   }
 }
 
@@ -398,7 +398,7 @@ Option<B> Function(Option<A> option) chainNullableK<A, B>(
 /// expect(E.left('fail').chain(fromEither), none());
 /// ```
 Option<R> fromEither<L, R>(E.Either<L, R> either) =>
-    either.chain(E.fold((_) => kNone, some));
+    either.chain(E.fold((_) => none(), some));
 
 /// Flatten's nested [Option] to a single level.
 ///
@@ -475,8 +475,7 @@ class None<A> extends Option<A> {
   R _fold<R>(R Function() ifNone, R Function(A value) ifSome) => ifNone();
 
   @override
-  Option<B> _bindSome<B>(Option<B> Function(A value) ifSome) =>
-      this as Option<B>;
+  Option<B> _bindSome<B>(Option<B> Function(A value) ifSome) => none();
 
   @override
   Option<A> _bindNone(Option<A> Function() ifNone) => ifNone();
