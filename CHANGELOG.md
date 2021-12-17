@@ -1,3 +1,7 @@
+## 0.0.25
+
+- Add json_serializable support
+
 ## 0.0.24
 
 - Add `MapExtension`

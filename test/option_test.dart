@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:fpdt/function.dart';
 import 'package:fpdt/either.dart' as E;
 import 'package:fpdt/option.dart' as O;
@@ -322,6 +324,19 @@ void main() {
 
     test('return None for Left', () {
       expect(E.left('left').chain(O.fromEither), O.none());
+    });
+  });
+
+  group('json', () {
+    test('toJson', () {
+      expect(jsonEncode(O.some(123).toJson(identity)), '123');
+    });
+
+    test('fromJson', () {
+      expect(
+        O.Option.fromJson('123', (json) => int.tryParse(json as String)),
+        equals(O.some(123)),
+      );
     });
   });
 }

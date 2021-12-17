@@ -412,15 +412,25 @@ Option<A> flatten<A>(Option<Option<A>> option) => option._bindSome(identity);
 ///
 /// If the value is present, then it will be wrapped in a [Some] instance.
 /// If the value is missing, then it will represented with a [None] instance.
-abstract class Option<A> {
+abstract class Option<T> {
   const Option();
 
   bool get _isNone;
   bool get _isSome;
 
-  B _fold<B>(B Function() ifNone, B Function(A value) ifSome);
-  Option<B> _bindSome<B>(Option<B> Function(A value) ifSome);
-  Option<A> _bindNone(Option<A> Function() ifNone);
+  B _fold<B>(B Function() ifNone, B Function(T value) ifSome);
+  Option<B> _bindSome<B>(Option<B> Function(T value) ifSome);
+  Option<T> _bindNone(Option<T> Function() ifNone);
+
+  /// Adds support for the `json_serializable` package.
+  factory Option.fromJson(
+    dynamic json,
+    T? Function(dynamic json) fromJsonT,
+  ) =>
+      fromNullable(fromJsonT(json));
+
+  /// Adds support for the `json_serializable` package.
+  Object? toJson(Object? Function(T v) toJsonT);
 
   @override
   String toString() => _fold(() => 'None', (a) => 'Some($a)');
@@ -448,6 +458,9 @@ class Some<A> extends Option<A> {
   Option<A> _bindNone(Option<A> Function() ifNone) => this;
 
   @override
+  Object? toJson(Object? Function(A v) toJsonT) => toJsonT(value);
+
+  @override
   bool operator ==(other) => other is Some && other.value == value;
 
   @override
@@ -473,6 +486,9 @@ class None<A> extends Option<A> {
 
   @override
   final _isNone = true;
+
+  @override
+  Object? toJson(Object? Function(A v) toJsonT) => null;
 
   @override
   bool operator ==(other) => other is None;
