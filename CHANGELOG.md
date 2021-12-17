@@ -1,3 +1,7 @@
+## 0.0.27
+
+- Fix `alt` type issues
+
 ## 0.0.26
 
 - Fix `None` stripping away type information
