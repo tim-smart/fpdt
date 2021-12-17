@@ -1,3 +1,7 @@
+## 0.0.24
+
+- Add `MapExtension`
+
 ## 0.0.23
 
 - Add `lazy` to `function.dart`.
