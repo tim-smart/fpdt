@@ -59,7 +59,7 @@ Either<R, L> swap<L, R>(Either<L, R> either) => either._fold(right, left);
 Either<L, NR> Function(Either<L, R> either) map<L, R, NR>(
   NR Function(R value) f,
 ) =>
-    fold(left, (r) => right(f(r)));
+    flatMap((r) => right(f(r)));
 
 /// Perform a side effect on the [Either], if it is a [Right].
 ///
