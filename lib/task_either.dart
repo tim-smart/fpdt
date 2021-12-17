@@ -12,10 +12,10 @@ export 'package:fpdt/task.dart' show tap, delay, sequence, sequenceSeq;
 typedef TaskEither<L, R> = Future<E.Either<L, R>> Function();
 
 /// Create a [TaskEither] that resolves to an [E.Right].
-TaskEither<L, R> right<L, R>(R a) => () => Future.value(E.right(a));
+TaskEither<L, R> right<L, R>(R a) => lazy(Future.value(E.right(a)));
 
 /// Create a [TaskEither] that resolves to an [E.Left].
-TaskEither<L, R> left<L, R>(L a) => () => Future.value(E.left(a));
+TaskEither<L, R> left<L, R>(L a) => lazy(Future.value(E.left(a)));
 
 /// Convert a [TaskEither] into a [Future], that throws an error on [E.Left].
 Future<R> toFuture<R>(TaskEither<dynamic, R> taskEither) =>

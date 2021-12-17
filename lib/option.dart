@@ -90,7 +90,7 @@ B Function(Option<A> option) fold<A, B>(
 /// expect(some('hello').chain(toNullable), 'hello');
 /// expect(none().chain(toNullable), null);
 /// ```
-T? toNullable<T>(Option<T> option) => option._fold(() => null, (v) => v);
+T? toNullable<T>(Option<T> option) => option._fold(() => null, identity);
 
 /// If the [Option] is a [None], then the result of the given function will
 /// determine the \[alt\]ernate / replacement [Option].
@@ -406,7 +406,7 @@ Option<R> fromEither<L, R>(E.Either<L, R> either) =>
 /// expect(some(some(1)), some(1));
 /// expect(some(none()), none());
 /// ```
-Option<A> flatten<A>(Option<Option<A>> option) => option._bindSome((o) => o);
+Option<A> flatten<A>(Option<Option<A>> option) => option._bindSome(identity);
 
 /// Represents a value that could be missing - an \[option\]al value.
 ///

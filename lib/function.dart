@@ -2,6 +2,9 @@ typedef Lazy<A> = A Function();
 
 T identity<T>(T value) => value;
 
+/// Return a [Lazy] version of `value`.
+Lazy<A> lazy<A>(A value) => () => value;
+
 extension ChainExtension<T> on T {
   R chain<R>(R Function(T value) f) => f(this);
   R pipe<R>(R Function(T value) f) => f(this);
