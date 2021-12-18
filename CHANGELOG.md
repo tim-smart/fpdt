@@ -1,3 +1,8 @@
+## 0.0.29
+
+- Add `p` as an alias for `chain`
+- Add `c` as an alias for `compose`
+
 ## 0.0.28
 
 - Add `flatMapFirst` to tasks.
