@@ -6,6 +6,9 @@ import 'package:fpdt/function.dart';
 /// returns a [Future].
 typedef Task<A> = Future<A> Function();
 
+/// Create a [Task] that wraps the given value.
+Task<A> value<A>(A value) => () => Future.value(value);
+
 /// Create a [Task] from a thunk / lazy value. A thunk is a function without
 /// arguments that returns a value.
 ///

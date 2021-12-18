@@ -15,6 +15,17 @@ void main() {
       expect(g(O.some(0)), null);
     });
 
+    test('c is an alias', () {
+      final g = O
+          .map((int i) => i * 2)
+          .c(O.flatMap((i) => O.some(i + 2)))
+          .c(O.filter((i) => i > 3))
+          .c(O.toNullable);
+
+      expect(g(O.some(1)), 4);
+      expect(g(O.some(0)), null);
+    });
+
     test('various arities', () {
       int zero() => 0;
       int one(int a) => a;
@@ -56,6 +67,17 @@ void main() {
           .chain(O.flatMap((i) => O.some(i + 2)))
           .chain(O.filter((i) => i > 3))
           .chain(O.toNullable);
+
+      expect(r, 4);
+    });
+
+    test('p is an alias', () {
+      final r = O
+          .some(1)
+          .p(O.map((int i) => i * 2))
+          .p(O.flatMap((i) => O.some(i + 2)))
+          .p(O.filter((i) => i > 3))
+          .p(O.toNullable);
 
       expect(r, 4);
     });
