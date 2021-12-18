@@ -1,3 +1,7 @@
+## 0.0.29+1
+
+- Docs for function methods
+
 ## 0.0.29
 
 - Add `p` as an alias for `chain`
