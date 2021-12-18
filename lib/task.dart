@@ -68,7 +68,7 @@ Task<A> Function(Task<A> task) flatMapFirst<A>(
 /// );
 /// ```
 Task<A> Function(Task<A> task) tap<A>(FutureOr<void> Function(A value) f) =>
-    (t) => () => t().then((a) => Future.value(f(a)).then((_) => a));
+    flatMapFirst((a) => () => Future.value(f(a)));
 
 Task<B> Function(Task<A> task) call<A, B>(Task<B> chain) =>
     flatMap((_) => chain);
