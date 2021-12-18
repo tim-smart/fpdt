@@ -9,8 +9,8 @@ export 'package:fpdt/task.dart' show delay, sequence, sequenceSeq;
 
 typedef TaskOption<A> = Future<O.Option<A>> Function();
 
-TaskOption<A> some<A>(A a) => () => Future.value(O.some(a));
-TaskOption<A> none<A>() => () => Future.value(O.none());
+TaskOption<A> some<A>(A a) => T.value(O.some(a));
+TaskOption<A> none<A>() => T.value(O.none());
 TaskOption<A> fromNullable<A>(A? a) => () => Future.value(O.fromNullable(a));
 TaskOption<A> Function(A? value) fromNullableWith<A>() => fromNullable;
 
