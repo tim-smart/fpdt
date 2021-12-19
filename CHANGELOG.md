@@ -1,3 +1,7 @@
+## 0.0.32
+
+- Fix TaskEither `fromNullable` variants
+
 ## 0.0.31
 
 - Add library barrel file which exports common types and functions

@@ -57,16 +57,20 @@ TaskEither<L, R> fromNullable<L, R>(
 
 /// Create a [TaskEither] from a nullable value. `onNone` is executed if the
 /// value (given to the returned function) is `null`.
-TaskEither<L, R> Function(R? value) fromNullableK<L, R>(
-  L Function() onNone,
+TaskEither<L, R> Function(A value) fromNullableK<A, L, R>(
+  R? Function(A value) f,
+  L Function(A value) onNone,
 ) =>
-    (r) => fromNullable(r, onNone);
+    (a) => fromNullable(f(a), () => onNone(a));
 
 /// Chainable variant of [fromNullableK].
-TaskEither<L, R> Function(TaskEither<L, R?> value) chainNullableK<L, R>(
-  L Function() onNone,
+TaskEither<L, R2> Function(
+  TaskEither<L, R> taskEither,
+) chainNullableK<L, R, R2>(
+  R2? Function(R right) f,
+  L Function(R right) onNone,
 ) =>
-    flatMap(fromNullableK(onNone));
+    flatMap(fromNullableK(f, onNone));
 
 /// Returns a [TaskEither] that resolves to the given [Either].
 ///
