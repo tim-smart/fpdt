@@ -68,9 +68,31 @@ TaskEither<L, R> Function(TaskEither<L, R?> value) chainNullableK<L, R>(
 ) =>
     flatMap(fromNullableK(onNone));
 
+/// Returns a [TaskEither] that resolves to the given [E.Either].
+///
+/// ```
+/// expect(
+///   await fromEither(E.right('hello'))(),
+///   E.right('hello'),
+/// );
+/// ```
 TaskEither<L, R> fromEither<L, R>(E.Either<L, R> either) =>
     () => Future.value(either);
 
+/// Runs the given task, and returns the result as an [E.Right].
+/// If it throws an error, the the error is passed to `onError`, which determines
+/// the [E.Left] value.
+///
+/// ```
+/// expect(
+///   await tryCatch(() => 'hello', (err, stack) => 'fail')(),
+///   E.right('hello'),
+/// );
+/// expect(
+///   await tryCatch(() => throw 'error', (err, stack) => 'fail')(),
+///   E.left('fail'),
+/// );
+/// ```
 TaskEither<L, R> tryCatch<L, R>(
   Lazy<FutureOr<R>> task,
   L Function(dynamic err, StackTrace stackTrace) onError,
@@ -83,19 +105,74 @@ TaskEither<L, R> tryCatch<L, R>(
       }
     };
 
+/// Transforms a [T.Task] into a [TaskEither], wrapping the result in an [E.Right].
+///
+/// ```
+/// expect(
+///   await fromTask(T.value('hello'))(),
+///   E.right('hello'),
+/// );
+/// ```
 TaskEither<L, R> fromTask<L, R>(T.Task<R> task) => task.chain(T.map(E.right));
 
+/// Unwraps the [E.Either] value, returning a [T.Task] that resolves to the
+/// result.
+///
+/// `onRight` is run if the value is an [E.Right], and `onLeft` for [E.Left].
+///
+/// ```
+/// expect(
+///   await right('hello').chain(fold(
+///     (left) => 'left value',
+///     (right) => 'right value',
+///   ))(),
+///   'right value',
+/// );
+/// expect(
+///   await left('fail').chain(fold(
+///     (left) => 'left value',
+///     (right) => 'right value',
+///   ))(),
+///   'left value',
+/// );
+/// ```
 T.Task<A> Function(TaskEither<L, R> taskEither) fold<L, R, A>(
   A Function(L left) onLeft,
   A Function(R right) onRight,
 ) =>
     T.map(E.fold(onLeft, onRight));
 
+/// If the given [TaskEither] is an [E.Right], then unwrap the result and transform
+/// it into another [TaskEither].
+///
+/// ```
+/// expect(
+///   await right(123).chain(flatMap((i) => right('got: $i')))(),
+///   E.right('got: 123'),
+/// );
+/// expect(
+///   await right(123).chain(flatMap((i) => left('fail')))(),
+///   E.left('fail'),
+/// );
+/// ```
 TaskEither<L, R2> Function(TaskEither<L, R> taskEither) flatMap<L, R, R2>(
   TaskEither<L, R2> Function(R value) f,
 ) =>
     T.flatMap(E.fold(left, f));
 
+/// If the given [TaskEither] is an [E.Right], then unwrap the result and transform
+/// it into another [TaskEither] - but only keep [E.Left] results.
+///
+/// ```
+/// expect(
+///   await right(123).chain(flatMapFirst((i) => right('got: $i')))(),
+///   E.right(123),
+/// );
+/// expect(
+///   await right(123).chain(flatMapFirst((i) => left('fail')))(),
+///   E.left('fail'),
+/// );
+/// ```
 TaskEither<L, R> Function(TaskEither<L, R> taskEither) flatMapFirst<L, R>(
   TaskEither<L, dynamic> Function(R value) f,
 ) =>
