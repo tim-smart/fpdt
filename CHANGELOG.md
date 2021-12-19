@@ -1,3 +1,7 @@
+## 0.0.31
+
+- Add library barrel file which exports common types and functions
+
 ## 0.0.30
 
 - More docs and small refactor
