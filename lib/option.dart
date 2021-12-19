@@ -423,9 +423,9 @@ abstract class Option<T> {
   /// Adds support for the `json_serializable` package.
   factory Option.fromJson(
     dynamic json,
-    T? Function(dynamic json) fromJsonT,
+    T Function(dynamic json) fromJsonT,
   ) =>
-      fromNullable(fromJsonT(json));
+      json != null ? some(fromJsonT(json)) : kNone;
 
   /// Adds support for the `json_serializable` package.
   Object? toJson(Object? Function(T v) toJsonT);
