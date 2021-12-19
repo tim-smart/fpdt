@@ -114,20 +114,9 @@ void main() {
   });
 
   group('fromTask', () {
-    test('resolve to a right if no error', () async {
-      final r = await T
-          .fromThunk(() => 123)
-          .chain(TE.fromTask((err, stack) => 'fail'))();
-
+    test('resolves to a right', () async {
+      final r = await T.value(123).chain(TE.fromTask)();
       expect(r, E.right(123));
-    });
-
-    test('resolves to a left on error', () async {
-      final r = await T
-          .fromThunk(() => throw 'error')
-          .chain(TE.fromTask((err, stack) => 'fail'))();
-
-      expect(r, E.left('fail'));
     });
   });
 

@@ -74,19 +74,9 @@ void main() {
   });
 
   group('fromTask', () {
-    test('resolve to a some if no error', () async {
-      final r = await T.fromThunk(() => 123).chain(TO.fromTask)();
+    test('resolves to a some', () async {
+      final r = await T.value(123).chain(TO.fromTask)();
       expect(r, O.some(123));
-    });
-
-    test('resolves to a none on error', () async {
-      final r = await T.fromThunk(() => throw 'error').chain(TO.fromTask)();
-      expect(r, O.none());
-    });
-
-    test('resolves to a none on null', () async {
-      final r = await T.fromThunk(() => null).chain(TO.fromTask)();
-      expect(r, O.none());
     });
   });
 

@@ -83,10 +83,7 @@ TaskEither<L, R> tryCatch<L, R>(
       }
     };
 
-TaskEither<L, R> Function(Lazy<FutureOr<R>> task) fromTask<L, R>(
-  L Function(dynamic err, StackTrace stackTrace) onError,
-) =>
-    (task) => tryCatch(task, onError);
+TaskEither<L, R> fromTask<L, R>(T.Task<R> task) => task.chain(T.map(E.right));
 
 T.Task<A> Function(TaskEither<L, R> taskEither) fold<L, R, A>(
   A Function(L left) onLeft,

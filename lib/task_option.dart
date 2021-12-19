@@ -25,13 +25,7 @@ TaskOption<A> fromOption<A>(O.Option<A> option) => () => Future.value(option);
 TaskOption<R> fromEither<L, R>(E.Either<L, R> either) =>
     () => Future.value(O.fromEither(either));
 
-TaskOption<A> fromTask<A>(T.Task<A?> task) => () async {
-      try {
-        return O.fromNullable(await task());
-      } catch (_) {
-        return O.none();
-      }
-    };
+TaskOption<A> fromTask<A>(T.Task<A> task) => task.chain(T.map(O.some));
 
 T.Task<B> Function(TaskOption<A> taskOption) fold<A, B>(
   B Function() onNone,
