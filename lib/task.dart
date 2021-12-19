@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:fpdt/function.dart';
+import 'package:fpdt/fpdt.dart';
 
 /// Type alias representing a [Task]. It is a lazy future - a function that
 /// returns a [Future].

@@ -1,4 +1,4 @@
-import 'package:fpdt/function.dart';
+import 'package:fpdt/fpdt.dart';
 import 'package:fpdt/either.dart' as E;
 import 'package:fpdt/option.dart' as O;
 
@@ -22,7 +22,7 @@ void main() async {
   assert(validateHelloImperative(null) == null);
 
   // A functional version using Option and chain.
-  O.Option<String> validateHelloFunctional(String? s) => O
+  Option<String> validateHelloFunctional(String? s) => O
       .fromNullable(s)
       .chain(O.map((s) => s.trim()))
       .chain(O.filter((s) => s.isNotEmpty))
@@ -82,7 +82,7 @@ void main() async {
   // assert(validateHelloImperativeE(null) == 'hello - valid!');
 
   // Here is a functional equivilent using [Either].
-  E.Either<ArgumentError, String> validateHelloFunctionalE(String? s) => E
+  Either<ArgumentError, String> validateHelloFunctionalE(String? s) => E
       // If the string was null, the result of `orElse` function will be wrapped
       // in a Left and returned.
       //

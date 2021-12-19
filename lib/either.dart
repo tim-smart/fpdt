@@ -1,4 +1,4 @@
-import 'package:fpdt/function.dart';
+import 'package:fpdt/fpdt.dart';
 import 'package:fpdt/option.dart' as O;
 
 /// Returns an [Either] that resolves to a [Left] value.
@@ -280,8 +280,8 @@ Either<L, R> Function(R value) fromPredicateK<L, R>(
 ) =>
     (r) => fromPredicate(r, predicate, orElse);
 
-/// Converts an [O.Option] into an [Either].
-/// If the [O.Option] is [O.Some], then a [Right] is returned with the wrapped
+/// Converts an [Option] into an [Either].
+/// If the [Option] is [Some], then a [Right] is returned with the wrapped
 /// value.
 /// Otherwise, `onNone` will determine the [Left] value to return.
 ///
@@ -295,7 +295,7 @@ Either<L, R> Function(R value) fromPredicateK<L, R>(
 ///   left('fail'),
 /// );
 /// ```
-Either<L, R> Function(O.Option<R> option) fromOption<L, R>(
+Either<L, R> Function(Option<R> option) fromOption<L, R>(
   L Function() onNone,
 ) =>
     O.fold(() => left(onNone()), right);

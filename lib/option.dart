@@ -1,6 +1,5 @@
 import 'package:fpdt/either.dart' as E;
-import 'package:fpdt/function.dart';
-import 'package:fpdt/tuple.dart';
+import 'package:fpdt/fpdt.dart';
 
 /// A constant version on [None], as `Option<Never>`.
 const Option<Never> kNone = None();
@@ -126,7 +125,7 @@ Option<T> Function(Option<T> option) alt<T>(Lazy<Option<T>> f) =>
 T Function(Option<T> option) getOrElse<T>(Lazy<T> orElse) =>
     fold(orElse, identity);
 
-/// Transform the wrapped value if the [O.Option] is a [O.Some], using the
+/// Transform the wrapped value if the [Option] is a [Some], using the
 /// provided function.
 ///
 /// ```
@@ -140,7 +139,7 @@ Option<R> Function(Option<T> option) map<T, R>(
 ) =>
     flatMap((a) => some(f(a)));
 
-/// Execute a side effect on the wrapped value, if the [O.Option] is a [O.Some].
+/// Execute a side effect on the wrapped value, if the [Option] is a [Some].
 ///
 /// ```
 /// expect(
@@ -390,14 +389,14 @@ Option<B> Function(Option<A> option) chainNullableK<A, B>(
 ) =>
     flatMap(fromNullableK(f));
 
-/// Transforms an [E.Either] into an [Option].
+/// Transforms an [Either] into an [Option].
 /// [Right] becomes [Some], and [Left] becomes [None].
 ///
 /// ```
 /// expect(E.right('hello').chain(fromEither), some('hello'));
 /// expect(E.left('fail').chain(fromEither), none());
 /// ```
-Option<R> fromEither<L, R>(E.Either<L, R> either) =>
+Option<R> fromEither<L, R>(Either<L, R> either) =>
     either.chain(E.fold((_) => kNone, some));
 
 /// Flatten's nested [Option] to a single level.

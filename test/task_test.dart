@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:fpdt/function.dart';
+import 'package:fpdt/fpdt.dart';
 import 'package:fpdt/task.dart';
 import 'package:test/test.dart';
 

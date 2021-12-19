@@ -1,23 +1,23 @@
 import 'dart:async';
 
 import 'package:fpdt/either.dart' as E;
-import 'package:fpdt/function.dart';
+import 'package:fpdt/fpdt.dart';
 import 'package:fpdt/option.dart' as O;
 import 'package:fpdt/task.dart' as T;
 
 export 'package:fpdt/task.dart' show delay, sequence, sequenceSeq;
 
-/// Represents a [T.Task] that resolves to an [E.Either].
-/// The underlying type is a [Function] that returns a [Future<E.Either>].
-typedef TaskEither<L, R> = Future<E.Either<L, R>> Function();
+/// Represents a [Task] that resolves to an [Either].
+/// The underlying type is a [Function] that returns a [Future<Either>].
+typedef TaskEither<L, R> = Future<Either<L, R>> Function();
 
-/// Create a [TaskEither] that resolves to an [E.Right].
+/// Create a [TaskEither] that resolves to an [Right].
 TaskEither<L, R> right<L, R>(R a) => T.value(E.right(a));
 
-/// Create a [TaskEither] that resolves to an [E.Left].
+/// Create a [TaskEither] that resolves to an [Left].
 TaskEither<L, R> left<L, R>(L a) => T.value(E.left(a));
 
-/// Convert a [TaskEither] into a [Future], that throws an error on [E.Left].
+/// Convert a [TaskEither] into a [Future], that throws an error on [Left].
 Future<R> toFuture<R>(TaskEither<dynamic, R> taskEither) =>
     taskEither.chain(fold(
       (l) => throw l,
@@ -25,7 +25,7 @@ Future<R> toFuture<R>(TaskEither<dynamic, R> taskEither) =>
     ))();
 
 /// Convert a [TaskEither] into a [Future<void>], that runs the side effect on
-/// [E.Left].
+/// [Left].
 Future<void> Function(TaskEither<L, dynamic> taskEither) toFutureVoid<L>(
   void Function(L value) onLeft,
 ) =>
@@ -34,15 +34,15 @@ Future<void> Function(TaskEither<L, dynamic> taskEither) toFutureVoid<L>(
           (_) {},
         ))();
 
-/// Replace the [TaskEither] with one that resolves to an [E.Right] containing
+/// Replace the [TaskEither] with one that resolves to an [Right] containing
 /// the given value.
 TaskEither<L, R2> Function(TaskEither<L, R> taskEither) pure<L, R, R2>(R2 a) =>
     (taskEither) => right(a);
 
-/// Create a [TaskEither] from an [O.Option]. If it is [O.None], then the
-/// [TaskEither] will resolve to a [E.Left] containing the result from executing
+/// Create a [TaskEither] from an [Option]. If it is [None], then the
+/// [TaskEither] will resolve to a [Left] containing the result from executing
 /// `onNone`.
-TaskEither<L, R> Function(O.Option<R> option) fromOption<L, R>(
+TaskEither<L, R> Function(Option<R> option) fromOption<L, R>(
   L Function() onNone,
 ) =>
     E.fromOption<L, R>(onNone).compose(fromEither);
@@ -68,7 +68,7 @@ TaskEither<L, R> Function(TaskEither<L, R?> value) chainNullableK<L, R>(
 ) =>
     flatMap(fromNullableK(onNone));
 
-/// Returns a [TaskEither] that resolves to the given [E.Either].
+/// Returns a [TaskEither] that resolves to the given [Either].
 ///
 /// ```
 /// expect(
@@ -76,12 +76,12 @@ TaskEither<L, R> Function(TaskEither<L, R?> value) chainNullableK<L, R>(
 ///   E.right('hello'),
 /// );
 /// ```
-TaskEither<L, R> fromEither<L, R>(E.Either<L, R> either) =>
+TaskEither<L, R> fromEither<L, R>(Either<L, R> either) =>
     () => Future.value(either);
 
-/// Runs the given task, and returns the result as an [E.Right].
+/// Runs the given task, and returns the result as an [Right].
 /// If it throws an error, the the error is passed to `onError`, which determines
-/// the [E.Left] value.
+/// the [Left] value.
 ///
 /// ```
 /// expect(
@@ -105,7 +105,7 @@ TaskEither<L, R> tryCatch<L, R>(
       }
     };
 
-/// Transforms a [T.Task] into a [TaskEither], wrapping the result in an [E.Right].
+/// Transforms a [Task] into a [TaskEither], wrapping the result in an [Right].
 ///
 /// ```
 /// expect(
@@ -113,12 +113,12 @@ TaskEither<L, R> tryCatch<L, R>(
 ///   E.right('hello'),
 /// );
 /// ```
-TaskEither<L, R> fromTask<L, R>(T.Task<R> task) => task.chain(T.map(E.right));
+TaskEither<L, R> fromTask<L, R>(Task<R> task) => task.chain(T.map(E.right));
 
-/// Unwraps the [E.Either] value, returning a [T.Task] that resolves to the
+/// Unwraps the [Either] value, returning a [Task] that resolves to the
 /// result.
 ///
-/// `onRight` is run if the value is an [E.Right], and `onLeft` for [E.Left].
+/// `onRight` is run if the value is an [Right], and `onLeft` for [Left].
 ///
 /// ```
 /// expect(
@@ -136,13 +136,13 @@ TaskEither<L, R> fromTask<L, R>(T.Task<R> task) => task.chain(T.map(E.right));
 ///   'left value',
 /// );
 /// ```
-T.Task<A> Function(TaskEither<L, R> taskEither) fold<L, R, A>(
+Task<A> Function(TaskEither<L, R> taskEither) fold<L, R, A>(
   A Function(L left) onLeft,
   A Function(R right) onRight,
 ) =>
     T.map(E.fold(onLeft, onRight));
 
-/// If the given [TaskEither] is an [E.Right], then unwrap the result and transform
+/// If the given [TaskEither] is an [Right], then unwrap the result and transform
 /// it into another [TaskEither].
 ///
 /// ```
@@ -160,8 +160,8 @@ TaskEither<L, R2> Function(TaskEither<L, R> taskEither) flatMap<L, R, R2>(
 ) =>
     T.flatMap(E.fold(left, f));
 
-/// If the given [TaskEither] is an [E.Right], then unwrap the result and transform
-/// it into another [TaskEither] - but only keep [E.Left] results.
+/// If the given [TaskEither] is an [Right], then unwrap the result and transform
+/// it into another [TaskEither] - but only keep [Left] results.
 ///
 /// ```
 /// expect(
@@ -178,7 +178,7 @@ TaskEither<L, R> Function(TaskEither<L, R> taskEither) flatMapFirst<L, R>(
 ) =>
     flatMap((r) => f(r).chain(map((_) => r)));
 
-/// If the given [TaskEither] is an [E.Left], then unwrap the result and transform
+/// If the given [TaskEither] is an [Left], then unwrap the result and transform
 /// it into an [alt]ernative [TaskEither].
 ///
 /// ```
@@ -202,8 +202,8 @@ TaskEither<L, R> Function(TaskEither<L, R> taskEither) orElse<L, R>(
 ) =>
     alt((_) => orElse);
 
-/// Unwrap the [E.Either] value. Resolves to the unwrapped [E.Right] value, but
-/// if the [TaskEither] is an [E.Left], the `onLeft` callback determines the
+/// Unwrap the [Either] value. Resolves to the unwrapped [Right] value, but
+/// if the [TaskEither] is an [Left], the `onLeft` callback determines the
 /// fallback value.
 ///
 /// ```
@@ -216,7 +216,7 @@ TaskEither<L, R> Function(TaskEither<L, R> taskEither) orElse<L, R>(
 ///   'fallback',
 /// );
 /// ```
-T.Task<R> Function(TaskEither<L, R> taskEither) getOrElse<L, R>(
+Task<R> Function(TaskEither<L, R> taskEither) getOrElse<L, R>(
   R Function(L left) onLeft,
 ) =>
     T.map(E.getOrElse(onLeft));
@@ -293,7 +293,7 @@ TaskEither<L, R2> Function(
 ) =>
     flatMap(tryCatchK(task, onError));
 
-/// Transform a [TaskEither]'s value if it is [E.Right].
+/// Transform a [TaskEither]'s value if it is [Right].
 ///
 /// ```
 /// expect(
@@ -310,14 +310,14 @@ TaskEither<L, R2> Function(TaskEither<L, R> taskEither) map<L, R, R2>(
 ) =>
     T.map(E.map(f));
 
-/// Run a side effect on a [E.Right] value. The side effect can optionally return
+/// Run a side effect on a [Right] value. The side effect can optionally return
 /// a [Future].
 TaskEither<L, R> Function(TaskEither<L, R> taskEither) tap<L, R>(
   FutureOr<void> Function(R value) f,
 ) =>
     T.tap(E.fold(identity, f));
 
-/// Conditionally filter the [TaskEither], transforming [E.Right] values to [E.Left].
+/// Conditionally filter the [TaskEither], transforming [Right] values to [Left].
 ///
 /// ```
 /// expect(

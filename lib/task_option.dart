@@ -1,13 +1,12 @@
 import 'dart:async';
 
-import 'package:fpdt/either.dart' as E;
-import 'package:fpdt/function.dart';
+import 'package:fpdt/fpdt.dart';
 import 'package:fpdt/option.dart' as O;
 import 'package:fpdt/task.dart' as T;
 
 export 'package:fpdt/task.dart' show delay, sequence, sequenceSeq;
 
-typedef TaskOption<A> = Future<O.Option<A>> Function();
+typedef TaskOption<A> = Future<Option<A>> Function();
 
 TaskOption<A> some<A>(A a) => T.value(O.some(a));
 TaskOption<A> none<A>() => T.value(O.none());
@@ -20,14 +19,14 @@ TaskOption<A> chainNullable<A>(TaskOption<A?> taskOption) =>
 TaskOption<B> Function(TaskOption<A> taskOption) pure<A, B>(B b) =>
     (taskOption) => () => Future.value(O.some(b));
 
-TaskOption<A> fromOption<A>(O.Option<A> option) => () => Future.value(option);
+TaskOption<A> fromOption<A>(Option<A> option) => () => Future.value(option);
 
-TaskOption<R> fromEither<L, R>(E.Either<L, R> either) =>
+TaskOption<R> fromEither<L, R>(Either<L, R> either) =>
     () => Future.value(O.fromEither(either));
 
-TaskOption<A> fromTask<A>(T.Task<A> task) => task.chain(T.map(O.some));
+TaskOption<A> fromTask<A>(Task<A> task) => task.chain(T.map(O.some));
 
-T.Task<B> Function(TaskOption<A> taskOption) fold<A, B>(
+Task<B> Function(TaskOption<A> taskOption) fold<A, B>(
   B Function() onNone,
   B Function(A value) onSome,
 ) =>
@@ -61,7 +60,7 @@ TaskOption<A> Function(TaskOption<A> taskOption) orElse<A>(
 ) =>
     alt(() => task);
 
-T.Task<A> Function(TaskOption<A> taskOption) getOrElse<A>(
+Task<A> Function(TaskOption<A> taskOption) getOrElse<A>(
   A Function() orElse,
 ) =>
     T.map(O.getOrElse(orElse));

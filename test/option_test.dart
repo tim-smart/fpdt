@@ -1,9 +1,8 @@
 import 'dart:convert';
 
-import 'package:fpdt/function.dart';
+import 'package:fpdt/fpdt.dart';
 import 'package:fpdt/either.dart' as E;
 import 'package:fpdt/option.dart' as O;
-import 'package:fpdt/tuple.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -333,7 +332,7 @@ void main() {
 
     test('fromJson', () {
       expect(
-        O.Option.fromJson('123', (json) => int.tryParse(json as String)),
+        Option.fromJson('123', (json) => int.tryParse(json as String)),
         equals(O.some(123)),
       );
     });
