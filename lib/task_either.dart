@@ -178,20 +178,48 @@ TaskEither<L, R> Function(TaskEither<L, R> taskEither) flatMapFirst<L, R>(
 ) =>
     flatMap((r) => f(r).chain(map((_) => r)));
 
+/// If the given [TaskEither] is an [E.Left], then unwrap the result and transform
+/// it into an [alt]ernative [TaskEither].
+///
+/// ```
+/// expect(
+///   await right(123).chain(flatMap((i) => right('got: $i')))(),
+///   E.right('got: 123'),
+/// );
+/// expect(
+///   await right(123).chain(flatMap((i) => left('fail')))(),
+///   E.left('fail'),
+/// );
+/// ```
 TaskEither<L, R> Function(TaskEither<L, R> taskEither) alt<L, R>(
   TaskEither<L, R> Function(L left) orElse,
 ) =>
     T.flatMap(E.fold(orElse, right));
 
+/// Similar to [alt], but the alternative [TaskEither] is given directly.
 TaskEither<L, R> Function(TaskEither<L, R> taskEither) orElse<L, R>(
   TaskEither<L, R> orElse,
 ) =>
     alt((_) => orElse);
 
+/// Unwrap the [E.Either] value. Resolves to the unwrapped [E.Right] value, but
+/// if the [TaskEither] is an [E.Left], the `onLeft` callback determines the
+/// fallback value.
+///
+/// ```
+/// expect(
+///   await right('hello').chain(getOrElse(() => 'fallback'))(),
+///   'hello',
+/// );
+/// expect(
+///   await left('fail').chain(getOrElse(() => 'fallback'))(),
+///   'fallback',
+/// );
+/// ```
 T.Task<R> Function(TaskEither<L, R> taskEither) getOrElse<L, R>(
-  R Function(L left) orElse,
+  R Function(L left) onLeft,
 ) =>
-    T.map(E.getOrElse(orElse));
+    T.map(E.getOrElse(onLeft));
 
 /// A variant of [tryCatch] that accepts an external parameter.
 ///
@@ -239,6 +267,24 @@ TaskEither<L, R> Function(A a, B b) tryCatchK2<A, B, L, R>(
 ) =>
     (a, b) => tryCatch(() => task(a, b), onError);
 
+/// A chainable variant of [tryCatchK].
+///
+/// ```
+/// expect(
+///   await right('hello').chain(chainTryCatchK(
+///     (s) => '$s world',
+///     (err, stack) => 'fail',
+///   ))(),
+///   E.right('hello world'),
+/// );
+/// expect(
+///   await right('hello').chain(chainTryCatchK(
+///     (s) => throw 'error',
+///     (err, stack) => 'fail',
+///   ))(),
+///   E.left('fail'),
+/// );
+/// ```
 TaskEither<L, R2> Function(
   TaskEither<L, R> taskEither,
 ) chainTryCatchK<L, R, R2>(
@@ -247,16 +293,48 @@ TaskEither<L, R2> Function(
 ) =>
     flatMap(tryCatchK(task, onError));
 
+/// Transform a [TaskEither]'s value if it is [E.Right].
+///
+/// ```
+/// expect(
+///   await right('hello').chain(map((s) => '$s world'))(),
+///   E.right('hello world'),
+/// );
+/// expect(
+///   await left('fail').chain(map((s) => '$s world'))(),
+///   E.left('fail'),
+/// );
+/// ```
 TaskEither<L, R2> Function(TaskEither<L, R> taskEither) map<L, R, R2>(
   R2 Function(R value) f,
 ) =>
     T.map(E.map(f));
 
+/// Run a side effect on a [E.Right] value. The side effect can optionally return
+/// a [Future].
 TaskEither<L, R> Function(TaskEither<L, R> taskEither) tap<L, R>(
   FutureOr<void> Function(R value) f,
 ) =>
     T.tap(E.fold(identity, f));
 
+/// Conditionally filter the [TaskEither], transforming [E.Right] values to [E.Left].
+///
+/// ```
+/// expect(
+///   await right('hello').chain(filter(
+///     (s) => s == 'hello',
+///     (s) => '$s was not hello',
+///   ))(),
+///   E.right('hello'),
+/// );
+/// expect(
+///   await right('asdf').chain(filter(
+///     (s) => s == 'hello',
+///     (s) => '$s was not hello',
+///   ))(),
+///   E.left('asdf was not hello'),
+/// );
+/// ```
 TaskEither<L, R> Function(TaskEither<L, R> taskEither) filter<L, R>(
   bool Function(R value) predicate,
   L Function(R value) orElse,
