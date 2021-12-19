@@ -1,3 +1,7 @@
+## 0.0.30
+
+- More docs and small refactor
+
 ## 0.0.29+1
 
 - Docs for function methods
