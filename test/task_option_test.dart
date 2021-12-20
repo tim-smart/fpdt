@@ -49,6 +49,34 @@ void main() {
     });
   });
 
+  group('fromNullableK', () {
+    final transform = TO.fromNullableK((int i) => i > 5 ? i : null);
+
+    test('resolve to a some if non-null', () async {
+      final r = await transform(10)();
+      expect(r, O.some(10));
+    });
+
+    test('resolves to a none if null', () async {
+      final r = await transform(3)();
+      expect(r, O.none());
+    });
+  });
+
+  group('chainNullableK', () {
+    final transform = TO.chainNullableK((int i) => i > 5 ? i : null);
+
+    test('resolve to a some if non-null', () async {
+      final r = await TO.some(10).chain(transform)();
+      expect(r, O.some(10));
+    });
+
+    test('resolves to a none if null', () async {
+      final r = await TO.some(3).chain(transform)();
+      expect(r, O.none());
+    });
+  });
+
   group('fromOption', () {
     test('resolve to a some if some', () async {
       final r = await O.some(123).chain(TO.fromOption)();
