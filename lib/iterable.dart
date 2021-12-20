@@ -3,11 +3,23 @@ import 'package:fpdt/option.dart';
 extension IterableExtension<T> on Iterable<T> {
   /// Returns the first element as an [Option].
   /// If the list is empty, it will return [None].
-  Option<T> get head => isEmpty ? kNone : some(first);
+  Option<T> get head {
+    final iterator = this.iterator;
+    if (iterator.moveNext()) return some(iterator.current);
+    return kNone;
+  }
 
   /// Returns the first element as an [Option].
   /// If the list is empty, it will return [None].
-  Option<T> get firstOption => isEmpty ? kNone : some(first);
+  Option<T> get firstOption => head;
+
+  /// The first element satisfying [predicate] as an [Option].
+  Option<T> firstWhereOption(bool Function(T element) predicate) {
+    for (var element in this) {
+      if (predicate(element)) return some(element);
+    }
+    return kNone;
+  }
 
   /// Returns all the of elements except the first.
   Option<Iterable<T>> get tail => isEmpty ? kNone : some(skip(1));
