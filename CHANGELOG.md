@@ -1,3 +1,7 @@
+## 0.0.33+1
+
+- Document `TaskOption`
+
 ## 0.0.33
 
 - Fix `Option.fromJson`

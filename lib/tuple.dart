@@ -1,6 +1,10 @@
+/// Returns a [Tuple2] that wraps the given values.
 Tuple2<A, B> tuple2<A, B>(A a, B b) => Tuple2(a, b);
+
+/// Returns a [Tuple3] that wraps the given values.
 Tuple3<A, B, C> tuple3<A, B, C>(A a, B b, C c) => Tuple3(a, b, c);
 
+/// A tuple implementation for dart that wraps two values.
 class Tuple2<A, B> {
   const Tuple2(this.first, this.second);
 
@@ -24,6 +28,7 @@ class Tuple2<A, B> {
   int get hashCode => first.hashCode ^ second.hashCode;
 }
 
+/// A tuple implementation for dart that wraps three values.
 class Tuple3<A, B, C> {
   const Tuple3(this.first, this.second, this.third);
 
