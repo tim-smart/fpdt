@@ -1,3 +1,7 @@
+## 0.0.34
+
+- Add `firstWhereOption` to iterable extension
+
 ## 0.0.33+1
 
 - Document `TaskOption`
