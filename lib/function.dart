@@ -34,7 +34,7 @@ extension ComposeExtension0<A> on A Function() {
   /// ```
   /// add.compose(print);
   /// // is the same as
-  /// print(add());
+  /// () => print(add());
   /// ```
   B Function() compose<B>(B Function(A a) f) => () => f(this());
 
@@ -43,7 +43,7 @@ extension ComposeExtension0<A> on A Function() {
   /// ```
   /// add.c(print);
   /// // is the same as
-  /// print(add());
+  /// () => print(add());
   /// ```
   B Function() c<B>(B Function(A a) f) => () => f(this());
 }
@@ -54,7 +54,7 @@ extension ComposeExtension1<A, B> on B Function(A) {
   /// ```
   /// add.compose(print);
   /// // is the same as
-  /// print(add());
+  /// () => print(add());
   /// ```
   C Function(A a) compose<C>(C Function(B b) f) => (a) => f(this(a));
 
@@ -63,7 +63,7 @@ extension ComposeExtension1<A, B> on B Function(A) {
   /// ```
   /// add.c(print);
   /// // is the same as
-  /// print(add());
+  /// () => print(add());
   /// ```
   C Function(A a) c<C>(C Function(B b) f) => (a) => f(this(a));
 }
@@ -74,7 +74,7 @@ extension ComposeExtension2<A, B, C> on C Function(A, B) {
   /// ```
   /// add.compose(print);
   /// // is the same as
-  /// print(add());
+  /// () => print(add());
   /// ```
   D Function(A a, B b) compose<D>(D Function(C c) f) => (a, b) => f(this(a, b));
 
@@ -83,7 +83,7 @@ extension ComposeExtension2<A, B, C> on C Function(A, B) {
   /// ```
   /// add.c(print);
   /// // is the same as
-  /// print(add());
+  /// () => print(add());
   /// ```
   D Function(A a, B b) c<D>(D Function(C c) f) => (a, b) => f(this(a, b));
 }
@@ -94,7 +94,7 @@ extension ComposeExtension3<A, B, C, D> on D Function(A, B, C) {
   /// ```
   /// add.compose(print);
   /// // is the same as
-  /// print(add());
+  /// () => print(add());
   /// ```
   E Function(A a, B b, C c) compose<E>(E Function(D d) f) =>
       (a, b, c) => f(this(a, b, c));
@@ -104,7 +104,7 @@ extension ComposeExtension3<A, B, C, D> on D Function(A, B, C) {
   /// ```
   /// add.c(print);
   /// // is the same as
-  /// print(add());
+  /// () => print(add());
   /// ```
   E Function(A a, B b, C c) c<E>(E Function(D d) f) =>
       (a, b, c) => f(this(a, b, c));
@@ -116,7 +116,7 @@ extension ComposeExtension4<A, B, C, D, E> on E Function(A, B, C, D) {
   /// ```
   /// add.compose(print);
   /// // is the same as
-  /// print(add());
+  /// () => print(add());
   /// ```
   F Function(A a, B b, C c, D d) compose<F>(F Function(E e) f) =>
       (a, b, c, d) => f(this(a, b, c, d));
@@ -126,7 +126,7 @@ extension ComposeExtension4<A, B, C, D, E> on E Function(A, B, C, D) {
   /// ```
   /// add.c(print);
   /// // is the same as
-  /// print(add());
+  /// () => print(add());
   /// ```
   F Function(A a, B b, C c, D d) c<F>(F Function(E e) f) =>
       (a, b, c, d) => f(this(a, b, c, d));
