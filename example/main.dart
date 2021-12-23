@@ -29,6 +29,15 @@ void main() async {
       .chain(O.filter((s) => s.startsWith('hello')))
       .chain(O.map((s) => '$s - valid!'));
 
+  // As well as [chain], a shorter [p] (p for [p]ipe) method is available.
+  // ignore: unused_element
+  Option<String> validateHelloFunctionalP(String? s) => O
+      .fromNullable(s)
+      .p(O.map((s) => s.trim()))
+      .p(O.filter((s) => s.isNotEmpty))
+      .p(O.filter((s) => s.startsWith('hello')))
+      .p(O.map((s) => '$s - valid!'));
+
   assert(validateHelloFunctional('   hello!') == O.some('hello! - valid!'));
   assert(validateHelloFunctional('   hi!') == O.none());
   assert(validateHelloFunctional('   ') == O.none());
