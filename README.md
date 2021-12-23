@@ -12,7 +12,7 @@ Includes:
 - `Task`
 - `TaskEither`
 - `TaskOption`
-- Tuples
+- Immutable data structures, thanks to: https://pub.dev/packages/fast_immutable_collections
 - Iterable extension helpers
 - `Unit`
 

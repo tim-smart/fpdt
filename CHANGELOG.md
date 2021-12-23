@@ -1,3 +1,8 @@
+## 0.0.35+1
+
+- Relax fast_immutable_collections version constraint
+- Give credit in README for fast_immutable_collections
+
 ## 0.0.35
 
 - Add and export `fast_immutable_collections`

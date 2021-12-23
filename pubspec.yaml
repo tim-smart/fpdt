@@ -1,12 +1,12 @@
 name: fpdt
 description: A collection of functions and monads for functional programming in dart.
-version: 0.0.35
+version: 0.0.35+1
 homepage: https://github.com/tim-smart/fpdt
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
 
-dependencies: 
+dependencies:
   fast_immutable_collections: any
 
 dev_dependencies:
