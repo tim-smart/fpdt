@@ -21,3 +21,6 @@ export 'option.dart' show Option, Some, None, kNone;
 export 'task_either.dart' show TaskEither;
 export 'task_option.dart' show TaskOption;
 export 'task.dart' show Task;
+
+// Immutable data types
+export 'package:fast_immutable_collections/fast_immutable_collections.dart';

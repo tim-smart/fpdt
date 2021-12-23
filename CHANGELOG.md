@@ -1,3 +1,7 @@
+## 0.0.35
+
+- Add and export `fast_immutable_collections`
+
 ## 0.0.34
 
 - Add `firstWhereOption` to iterable extension
