@@ -115,11 +115,11 @@ Option<T> Function(Option<T> option) alt<T>(Lazy<Option<T>> f) =>
 /// ```
 /// expect(
 ///   some('hello').chain(getOrElse(() => 'fallback')),
-///   some('hello'),
+///   'hello',
 /// );
 /// expect(
 ///   none().chain(getOrElse(() => 'fallback')),
-///   some('fallback'),
+///   'fallback',
 /// );
 /// ```
 T Function(Option<T> option) getOrElse<T>(Lazy<T> orElse) =>
