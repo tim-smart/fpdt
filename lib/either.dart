@@ -386,6 +386,22 @@ Either<L, R2> Function(Either<L, R> value) chainNullableK<L, R, R2>(
 ) =>
     flatMap(fromNullableK(f, orElse));
 
+/// Transform an iterable of [Either], into an [Either] containing an [IList] of
+/// the results.
+Either<L, IList<R2>> Function(Iterable<R1>) traverse<L, R1, R2>(
+  Either<L, R2> Function(R1 a) f,
+) =>
+    (as) => as.fold(
+          right(IList()),
+          (acc, a) => acc._fold(
+            (_) => acc,
+            (bs) => f(a)._fold(
+              (l) => left(l),
+              (b) => right(bs.add(b)),
+            ),
+          ),
+        );
+
 /// Represents a value than can be one of two things - [Left] or [Right].
 ///
 /// Commonly used for function results that can either be an error, or the

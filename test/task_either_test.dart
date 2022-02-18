@@ -339,4 +339,44 @@ void main() {
       expect(r, E.left('asdf'));
     });
   });
+
+  group('sequence', () {
+    test('transforms the iterable into a TaskEither', () async {
+      final result = await TE.sequence([
+        TE.right(1),
+        TE.right(2),
+        TE.right(3),
+      ])();
+      expect(result, E.right(const IListConst([1, 2, 3])));
+    });
+
+    test('resolves to a left if an item is left', () async {
+      final result = await TE.sequence<String, int>([
+        TE.right(1),
+        TE.left('fail'),
+        TE.right(3),
+      ])();
+      expect(result, E.left('fail'));
+    });
+  });
+
+  group('sequenceSeq', () {
+    test('transforms the iterable into a TaskEither', () async {
+      final result = await TE.sequenceSeq([
+        TE.right(1),
+        TE.right(2),
+        TE.right(3),
+      ])();
+      expect(result, E.right(const IListConst([1, 2, 3])));
+    });
+
+    test('resolves to a left if an item is left', () async {
+      final result = await TE.sequenceSeq<String, int>([
+        TE.right(1),
+        TE.left('fail'),
+        TE.right(3),
+      ])();
+      expect(result, E.left('fail'));
+    });
+  });
 }

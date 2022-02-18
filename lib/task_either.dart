@@ -1,11 +1,11 @@
 import 'dart:async';
 
-import 'package:fpdt/either.dart' as E;
 import 'package:fpdt/fpdt.dart';
+import 'package:fpdt/either.dart' as E;
 import 'package:fpdt/option.dart' as O;
 import 'package:fpdt/task.dart' as T;
 
-export 'package:fpdt/task.dart' show delay, sequence, sequenceSeq;
+export 'package:fpdt/task.dart' show delay;
 
 /// Represents a [Task] that resolves to an [Either].
 /// The underlying type is a [Function] that returns a [Future<Either>].
@@ -344,3 +344,31 @@ TaskEither<L, R> Function(TaskEither<L, R> taskEither) filter<L, R>(
   L Function(R value) orElse,
 ) =>
     T.map(E.filter(predicate, orElse));
+
+TaskEither<L, IList<B>> Function(Iterable<A>) traverseIterable<L, A, B>(
+  TaskEither<L, B> Function(A a) f,
+) =>
+    T.traverseIterable(f).compose(T.map(E.traverse(identity)));
+
+TaskEither<L, IList<B>> Function(Iterable<A>) traverseIterableSeq<L, A, B>(
+  TaskEither<L, B> Function(A a) f,
+) =>
+    (as) => () => as.fold<Future<Either<L, IList<B>>>>(
+        Future.value(E.right(IList())),
+        (acc, a) => acc.then((eb) => eb.chain(E.fold(
+              (_) => acc,
+              (bs) => f(a)().then(E.fold(
+                (l) => E.left(l),
+                (b) => E.right(bs.add(b)),
+              )),
+            ))));
+
+TaskEither<L, IList<A>> sequence<L, A>(
+  Iterable<TaskEither<L, A>> arr,
+) =>
+    arr.chain(traverseIterable(identity));
+
+TaskEither<L, IList<A>> sequenceSeq<L, A>(
+  Iterable<TaskEither<L, A>> arr,
+) =>
+    arr.chain(traverseIterableSeq(identity));

@@ -73,6 +73,19 @@ Task<A> Function(Task<A> task) tap<A>(FutureOr<void> Function(A value) f) =>
 Task<B> Function(Task<A> task) call<A, B>(Task<B> chain) =>
     flatMap((_) => chain);
 
+Task<IList<B>> Function(Iterable<A>) traverseIterable<A, B>(
+  Task<B> Function(A a) f,
+) =>
+    (as) => () => as.fold(
+          Future.value(IList()),
+          (acc, a) => acc.then((bs) => f(a)().then((b) => bs.add(b))),
+        );
+
+Task<IList<B>> Function(Iterable<A>) traverseIterableSeq<A, B>(
+  Task<B> Function(A a) f,
+) =>
+    (as) => () => Future.wait(as.map((a) => f(a)())).then((bs) => IList(bs));
+
 /// Returns a task that maps an [Iterable] of [Task]'s, into a list of results.
 ///
 /// The tasks are run in parallel.
@@ -84,10 +97,10 @@ Task<B> Function(Task<A> task) call<A, B>(Task<B> chain) =>
 ///   ['one', 'two'],
 /// );
 /// ```
-Task<List<A>> sequence<A>(
+Task<IList<A>> sequence<A>(
   Iterable<Task<A>> tasks,
 ) =>
-    () => Future.wait(tasks.map((f) => f()));
+    tasks.chain(traverseIterable(identity));
 
 /// Returns a task the flattens an [Iterable] of [Task]'s, into a list of results.
 ///
@@ -100,7 +113,5 @@ Task<List<A>> sequence<A>(
 ///   ['one', 'two'],
 /// );
 /// ```
-Task<List<A>> sequenceSeq<A>(Iterable<Task<A>> tasks) => () => tasks.fold(
-      Future.sync(() => []),
-      (acc, task) => acc.then((list) => task().then((a) => [...list, a])),
-    );
+Task<IList<A>> sequenceSeq<A>(Iterable<Task<A>> tasks) =>
+    tasks.chain(traverseIterableSeq(identity));
