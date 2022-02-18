@@ -2,21 +2,20 @@ import 'package:fpdt/fpdt.dart';
 import 'package:fpdt/either.dart' as Ei;
 import 'package:fpdt/reader_task_either.dart' as RTE;
 
-typedef StateReaderTaskEither<S, R, E, A> = ReaderTaskEither<R, E, Tuple2<A, S>>
+typedef StateReaderTaskEither<S, C, L, R> = ReaderTaskEither<C, L, Tuple2<R, S>>
     Function(S s);
 
 StateReaderTaskEither<S, R, E, A> left<S, R, E, A>(E e) => (s) => RTE.left(e);
 StateReaderTaskEither<S, R, E, A> right<S, R, E, A>(A a) =>
     (s) => RTE.right(tuple2(a, s));
 
-StateReaderTaskEither<S, R, E, B> Function(
-    StateReaderTaskEither<S, R, E, A>) map<S, R, E, A, B>(
-        B Function(A a) f) =>
-    (fa) => (s) => fa(s).chain(RTE.map((t) => tuple2(f(t.first), t.second)));
+StateReaderTaskEither<S, R, E, B> Function(StateReaderTaskEither<S, R, E, A>)
+    map<S, R, E, A, B>(B Function(A a) f) =>
+        (fa) => fa.compose(RTE.map((t) => tuple2(f(t.first), t.second)));
 
 StateReaderTaskEither<S, R, E, B> Function(StateReaderTaskEither<S, R, E, A>)
     flatMap<S, R, E, A, B>(StateReaderTaskEither<S, R, E, B> Function(A a) f) =>
-        (fa) => (s) => fa(s).chain(RTE.flatMap((a) => f(a.first)(a.second)));
+        (fa) => fa.compose(RTE.flatMap((a) => f(a.first)(a.second)));
 
 StateReaderTaskEither<S, R, E, IList<B>> Function(
     Iterable<A>) traverseIterable<S, R, E, A, B>(
