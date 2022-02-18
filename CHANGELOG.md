@@ -1,3 +1,7 @@
+## 0.0.36
+
+- Add traverse functions, and improve `sequence` for `TaskEither`.
+
 ## 0.0.35+1
 
 - Relax fast_immutable_collections version constraint
