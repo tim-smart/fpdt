@@ -18,6 +18,10 @@ export 'unit.dart';
 // Primitive types
 export 'either.dart' show Either, Left, Right;
 export 'option.dart' show Option, Some, None, kNone;
+export 'reader.dart' show Reader;
+export 'reader_task.dart' show ReaderTask;
+export 'reader_task_either.dart' show ReaderTaskEither;
+export 'state.dart' show State;
 export 'task_either.dart' show TaskEither;
 export 'task_option.dart' show TaskOption;
 export 'task.dart' show Task;
