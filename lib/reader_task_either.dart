@@ -94,13 +94,13 @@ ReaderTaskEither<C, L, R> fromTaskEither<C, L, R>(
 /// the [Left] value.
 ReaderTaskEither<C, L, R> tryCatch<C, L, R>(
   FutureOr<R> Function(C) task,
-  L Function(dynamic err, StackTrace stackTrace) onError,
+  L Function(dynamic err, StackTrace stackTrace) Function(C c) onError,
 ) =>
     (r) => () async {
           try {
             return E.right(await task(r));
           } catch (err, stack) {
-            return E.left(onError(err, stack));
+            return E.left(onError(r)(err, stack));
           }
         };
 
@@ -181,3 +181,56 @@ ReaderTaskEither<C, L, R> Function(ReaderTaskEither<C, L, R> taskEither)
   L Function(R value) orElse,
 ) =>
         RT.map(E.filter(predicate, orElse));
+
+/// If the given [ReaderTaskEither] is an [Left], then unwrap the result and transform
+/// it into an [alt]ernative [ReaderTaskEither].
+ReaderTaskEither<C, L, R> Function(ReaderTaskEither<C, L, R>) alt<C, L, R>(
+  ReaderTaskEither<C, L, R> Function(L left) orElse,
+) =>
+    RT.flatMap(E.fold(orElse, right));
+
+/// Similar to [alt], but the alternative [ReaderTaskEither] is given directly.
+ReaderTaskEither<C, L, R> Function(ReaderTaskEither<C, L, R>) orElse<C, L, R>(
+  ReaderTaskEither<C, L, R> orElse,
+) =>
+    alt((_) => orElse);
+
+/// Unwrap the [Either] value. Resolves to the unwrapped [Right] value, but
+/// if the [ReaderTaskEither] is an [Left], the `onLeft` callback determines the
+/// fallback value.
+ReaderTask<C, R> Function(ReaderTaskEither<C, L, R> taskEither)
+    getOrElse<C, L, R>(
+  R Function(L left) onLeft,
+) =>
+        RT.map(E.getOrElse(onLeft));
+
+/// A variant of [tryCatch] that accepts an external parameter.
+ReaderTaskEither<C, L, R> Function(A value) tryCatchK<C, A, L, R>(
+  FutureOr<R> Function(A value) Function(C) task,
+  L Function(dynamic err, StackTrace stackTrace) Function(A a) Function(C c)
+      onError,
+) =>
+    (a) => tryCatch((c) => task(c)(a), (c) => onError(c)(a));
+
+/// A variant of [tryCatch] that accepts two external parameters.
+ReaderTaskEither<C, L, R> Function(A a, B b) tryCatchK2<A, B, C, L, R>(
+  FutureOr<R> Function(A a, B b) Function(C) task,
+  L Function(dynamic err, StackTrace stackTrace) Function(C c) onError,
+) =>
+    (a, b) => tryCatch((c) => task(c)(a, b), onError);
+
+/// A chainable variant of [tryCatchK].
+ReaderTaskEither<C, L, R2> Function(ReaderTaskEither<C, L, R>)
+    chainTryCatchK<C, L, R, R2>(
+  FutureOr<R2> Function(R value) Function(C c) task,
+  L Function(dynamic err, StackTrace stackTrace) Function(R r) Function(C c)
+      onError,
+) =>
+        flatMap(tryCatchK(task, onError));
+
+/// Run a side effect on a [Right] value. The side effect can optionally return
+/// a [Future].
+ReaderTaskEither<C, L, R> Function(ReaderTaskEither<C, L, R>) tap<C, L, R>(
+  FutureOr<void> Function(R value) f,
+) =>
+    RT.tap(E.fold(identity, f));

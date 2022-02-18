@@ -15,7 +15,13 @@ ReaderTask<R, A> fromTask<R, A>(Task<A> task) => (r) => task;
 ReaderTask<R, B> Function(ReaderTask<R, A>) map<R, A, B>(
   B Function(A a) f,
 ) =>
-    (fa) => (r) => fa(r).chain(T.map(f));
+    (fa) => fa.compose(T.map(f));
+
+/// [tap] transforms the previous computation result using the given function.
+ReaderTask<R, A> Function(ReaderTask<R, A>) tap<R, A>(
+  void Function(A a) f,
+) =>
+    (fa) => fa.compose(T.tap(f));
 
 /// [flatMap] transforms the previous computation result using the given function.
 ReaderTask<R, B> Function(ReaderTask<R, A>) flatMap<R, A, B>(
