@@ -219,3 +219,14 @@ StateReaderTaskEither<S, C, L, R> Function(StateReaderTaskEither<S, C, L, R>)
   Duration d,
 ) =>
         (f) => f.compose(RTE.delay(d));
+
+/// Conditionally filter the [StateReaderTaskEither], transforming [Right] values to [Left].
+StateReaderTaskEither<S, C, L, R> Function(StateReaderTaskEither<S, C, L, R>)
+    filter<S, C, L, R>(
+  bool Function(R value) predicate,
+  L Function(R value) orElse,
+) =>
+        (f) => f.compose(RTE.filter(
+              (t) => predicate(t.first),
+              (t) => orElse(t.first),
+            ));
