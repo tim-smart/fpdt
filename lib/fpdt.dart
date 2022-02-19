@@ -22,6 +22,8 @@ export 'reader.dart' show Reader;
 export 'reader_task.dart' show ReaderTask;
 export 'reader_task_either.dart' show ReaderTaskEither;
 export 'state.dart' show State;
+export 'state_machine.dart' show StateMachine, StateRTEMachine;
+export 'state_reader_task_either.dart' show StateReaderTaskEither;
 export 'task_either.dart' show TaskEither;
 export 'task_option.dart' show TaskOption;
 export 'task.dart' show Task;
