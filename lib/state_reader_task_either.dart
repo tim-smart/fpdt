@@ -212,3 +212,10 @@ StateReaderTaskEither<S, C, L, R> Function(StateReaderTaskEither<S, C, L, R>)
   StateReaderTaskEither<S, C, L, R> orElse,
 ) =>
         alt((_) => orElse);
+
+// Delay the task by the given duration.
+StateReaderTaskEither<S, C, L, R> Function(StateReaderTaskEither<S, C, L, R>)
+    delay<S, C, L, R>(
+  Duration d,
+) =>
+        (f) => f.compose(RTE.delay(d));

@@ -1,3 +1,7 @@
+## 0.0.38
+
+- Add `delay` method to more monads
+
 ## 0.0.37
 
 - Add `State`

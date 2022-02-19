@@ -234,3 +234,8 @@ ReaderTaskEither<C, L, R> Function(ReaderTaskEither<C, L, R>) tap<C, L, R>(
   FutureOr<void> Function(R value) f,
 ) =>
     RT.tap(E.fold(identity, f));
+
+/// Pause execution of the task by the given [Duration].
+ReaderTaskEither<C, L, R> Function(ReaderTaskEither<C, L, R>) delay<C, L, R>(
+        Duration d) =>
+    (f) => f.compose(TE.delay(d));

@@ -5,8 +5,6 @@ import 'package:fpdt/either.dart' as E;
 import 'package:fpdt/option.dart' as O;
 import 'package:fpdt/task.dart' as T;
 
-export 'package:fpdt/task.dart' show delay;
-
 /// Represents a [Task] that resolves to an [Either].
 /// The underlying type is a [Function] that returns a [Future<Either>].
 typedef TaskEither<L, R> = Future<Either<L, R>> Function();
@@ -372,3 +370,7 @@ TaskEither<L, IList<A>> sequenceSeq<L, A>(
   Iterable<TaskEither<L, A>> arr,
 ) =>
     arr.chain(traverseIterableSeq(identity));
+
+/// Pause execution of the task by the given [Duration].
+TaskEither<L, R> Function(TaskEither<L, R>) delay<L, R>(Duration d) =>
+    flatMap((r) => () => Future.delayed(d, () => E.right(r)));
