@@ -73,7 +73,7 @@ Task<A> Function(Task<A> task) tap<A>(FutureOr<void> Function(A value) f) =>
 Task<B> Function(Task<A> task) call<A, B>(Task<B> chain) =>
     flatMap((_) => chain);
 
-Task<IList<B>> Function(Iterable<A>) traverseIterable<A, B>(
+Task<IList<B>> Function(Iterable<A>) traverseIterableSeq<A, B>(
   Task<B> Function(A a) f,
 ) =>
     (as) => () => as.fold(
@@ -81,7 +81,7 @@ Task<IList<B>> Function(Iterable<A>) traverseIterable<A, B>(
           (acc, a) => acc.then((bs) => f(a)().then((b) => bs.add(b))),
         );
 
-Task<IList<B>> Function(Iterable<A>) traverseIterableSeq<A, B>(
+Task<IList<B>> Function(Iterable<A>) traverseIterable<A, B>(
   Task<B> Function(A a) f,
 ) =>
     (as) => () => Future.wait(as.map((a) => f(a)())).then((bs) => IList(bs));
