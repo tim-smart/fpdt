@@ -2,8 +2,6 @@ import 'dart:async';
 
 import 'package:fpdt/fpdt.dart';
 import 'package:fpdt/either.dart' as E;
-import 'package:fpdt/option.dart' as O;
-import 'package:fpdt/task.dart' as T;
 import 'package:fpdt/task_either.dart' as TE;
 import 'package:fpdt/reader_task_either.dart';
 import 'package:test/test.dart';

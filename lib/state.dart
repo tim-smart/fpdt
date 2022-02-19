@@ -6,7 +6,7 @@ typedef State<S, A> = Tuple2<A, S> Function(S state);
 State<S, S> get<S>() => (s) => tuple2(s, s);
 
 /// Set the state
-State<S, void> put<S>(S s) => (s) => tuple2(null, s);
+State<S, void> put<S>(S s) => (_) => tuple2(null, s);
 
 /// Modify the state with the given transformer function
 State<S, void> modify<S>(S Function(S s) f) => (s) => tuple2(null, f(s));
