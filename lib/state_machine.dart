@@ -10,25 +10,28 @@ import 'dart:collection';
 class StateMachine<S> {
   StateMachine(this._state);
 
-  Tuple2<dynamic, S> _state;
-  Tuple2<dynamic, S> get state => _state;
+  S _state;
+  S get state => _state;
 
-  final _controller = StreamController<Tuple2<dynamic, S>>();
-  Stream<Tuple2<dynamic, S>> get stream => _controller.stream;
+  final _controller = StreamController<S>();
+  Stream<S> get stream => _controller.stream;
 
-  A evaluate<A>(State<S, A> state) {
-    final next = state(_state.second);
-    _state = next;
-    _controller.add(next);
-    return next.first;
+  Tuple2<A, S> run<A>(State<S, A> state) {
+    final next = state(_state);
+    _state = next.second;
+    _controller.add(next.second);
+    return next;
   }
 
-  S execute(State<S, dynamic> state) {
-    final next = state(_state.second);
-    _state = next;
-    _controller.add(next);
-    return next.second;
-  }
+  A evaluate<A>(State<S, A> state) => run(state).first;
+  S execute(State<S, dynamic> state) => run(state).second;
+
+  IList<Tuple2<dynamic, S>> sequence(Iterable<State<S, dynamic>> arr) =>
+      arr.map(run).toIList();
+  IList<dynamic> evaluateSeq(Iterable<State<S, dynamic>> arr) =>
+      arr.map(run).map((t) => t.first).toIList();
+  IList<S> executeSeq(Iterable<State<S, dynamic>> arr) =>
+      arr.map(run).map((t) => t.second).toIList();
 
   void close() => _controller.close();
 }
@@ -37,18 +40,11 @@ class StateMachine<S> {
 class StateRTEMachine<S, C, L> {
   StateRTEMachine(this._state, this._context);
 
-  static ReaderTaskEither<C, L, StateRTEMachine<S, C, L>> Function(
-      S s) from<S, C, L, R>(
-    StateReaderTaskEither<S, C, L, R> srte,
-  ) =>
-      (s) => srte(s).chain(
-          RTE.flatMap((r) => (c) => TE.right(StateRTEMachine<S, C, L>(r, c))));
+  S _state;
+  S get state => _state;
 
-  Tuple2<dynamic, S> _state;
-  Tuple2<dynamic, S> get state => _state;
-
-  final _controller = StreamController<Tuple2<dynamic, S>>(sync: true);
-  Stream<Tuple2<dynamic, S>> get stream => _controller.stream;
+  final _controller = StreamController<S>(sync: true);
+  Stream<S> get stream => _controller.stream;
 
   final C _context;
 
@@ -60,12 +56,12 @@ class StateRTEMachine<S, C, L> {
   bool get closed => _closed;
 
   Future<Either<L, R>> evaluate<R>(StateReaderTaskEither<S, C, L, R> state) =>
-      _maybeRun(state).then(E.map((t) => t.first));
+      run(state).then(E.map((t) => t.first));
 
   Future<Either<L, S>> execute<R>(StateReaderTaskEither<S, C, L, R> state) =>
-      _maybeRun(state).then(E.map((t) => t.second));
+      run(state).then(E.map((t) => t.second));
 
-  Future<Either<L, Tuple2<R, S>>> _maybeRun<R>(
+  Future<Either<L, Tuple2<R, S>>> run<R>(
       StateReaderTaskEither<S, C, L, R> state) async {
     if (_closed) throw 'closed';
 
@@ -78,36 +74,49 @@ class StateRTEMachine<S, C, L> {
     return _run(state);
   }
 
+  Future<Either<L, IList<Tuple2<dynamic, S>>>> sequence(
+          Iterable<StateReaderTaskEither<S, C, L, dynamic>> arr) =>
+      Future.wait(arr.map(run)).then(E.sequence);
+
+  Future<Either<L, IList<dynamic>>> evaluateSeq(
+          Iterable<StateReaderTaskEither<S, C, L, dynamic>> arr) =>
+      sequence(arr).then(E.map((arr) => arr.map((t) => t.first).toIList()));
+
+  Future<Either<L, IList<S>>> executeSeq(
+          Iterable<StateReaderTaskEither<S, C, L, dynamic>> arr) =>
+      sequence(arr).then(E.map((arr) => arr.map((t) => t.second).toIList()));
+
   Future<Either<L, Tuple2<R, S>>> _run<R>(
       StateReaderTaskEither<S, C, L, R> state) async {
-    final result = await state(_state.second)(_context)();
+    final result = await state(_state)(_context)();
 
     _state = result.chain(E.fold(
       (_) => _state,
-      (r) => r,
+      (r) => r.second,
     ));
     if (E.isRight(result)) {
       _controller.add(_state);
     }
 
-    _afterRun();
+    if (_queue.isNotEmpty) {
+      final next = _queue.removeFirst();
+      _run(next.first).then(next.second.complete);
+    } else {
+      _maybeClose(true);
+    }
 
     return result;
   }
 
-  void _afterRun() {
-    final isEmpty = _queue.isEmpty;
-
-    if (_closed && isEmpty) {
-      _controller.close();
-    } else if (!isEmpty) {
-      final next = _queue.removeFirst();
-      _run(next.first).then(next.second.complete);
-    }
+  void close() {
+    if (_closed) return;
+    _closed = true;
+    _maybeClose(_queue.isEmpty);
   }
 
-  void close() {
-    _closed = true;
-    _afterRun();
+  void _maybeClose(bool queueEmpty) {
+    if (_closed && queueEmpty) {
+      _controller.close();
+    }
   }
 }

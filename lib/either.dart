@@ -402,6 +402,13 @@ Either<L, IList<R2>> Function(Iterable<R1>) traverse<L, R1, R2>(
           ),
         );
 
+/// Transform an iterable of [Either], into an [Either] containing an [IList] of
+/// the results.
+Either<L, IList<R>> sequence<L, R>(
+  Iterable<Either<L, R>> arr,
+) =>
+    arr.chain(traverse(identity));
+
 /// Represents a value than can be one of two things - [Left] or [Right].
 ///
 /// Commonly used for function results that can either be an error, or the
