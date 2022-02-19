@@ -1,3 +1,7 @@
+## 0.0.39
+
+- Add `filter` to `StateReaderTaskEither`
+
 ## 0.0.38
 
 - Add `delay` method to more monads
