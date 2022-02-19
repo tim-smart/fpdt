@@ -11,7 +11,7 @@ class StateMachine<S> {
 
   StreamController<S>? _controller;
   Stream<S> get stream {
-    _controller ??= StreamController();
+    _controller ??= StreamController.broadcast();
     return _controller!.stream;
   }
 

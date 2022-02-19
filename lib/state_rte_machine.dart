@@ -13,7 +13,7 @@ class StateRTEMachine<S, C, L> {
 
   StreamController<S>? _controller;
   Stream<S> get stream {
-    _controller ??= StreamController(sync: true);
+    _controller ??= StreamController.broadcast(sync: true);
     return _controller!.stream;
   }
 
