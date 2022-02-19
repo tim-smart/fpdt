@@ -2,8 +2,6 @@ import 'dart:async';
 
 import 'package:fpdt/fpdt.dart';
 import 'package:fpdt/either.dart' as E;
-import 'package:fpdt/task_either.dart' as TE;
-import 'package:fpdt/reader_task_either.dart' as RTE;
 import 'dart:collection';
 
 /// A state machine for [State].
