@@ -1,3 +1,13 @@
+## 0.0.37
+
+- Add `State`
+- Add `Reader`
+- Add `ReaderTask`
+- Add `ReaderTaskEither`
+- Add `StateReaderTaskEither`
+- Add `StateMachine`
+- Add `StateRTEMachine`
+
 ## 0.0.36
 
 - Add traverse functions, and improve `sequence` for `TaskEither`.

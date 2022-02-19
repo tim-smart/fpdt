@@ -12,9 +12,15 @@ Includes:
 - `Task`
 - `TaskEither`
 - `TaskOption`
+- `State`
+- `Reader`
+- `ReaderTask`
+- `ReaderTaskEither`
+- `StateReaderTaskEither`
 - Immutable data structures, thanks to: https://pub.dev/packages/fast_immutable_collections
 - Iterable extension helpers
 - `Unit`
+- `StateMachine` and `StateRTEMachine` to help with interop.
 
 Note that the API will be unstable until version `0.1.0` is reached.
 
