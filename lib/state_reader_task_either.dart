@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:fpdt/fpdt.dart';
 import 'package:fpdt/either.dart' as Ei;
+import 'package:fpdt/reader.dart' as Rd;
+import 'package:fpdt/reader_task.dart' as RT;
 import 'package:fpdt/reader_task_either.dart' as RTE;
 import 'package:fpdt/task.dart' as T;
 import 'package:fpdt/task_either.dart' as TE;
@@ -51,6 +53,16 @@ StateReaderTaskEither<S, C, L, R> fromReaderTaskEither<S, C, L, R>(
 /// Returns a [StateReaderTaskEither] that resolves to the given [Either].
 StateReaderTaskEither<S, C, L, R> fromEither<S, C, L, R>(Either<L, R> either) =>
     either.chain(Ei.fold(left, right));
+
+/// Transforms a [Reader] into a [StateReaderTaskEither], wrapping the result in an [Right].
+StateReaderTaskEither<S, C, L, R> fromReader<S, C, L, R>(Reader<C, R> f) =>
+    (s) => RTE.fromReader(f.chain(Rd.map((r) => tuple2(r, s))));
+
+/// Transforms a [ReaderTask] into a [StateReaderTaskEither], wrapping the
+/// result in an [Right].
+StateReaderTaskEither<S, C, L, R> fromReaderTask<S, C, L, R>(
+        ReaderTask<C, R> f) =>
+    (s) => RTE.fromReaderTask(f.chain(RT.map((r) => tuple2(r, s))));
 
 /// Transforms a [Task] into a [StateReaderTaskEither], wrapping the result in an [Right].
 StateReaderTaskEither<S, C, L, R> fromTask<S, C, L, R>(Task<R> task) =>
@@ -110,6 +122,18 @@ StateReaderTaskEither<S, C, L, R2> Function(StateReaderTaskEither<S, C, L, R1>)
   Either<L, R2> Function(R1 a) f,
 ) =>
         flatMap(f.compose(fromEither));
+
+StateReaderTaskEither<S, C, L, R2> Function(StateReaderTaskEither<S, C, L, R1>)
+    flatMapReader<S, C, L, R1, R2>(
+  Reader<C, R2> Function(R1 a) f,
+) =>
+        flatMap(f.compose(fromReader));
+
+StateReaderTaskEither<S, C, L, R2> Function(StateReaderTaskEither<S, C, L, R1>)
+    flatMapReaderTask<S, C, L, R1, R2>(
+  ReaderTask<C, R2> Function(R1 a) f,
+) =>
+        flatMap(f.compose(fromReaderTask));
 
 StateReaderTaskEither<S, C, L, R2> Function(StateReaderTaskEither<S, C, L, R1>)
     flatMapReaderTaskEither<S, C, L, R1, R2>(

@@ -80,6 +80,14 @@ ReaderTaskEither<C, L, R2> Function(
 ReaderTaskEither<C, L, R> fromEither<C, L, R>(Either<L, R> either) =>
     (r) => TE.fromEither(either);
 
+/// Transforms a [Reader] into a [ReaderTaskEither], wrapping the result in an [Right].
+ReaderTaskEither<C, L, R> fromReader<C, L, R>(Reader<C, R> f) =>
+    (r) => TE.right(f(r));
+
+/// Transforms a [ReaderTask] into a [ReaderTaskEither], wrapping the result in an [Right].
+ReaderTaskEither<C, L, R> fromReaderTask<C, L, R>(ReaderTask<C, R> f) =>
+    f.compose(TE.fromTask);
+
 /// Transforms a [Task] into a [ReaderTaskEither], wrapping the result in an [Right].
 ReaderTaskEither<C, L, R> fromTask<C, L, R>(Task<R> task) =>
     (r) => TE.fromTask(task);
@@ -129,6 +137,18 @@ ReaderTaskEither<C, L, R2> Function(ReaderTaskEither<C, L, R1>)
   ReaderTaskEither<C, L, R2> Function(R1 a) f,
 ) =>
         RT.flatMap(E.fold(left, f));
+
+ReaderTaskEither<C, L, R2> Function(ReaderTaskEither<C, L, R1>)
+    flatMapReader<C, L, R1, R2>(
+  Reader<C, R2> Function(R1 a) f,
+) =>
+        flatMap(f.compose(fromReader));
+
+ReaderTaskEither<C, L, R2> Function(ReaderTaskEither<C, L, R1>)
+    flatMapReaderTask<C, L, R1, R2>(
+  ReaderTask<C, R2> Function(R1 a) f,
+) =>
+        flatMap(f.compose(fromReaderTask));
 
 ReaderTaskEither<C, L, R2> Function(ReaderTaskEither<C, L, R1>)
     flatMapTask<C, L, R1, R2>(
