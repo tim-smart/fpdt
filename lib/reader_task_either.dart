@@ -257,3 +257,23 @@ ReaderTaskEither<C, L, R> Function(ReaderTaskEither<C, L, R>) tap<C, L, R>(
 ReaderTaskEither<C, L, R> Function(ReaderTaskEither<C, L, R>) delay<C, L, R>(
         Duration d) =>
     (f) => f.compose(TE.delay(d));
+
+ReaderTaskEither<C, L, IList<R>> Function(Iterable<A>)
+    traverseIterable<A, C, L, R>(
+  ReaderTaskEither<C, L, R> Function(A a) f,
+) =>
+        (as) => (c) => as.map((a) => f(a)(c)).chain(TE.sequence);
+
+ReaderTaskEither<C, L, IList<R>> Function(Iterable<A>)
+    traverseIterableSeq<A, C, L, R>(
+  ReaderTaskEither<C, L, R> Function(A a) f,
+) =>
+        (as) => (c) => as.map((a) => f(a)(c)).chain(TE.sequenceSeq);
+
+ReaderTaskEither<C, L, IList<R>> sequence<C, L, R>(
+        Iterable<ReaderTaskEither<C, L, R>> arr) =>
+    arr.chain(traverseIterable(identity));
+
+ReaderTaskEither<C, L, IList<R>> sequenceSeq<C, L, R>(
+        Iterable<ReaderTaskEither<C, L, R>> arr) =>
+    arr.chain(traverseIterableSeq(identity));
