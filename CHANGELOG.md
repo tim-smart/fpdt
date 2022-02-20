@@ -1,3 +1,7 @@
+## 0.0.42
+
+- Add more Reader\* constructors
+
 ## 0.0.41
 
 - Clean up `ReaderTaskEither` API
