@@ -156,16 +156,16 @@ void main() {
   group('tryCatch', () {
     test('resolves to a right when there is no error', () async {
       final r = await tryCatch(
-        (StateEnum s) => (Context c) => c.fetch(),
-        (_) => (_) => (err, stack) => 'fail',
+        () => Future.value(123),
+        (err, stack) => 'fail',
       )(StateEnum.one)(kContext)();
       expect(r, E.right(tuple2(123, StateEnum.one)));
     });
 
     test('resolves to a left when there is an error', () async {
       final r = await tryCatch(
-        (StateEnum s) => (Context c) async => throw 'error',
-        (s) => (c) => (err, stack) => 'fail',
+        () => throw 'error',
+        (err, stack) => 'fail',
       )(StateEnum.one)(kContext)();
       expect(r, E.left('fail'));
     });
@@ -189,8 +189,8 @@ void main() {
     test('runs the function on right', () async {
       final r = await right<StateEnum, Context, String, int>(123)
           .chain(flatMap(tryCatchK(
-        (s) => (c) => (i) => c.fetch().then((r) => i + r),
-        (s) => (c) => (i) => (err, stack) => 'fail',
+        (i) => i * 2,
+        (err, stack) => 'fail',
       )))(StateEnum.one)(kContext)();
 
       expect(r, E.right(tuple2(246, StateEnum.one)));
@@ -198,8 +198,8 @@ void main() {
 
     test('does nothing on left', () async {
       final r = await left('left').chain(flatMap(tryCatchK(
-        (s) => (_) => (i) async => i * 2,
-        (s) => (_) => (_) => (err, stack) => 'fail',
+        (i) async => i * 2,
+        (err, stack) => 'fail',
       )))(StateEnum.one)(kContext)();
       expect(r, E.left('left'));
     });
