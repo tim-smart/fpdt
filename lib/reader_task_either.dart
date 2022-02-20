@@ -93,14 +93,14 @@ ReaderTaskEither<C, L, R> fromTaskEither<C, L, R>(
 /// If it throws an error, the the error is passed to `onError`, which determines
 /// the [Left] value.
 ReaderTaskEither<C, L, R> tryCatch<C, L, R>(
-  FutureOr<R> Function(C) task,
-  L Function(dynamic err, StackTrace stackTrace) Function(C c) onError,
+  FutureOr<R> Function() task,
+  L Function(dynamic err, StackTrace stackTrace) onError,
 ) =>
     (r) => () async {
           try {
-            return E.right(await task(r));
+            return E.right(await task());
           } catch (err, stack) {
-            return E.left(onError(r)(err, stack));
+            return E.left(onError(err, stack));
           }
         };
 
@@ -206,25 +206,23 @@ ReaderTask<C, R> Function(ReaderTaskEither<C, L, R> taskEither)
 
 /// A variant of [tryCatch] that accepts an external parameter.
 ReaderTaskEither<C, L, R> Function(A value) tryCatchK<C, A, L, R>(
-  FutureOr<R> Function(A value) Function(C) task,
-  L Function(dynamic err, StackTrace stackTrace) Function(A a) Function(C c)
-      onError,
+  FutureOr<R> Function(A value) task,
+  L Function(dynamic err, StackTrace stackTrace) onError,
 ) =>
-    (a) => tryCatch((c) => task(c)(a), (c) => onError(c)(a));
+    (a) => tryCatch(() => task(a), onError);
 
 /// A variant of [tryCatch] that accepts two external parameters.
 ReaderTaskEither<C, L, R> Function(A a, B b) tryCatchK2<A, B, C, L, R>(
-  FutureOr<R> Function(A a, B b) Function(C) task,
-  L Function(dynamic err, StackTrace stackTrace) Function(C c) onError,
+  FutureOr<R> Function(A a, B b) task,
+  L Function(dynamic err, StackTrace stackTrace) onError,
 ) =>
-    (a, b) => tryCatch((c) => task(c)(a, b), onError);
+    (a, b) => tryCatch(() => task(a, b), onError);
 
 /// A chainable variant of [tryCatchK].
 ReaderTaskEither<C, L, R2> Function(ReaderTaskEither<C, L, R>)
     chainTryCatchK<C, L, R, R2>(
-  FutureOr<R2> Function(R value) Function(C c) task,
-  L Function(dynamic err, StackTrace stackTrace) Function(R r) Function(C c)
-      onError,
+  FutureOr<R2> Function(R value) task,
+  L Function(dynamic err, StackTrace stackTrace) onError,
 ) =>
         flatMap(tryCatchK(task, onError));
 

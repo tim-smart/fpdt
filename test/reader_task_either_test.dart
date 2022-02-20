@@ -117,16 +117,16 @@ void main() {
   group('tryCatch', () {
     test('resolves to a right when there is no error', () async {
       final r = await tryCatch(
-        (Context c) => c.fetch(),
-        (_) => (err, stack) => 'fail',
+        () => Future.value(123),
+        (err, stack) => 'fail',
       )(kContext)();
       expect(r, E.right(123));
     });
 
     test('resolves to a left when there is an error', () async {
       final r = await tryCatch(
-        (Context c) async => throw 'error',
-        (c) => (err, stack) => 'fail',
+        () async => throw 'error',
+        (err, stack) => 'fail',
       )(kContext)();
       expect(r, E.left('fail'));
     });
@@ -147,8 +147,8 @@ void main() {
   group('tryCatchK', () {
     test('runs the function on right', () async {
       final r = await right<Context, String, int>(123).chain(flatMap(tryCatchK(
-        (c) => (i) => c.fetch().then((r) => i + r),
-        (_) => (_) => (err, stack) => 'fail',
+        (i) => i * 2,
+        (err, stack) => 'fail',
       )))(kContext)();
 
       expect(r, E.right(246));
@@ -156,8 +156,8 @@ void main() {
 
     test('does nothing on left', () async {
       final r = await left('left').chain(flatMap(tryCatchK(
-        (_) => (i) async => i * 2,
-        (_) => (_) => (err, stack) => 'fail',
+        (i) async => i * 2,
+        (err, stack) => 'fail',
       )))(kContext)();
       expect(r, E.left('left'));
     });
