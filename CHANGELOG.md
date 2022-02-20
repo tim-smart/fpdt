@@ -1,3 +1,7 @@
+## 0.0.43
+
+- Add traversal to `ReaderTaskEither`
+
 ## 0.0.42
 
 - Add more Reader\* constructors
