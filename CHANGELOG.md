@@ -1,3 +1,7 @@
+## 0.0.40
+
+- Clean up `StateReaderTaskEither` API
+
 ## 0.0.39
 
 - Add `filter` to `StateReaderTaskEither`
