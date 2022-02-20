@@ -155,46 +155,40 @@ ReaderTaskEither<C, L, S> Function(S s) execute<S, C, L, R>(
 /// If it throws an error, the the error is passed to `onError`, which determines
 /// the [Left] value.
 StateReaderTaskEither<S, C, L, R> tryCatch<S, C, L, R>(
-  FutureOr<R> Function(C) Function(S) task,
-  L Function(dynamic err, StackTrace stackTrace) Function(C c) Function(S)
-      onError,
+  FutureOr<R> Function() task,
+  L Function(dynamic err, StackTrace stackTrace) onError,
 ) =>
     (s) => (r) => () async {
           try {
-            return Ei.right(tuple2(await task(s)(r), s));
+            return Ei.right(tuple2(await task(), s));
           } catch (err, stack) {
-            return Ei.left(onError(s)(r)(err, stack));
+            return Ei.left(onError(err, stack));
           }
         };
 
 /// A variant of [tryCatch] that accepts an external parameter.
 StateReaderTaskEither<S, C, L, R> Function(A value) tryCatchK<S, C, A, L, R>(
-  FutureOr<R> Function(A value) Function(C) Function(S) task,
-  L Function(dynamic err, StackTrace stackTrace) Function(A a) Function(C c)
-          Function(S s)
-      onError,
+  FutureOr<R> Function(A value) task,
+  L Function(dynamic err, StackTrace stackTrace) onError,
 ) =>
     (a) => tryCatch(
-          (s) => (c) => task(s)(c)(a),
-          (s) => (c) => onError(s)(c)(a),
+          () => task(a),
+          onError,
         );
 
 /// A variant of [tryCatch] that accepts two external parameters.
 StateReaderTaskEither<S, C, L, R> Function(A a, B b)
     tryCatchK2<A, B, S, C, L, R>(
-  FutureOr<R> Function(A a, B b) Function(C) Function(S) task,
-  L Function(dynamic err, StackTrace stackTrace) Function(C c) Function(S s)
-      onError,
+  FutureOr<R> Function(A a, B b) task,
+  L Function(dynamic err, StackTrace stackTrace) onError,
 ) =>
-        (a, b) => tryCatch((s) => (c) => task(s)(c)(a, b), onError);
+        (a, b) => tryCatch(() => task(a, b), onError);
 
 /// A chainable variant of [tryCatchK].
 StateReaderTaskEither<S, C, L, R2> Function(StateReaderTaskEither<S, C, L, R>)
     chainTryCatchK<S, C, L, R, R2>(
-  FutureOr<R2> Function(R value) Function(C c) Function(S s) task,
-  L Function(dynamic err, StackTrace stackTrace) Function(R r) Function(C c)
-          Function(S s)
-      onError,
+  FutureOr<R2> Function(R value) task,
+  L Function(dynamic err, StackTrace stackTrace) onError,
 ) =>
         flatMap(tryCatchK(task, onError));
 
