@@ -1,3 +1,7 @@
+## 0.0.41
+
+- Clean up `ReaderTaskEither` API
+
 ## 0.0.40
 
 - Clean up `StateReaderTaskEither` API
