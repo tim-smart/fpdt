@@ -1,3 +1,7 @@
+## 0.0.44
+
+- Add `flatMapS` to `StateReaderTaskEither`
+
 ## 0.0.43
 
 - Add traversal to `ReaderTaskEither`
