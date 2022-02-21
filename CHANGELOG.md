@@ -1,3 +1,7 @@
+## 0.0.46
+
+- Add `mapLeft` to either variants
+
 ## 0.0.45
 
 - Add `UnwrapException` to either
