@@ -6,7 +6,7 @@ import 'package:fpdt/fpdt.dart';
 
 /// A state machine for [StateReaderTaskEither].
 class StateRTEMachine<S, C, L> {
-  StateRTEMachine(this._state, this._context);
+  StateRTEMachine(this._state, this.context);
 
   S _state;
   S get state => _state;
@@ -17,7 +17,7 @@ class StateRTEMachine<S, C, L> {
     return _controller!.stream;
   }
 
-  final C _context;
+  final C context;
 
   final _queue = Queue<
       Tuple2<StateReaderTaskEither<S, C, L, dynamic>,
@@ -59,7 +59,7 @@ class StateRTEMachine<S, C, L> {
 
   Future<Either<L, Tuple2<R, S>>> _run<R>(
       StateReaderTaskEither<S, C, L, R> state) async {
-    final result = await state(_state)(_context)();
+    final result = await state(_state)(context)();
 
     _state = result.chain(E.fold(
       (_) => _state,
