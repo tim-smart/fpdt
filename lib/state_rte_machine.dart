@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:collection';
 
 import 'package:fpdt/either.dart' as E;
 import 'package:fpdt/fpdt.dart';
@@ -19,9 +18,8 @@ class StateRTEMachine<S, C, L> {
 
   final C context;
 
-  final _queue = Queue<
-      Tuple2<StateReaderTaskEither<S, C, L, dynamic>,
-          Completer<Either<L, Tuple2<dynamic, S>>>>>();
+  late Future<Either<L, Tuple2<dynamic, S>>> _future =
+      Future.value(E.right(tuple2(null, _state)));
 
   var _closed = false;
   bool get closed => _closed;
@@ -33,16 +31,20 @@ class StateRTEMachine<S, C, L> {
       run(state).then(E.map((t) => t.second));
 
   Future<Either<L, Tuple2<R, S>>> run<R>(
-      StateReaderTaskEither<S, C, L, R> state) async {
-    if (_closed) throw 'closed';
-
-    if (_queue.isNotEmpty) {
-      final completer = Completer<Either<L, Tuple2<R, S>>>.sync();
-      _queue.add(tuple2(state, completer));
-      return completer.future;
+    StateReaderTaskEither<S, C, L, R> state,
+  ) {
+    if (_closed) {
+      return Future.error('closed');
     }
 
-    return _run(state);
+    final future = _future.then((_) => state(_state)(context)());
+
+    _future = future.then(
+      _handleResult,
+      onError: (err, st) => tuple2(null, _state),
+    );
+
+    return future;
   }
 
   Future<Either<L, IList<Tuple2<dynamic, S>>>> sequence(
@@ -57,23 +59,14 @@ class StateRTEMachine<S, C, L> {
           Iterable<StateReaderTaskEither<S, C, L, dynamic>> arr) =>
       sequence(arr).then(E.map((arr) => arr.map((t) => t.second).toIList()));
 
-  Future<Either<L, Tuple2<R, S>>> _run<R>(
-      StateReaderTaskEither<S, C, L, R> state) async {
-    final result = await state(_state)(context)();
-
+  Either<L, Tuple2<R, S>> _handleResult<R>(Either<L, Tuple2<R, S>> result) {
     _state = result.chain(E.fold(
       (_) => _state,
       (r) => r.second,
     ));
+
     if (E.isRight(result)) {
       _controller?.add(_state);
-    }
-
-    if (_queue.isNotEmpty) {
-      final next = _queue.removeFirst();
-      _run(next.first).then(next.second.complete);
-    } else {
-      _maybeClose(true);
     }
 
     return result;
@@ -82,12 +75,6 @@ class StateRTEMachine<S, C, L> {
   void close() {
     if (_closed) return;
     _closed = true;
-    _maybeClose(_queue.isEmpty);
-  }
-
-  void _maybeClose(bool queueEmpty) {
-    if (_closed && queueEmpty) {
-      _controller?.close();
-    }
+    _future.whenComplete(() => _controller?.close());
   }
 }
