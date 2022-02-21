@@ -1,3 +1,7 @@
+## 0.0.48
+
+- Expose context / env in `StateRTEMachine`
+
 ## 0.0.47
 
 - Add `fromPredicate`\* functions to more monads
