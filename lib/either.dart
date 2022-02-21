@@ -7,9 +7,18 @@ Either<L, R> left<L, R>(L value) => Left(value);
 /// Returns an [Either] that resolves to a [Right] value.
 Either<L, R> right<L, R>(R value) => Right(value);
 
+class UnwrapException<L> implements Exception {
+  UnwrapException(this.value);
+
+  final L value;
+
+  @override
+  String toString() => value.toString();
+}
+
 /// Unwraps the value of an [Either], throwing if the value is [Left].
 R unwrap<R>(Either<dynamic, R> either) => either._fold(
-      (l) => throw "",
+      (l) => throw UnwrapException(l),
       identity,
     );
 
