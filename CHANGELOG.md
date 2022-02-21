@@ -1,3 +1,7 @@
+## 0.0.49
+
+- `StateRTEMachine` refactor
+
 ## 0.0.48
 
 - Expose context / env in `StateRTEMachine`
