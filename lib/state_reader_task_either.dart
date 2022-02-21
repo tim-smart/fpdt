@@ -105,6 +105,11 @@ StateReaderTaskEither<S, C, L, R2> Function(StateReaderTaskEither<S, C, L, R1>)
             ReaderTaskEither<C, L, R2> Function(S s) Function(R1 a) f) =>
         flatMap((a) => (s) => f(a)(s).chain(RTE.map((b) => tuple2(b, s))));
 
+StateReaderTaskEither<S, C, L, void> Function(StateReaderTaskEither<S, C, L, R>)
+    flatMapS<S, C, L, R>(
+            ReaderTaskEither<C, L, S> Function(S s) Function(R a) f) =>
+        flatMap((a) => f(a).compose(RTE.map((s) => tuple2(null, s))));
+
 StateReaderTaskEither<S, C, L, R2> Function(StateReaderTaskEither<S, C, L, R1>)
     flatMapTask<S, C, L, R1, R2>(
   Task<R2> Function(R1 a) f,
