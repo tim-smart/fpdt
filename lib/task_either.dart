@@ -312,6 +312,19 @@ TaskEither<L, R2> Function(TaskEither<L, R> taskEither) map<L, R, R2>(
 ) =>
     T.map(E.map(f));
 
+/// Transform a [TaskEither]'s value if it is [Left].
+///
+/// ```
+/// expect(
+///   await left('fail').chain(mapLeft((s) => '${s}ure'))(),
+///   E.left('failure'),
+/// );
+/// ```
+TaskEither<L2, R> Function(TaskEither<L1, R> taskEither) mapLeft<L1, L2, R>(
+  L2 Function(L1 value) f,
+) =>
+    T.map(E.mapLeft(f));
+
 /// Run a side effect on a [Right] value. The side effect can optionally return
 /// a [Future].
 TaskEither<L, R> Function(TaskEither<L, R> taskEither) tap<L, R>(

@@ -132,6 +132,14 @@ ReaderTaskEither<C, L, R2> Function(ReaderTaskEither<C, L, R1>)
 
 /// Composes computations in sequence, using the return value from the previous
 /// computation.
+ReaderTaskEither<C, L2, R> Function(ReaderTaskEither<C, L1, R>)
+    mapLeft<C, L1, L2, R>(
+  L2 Function(L1 a) f,
+) =>
+        RT.map(E.mapLeft(f));
+
+/// Composes computations in sequence, using the return value from the previous
+/// computation.
 ReaderTaskEither<C, L, R2> Function(ReaderTaskEither<C, L, R1>)
     flatMap<C, L, R1, R2>(
   ReaderTaskEither<C, L, R2> Function(R1 a) f,

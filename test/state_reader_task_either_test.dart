@@ -84,6 +84,24 @@ void main() {
     });
   });
 
+  group('mapLeft', () {
+    test('transforms the left value', () async {
+      final r = left('fail').chain(mapLeft((s) => '${s}ure'));
+      expect(
+        await r(StateEnum.one)(kContext)(),
+        E.left('failure'),
+      );
+    });
+
+    test('does nothing on right', () async {
+      final r = right(123).chain(mapLeft((l) => 'fail'));
+      expect(
+        await r(StateEnum.one)(kContext)(),
+        E.right(tuple2(123, StateEnum.one)),
+      );
+    });
+  });
+
   group('flatMap', () {
     test('transforms the StateReaderTaskEither', () async {
       final r =

@@ -74,7 +74,20 @@ Either<R, L> swap<L, R>(Either<L, R> either) => either._fold(right, left);
 Either<L, NR> Function(Either<L, R> either) map<L, R, NR>(
   NR Function(R value) f,
 ) =>
-    flatMap((r) => right(f(r)));
+    fold(left, f.compose(right));
+
+/// Transforms the wrapped value if the [Either] is a [Left].
+///
+/// ```
+/// expect(
+///   left('fail').chain(mapLeft((s) => '${s}ure')),
+///   equals(left('failure')),
+/// );
+/// ```
+Either<L2, R> Function(Either<L1, R> either) mapLeft<L1, L2, R>(
+  L2 Function(L1 value) f,
+) =>
+    fold(f.compose(left), right);
 
 /// Perform a side effect on the [Either], if it is a [Right].
 ///

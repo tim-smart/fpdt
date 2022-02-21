@@ -77,6 +77,10 @@ StateReaderTaskEither<S, R, E, B> Function(StateReaderTaskEither<S, R, E, A>)
     map<S, R, E, A, B>(B Function(A a) f) =>
         (fa) => fa.compose(RTE.map((t) => tuple2(f(t.first), t.second)));
 
+StateReaderTaskEither<S, C, L2, R> Function(StateReaderTaskEither<S, C, L1, R>)
+    mapLeft<S, C, L1, L2, R>(L2 Function(L1 a) f) =>
+        (fa) => fa.compose(RTE.mapLeft(f));
+
 StateReaderTaskEither<S, R, E, IList<B>> Function(
     Iterable<A>) traverseIterable<S, R, E, A, B>(
   StateReaderTaskEither<S, R, E, B> Function(A a) f,
