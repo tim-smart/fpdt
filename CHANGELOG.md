@@ -1,3 +1,7 @@
+## 0.0.47
+
+- Add `fromPredicate`\* functions to more monads
+
 ## 0.0.46
 
 - Add `mapLeft` to either variants
