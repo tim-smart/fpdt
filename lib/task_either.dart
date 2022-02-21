@@ -37,6 +37,29 @@ Future<void> Function(TaskEither<L, dynamic> taskEither) toFutureVoid<L>(
 TaskEither<L, R2> Function(TaskEither<L, R> taskEither) pure<L, R, R2>(R2 a) =>
     (taskEither) => right(a);
 
+/// If the function returns true, then the resolved [Either] will be a [Right]
+/// containing the given `value`.
+///
+/// If the function returns `false`, then the resolved [Either] will be a [Left]
+/// containing the value returned from executing the `orElse` function.
+TaskEither<L, R> fromPredicate<L, R>(
+  R r,
+  bool Function(R r) f,
+  L Function(R r) orElse,
+) =>
+    fromEither(E.fromPredicate(r, f, orElse));
+
+/// If the function returns true, then the resolved [Either] will be a [Right]
+/// containing the given `value`.
+///
+/// If the function returns `false`, then the resolved [Either] will be a [Left]
+/// containing the value returned from executing the `orElse` function.
+TaskEither<L, R> Function(R r) fromPredicateK<L, R>(
+  bool Function(R r) f,
+  L Function(R r) orElse,
+) =>
+    (r) => fromPredicate(r, f, orElse);
+
 /// Create a [TaskEither] from an [Option]. If it is [None], then the
 /// [TaskEither] will resolve to a [Left] containing the result from executing
 /// `onNone`.

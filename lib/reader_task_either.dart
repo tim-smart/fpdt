@@ -43,6 +43,29 @@ Future<void> Function(C) Function(ReaderTaskEither<C, L, dynamic>)
 ReaderTaskEither<C, L, R2> Function(ReaderTaskEither<C, L, R>)
     pure<C, L, R, R2>(R2 a) => (readerTaskEither) => right(a);
 
+/// If the function returns true, then the resolved [Either] will be a [Right]
+/// containing the given `value`.
+///
+/// If the function returns `false`, then the resolved [Either] will be a [Left]
+/// containing the value returned from executing the `orElse` function.
+ReaderTaskEither<C, L, R> fromPredicate<C, L, R>(
+  R r,
+  bool Function(R r) f,
+  L Function(R r) orElse,
+) =>
+    fromEither(E.fromPredicate(r, f, orElse));
+
+/// If the function returns true, then the resolved [Either] will be a [Right]
+/// containing the given `value`.
+///
+/// If the function returns `false`, then the resolved [Either] will be a [Left]
+/// containing the value returned from executing the `orElse` function.
+ReaderTaskEither<C, L, R> Function(R r) fromPredicateK<C, L, R>(
+  bool Function(R r) f,
+  L Function(R r) orElse,
+) =>
+    (r) => fromPredicate(r, f, orElse);
+
 /// Create a [ReaderTaskEither] from an [Option]. If it is [None], then the
 /// [ReaderTaskEither] will resolve to a [Left] containing the result from executing
 /// `onNone`.

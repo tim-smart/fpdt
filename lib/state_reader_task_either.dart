@@ -45,6 +45,29 @@ StateReaderTaskEither<S, C, L, C> ask<S, C, L>() =>
 StateReaderTaskEither<S, C, L, R> asks<S, C, L, R>(R Function(C c) f) =>
     (s) => (c) => TE.right(tuple2(f(c), s));
 
+/// If the function returns true, then the resolved [Either] will be a [Right]
+/// containing the given `value`.
+///
+/// If the function returns `false`, then the resolved [Either] will be a [Left]
+/// containing the value returned from executing the `orElse` function.
+StateReaderTaskEither<S, C, L, R> fromPredicate<S, C, L, R>(
+  R r,
+  bool Function(R r) f,
+  L Function(R r) orElse,
+) =>
+    fromEither(Ei.fromPredicate(r, f, orElse));
+
+/// If the function returns true, then the resolved [Either] will be a [Right]
+/// containing the given `value`.
+///
+/// If the function returns `false`, then the resolved [Either] will be a [Left]
+/// containing the value returned from executing the `orElse` function.
+StateReaderTaskEither<S, C, L, R> Function(R r) fromPredicateK<S, C, L, R>(
+  bool Function(R r) f,
+  L Function(R r) orElse,
+) =>
+    (r) => fromPredicate(r, f, orElse);
+
 /// Returns a [StateReaderTaskEither] that resolves to the given [ReaderTaskEither].
 StateReaderTaskEither<S, C, L, R> fromReaderTaskEither<S, C, L, R>(
         ReaderTaskEither<C, L, R> rte) =>

@@ -102,6 +102,21 @@ TaskOption<B> Function(TaskOption<A> taskOption) pure<A, B>(B b) =>
 /// Returns a [TaskOption] that resolves to the given [Option].
 TaskOption<A> fromOption<A>(Option<A> option) => T.value(option);
 
+/// Returns a [Some] or [None] if the predicate returns `true` or `false`
+/// respectively.
+TaskOption<A> fromPredicate<A>(
+  A value,
+  bool Function(A value) predicate,
+) =>
+    T.value(O.fromPredicate(value, predicate));
+
+/// Returns a [Some] or [None] if the predicate returns `true` or `false`
+/// respectively.
+TaskOption<A> Function(A a) fromPredicateK<A>(
+  bool Function(A value) predicate,
+) =>
+    (a) => fromPredicate(a, predicate);
+
 /// Returns a [TaskOption] that resolves to an [Option] from the given [Either].
 /// [Left] values become [None], [Right] values are wrapped in [Some].
 TaskOption<R> fromEither<L, R>(Either<L, R> either) =>
