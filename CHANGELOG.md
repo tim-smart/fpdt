@@ -1,3 +1,7 @@
+## 0.0.45
+
+- Add `UnwrapException` to either
+
 ## 0.0.44
 
 - Add `flatMapS` to `StateReaderTaskEither`
