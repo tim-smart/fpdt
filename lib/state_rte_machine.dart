@@ -22,7 +22,7 @@ class StateRTEMachine<S, C, L> implements StateMachineBase<S> {
 
   final C context;
 
-  late var _future = Future.value();
+  var _future = Future.value();
 
   var _closed = false;
   bool get closed => _closed;
