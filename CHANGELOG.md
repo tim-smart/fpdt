@@ -1,3 +1,7 @@
+## 0.0.52
+
+- Add `tapLeft`
+
 ## 0.0.51
 
 - State machine docs and internal refactor
