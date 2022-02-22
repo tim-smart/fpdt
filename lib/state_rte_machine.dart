@@ -2,15 +2,20 @@ import 'dart:async';
 
 import 'package:fpdt/either.dart' as E;
 import 'package:fpdt/fpdt.dart';
+import 'package:fpdt/state_machine.dart';
 
 /// A state machine for [StateReaderTaskEither].
-class StateRTEMachine<S, C, L> {
+class StateRTEMachine<S, C, L> implements StateMachineBase<S> {
   StateRTEMachine(this._state, this.context);
 
   S _state;
+
+  @override
   S get state => _state;
 
   StreamController<S>? _controller;
+
+  @override
   Stream<S> get stream {
     _controller ??= StreamController.broadcast(sync: true);
     return _controller!.stream;
@@ -72,6 +77,7 @@ class StateRTEMachine<S, C, L> {
     return result;
   }
 
+  @override
   void close() {
     if (_closed) return;
     _closed = true;
