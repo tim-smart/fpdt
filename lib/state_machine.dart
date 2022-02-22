@@ -3,8 +3,13 @@ import 'dart:async';
 import 'package:fpdt/fpdt.dart';
 
 abstract class StateMachineBase<S> {
+  /// A [Stream] of state changes
   Stream<S> get stream;
+
+  /// The current state ([S]) of the machine
   S get state;
+
+  /// Closes the internal [StreamController]
   void close();
 }
 
@@ -25,6 +30,7 @@ class StateMachine<S> implements StateMachineBase<S> {
     return _controller!.stream;
   }
 
+  /// Run the computation and returns a tuple of the result and state.
   Tuple2<A, S> run<A>(State<S, A> state) {
     final next = state(_state);
     _state = next.second;
@@ -32,13 +38,21 @@ class StateMachine<S> implements StateMachineBase<S> {
     return next;
   }
 
+  /// Run the computation and returns the result only.
   A evaluate<A>(State<S, A> state) => run(state).first;
+
+  /// Run the computation and returns the state only.
   S execute(State<S, dynamic> state) => run(state).second;
 
+  /// Run the iterable of [State]'s in sequence
   IList<Tuple2<dynamic, S>> sequence(Iterable<State<S, dynamic>> arr) =>
       arr.map(run).toIList();
+
+  /// Run the iterable of [State]'s in sequence, only returning the results.
   IList<dynamic> evaluateSeq(Iterable<State<S, dynamic>> arr) =>
       arr.map(run).map((t) => t.first).toIList();
+
+  /// Run the iterable of [State]'s in sequence, only returning the new states.
   IList<S> executeSeq(Iterable<State<S, dynamic>> arr) =>
       arr.map(run).map((t) => t.second).toIList();
 

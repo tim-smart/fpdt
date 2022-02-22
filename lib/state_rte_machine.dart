@@ -20,19 +20,25 @@ class StateRTEMachine<S, C, L> implements StateMachineBase<S> {
     return _controller!.stream;
   }
 
+  /// The context / environment passed to the [StateReaderTaskEither]'s.
   final C context;
 
   var _future = Future.value();
 
   var _closed = false;
+
+  /// `true` if [close] has been called
   bool get closed => _closed;
 
+  /// Run the computation and returns the result only.
   Future<Either<L, R>> evaluate<R>(StateReaderTaskEither<S, C, L, R> state) =>
       run(state).then(E.map((t) => t.first));
 
+  /// Run the computation and returns the state only.
   Future<Either<L, S>> execute<R>(StateReaderTaskEither<S, C, L, R> state) =>
       run(state).then(E.map((t) => t.second));
 
+  /// Run the computation and returns a tuple of the result and state.
   Future<Either<L, Tuple2<R, S>>> run<R>(
     StateReaderTaskEither<S, C, L, R> state,
   ) {
@@ -50,14 +56,17 @@ class StateRTEMachine<S, C, L> implements StateMachineBase<S> {
     return future;
   }
 
+  /// Run the computations in sequence
   Future<Either<L, IList<Tuple2<dynamic, S>>>> sequence(
           Iterable<StateReaderTaskEither<S, C, L, dynamic>> arr) =>
       Future.wait(arr.map(run)).then(E.sequence);
 
+  /// Run the computations in sequence, only returning the results
   Future<Either<L, IList<dynamic>>> evaluateSeq(
           Iterable<StateReaderTaskEither<S, C, L, dynamic>> arr) =>
       sequence(arr).then(E.map((arr) => arr.map((t) => t.first).toIList()));
 
+  /// Run the computations in sequence, only returning the new states
   Future<Either<L, IList<S>>> executeSeq(
           Iterable<StateReaderTaskEither<S, C, L, dynamic>> arr) =>
       sequence(arr).then(E.map((arr) => arr.map((t) => t.second).toIList()));
