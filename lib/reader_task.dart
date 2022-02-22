@@ -13,7 +13,7 @@ ReaderTask<R, A> fromReader<R, A>(Reader<R, A> f) => asks(f);
 
 ReaderTask<R, A> fromTask<R, A>(Task<A> task) => (r) => task;
 
-ReaderTask<R, B> Function(ReaderTask<R, A> task) call<R, A, B>(
+ReaderTask<R, B> Function(ReaderTask<R, A> task) replace<R, A, B>(
   ReaderTask<R, B> chain,
 ) =>
     flatMap((_) => chain);

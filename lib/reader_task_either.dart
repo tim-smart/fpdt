@@ -147,10 +147,10 @@ ReaderTask<R, B> Function(ReaderTaskEither<R, L, A>) fold<R, L, A, B>(
     RT.map(E.fold(onLeft, onRight));
 
 ReaderTaskEither<C, L, R2> Function(ReaderTaskEither<C, L, R1> task)
-    call<C, L, R1, R2>(
+    replace<C, L, R1, R2>(
   ReaderTaskEither<C, L, R2> chain,
 ) =>
-        RT.call(chain);
+        RT.replace(chain);
 
 /// Composes computations in sequence, using the return value from the previous
 /// computation.

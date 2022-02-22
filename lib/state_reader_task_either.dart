@@ -98,10 +98,10 @@ StateReaderTaskEither<S, C, L, R> fromTaskEither<S, C, L, R>(
     (s) => RTE.fromTaskEither(taskEither.chain(TE.map((a) => tuple2(a, s))));
 
 StateReaderTaskEither<S, C, L, R2> Function(StateReaderTaskEither<S, C, L, R1>)
-    call<S, C, L, R1, R2>(
+    replace<S, C, L, R1, R2>(
   StateReaderTaskEither<S, C, L, R2> chain,
 ) =>
-        (fa) => (s) => fa(s).chain(RTE.call(chain(s)));
+        (fa) => (s) => fa(s).chain(RTE.replace(chain(s)));
 
 StateReaderTaskEither<S, R, E, B> Function(StateReaderTaskEither<S, R, E, A>)
     map<S, R, E, A, B>(B Function(A a) f) =>

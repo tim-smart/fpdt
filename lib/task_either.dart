@@ -188,6 +188,11 @@ TaskEither<L, R2> Function(TaskEither<L, R> taskEither) flatMap<L, R, R2>(
 TaskEither<L, R2> Function(TaskEither<L, R1> task) call<L, R1, R2>(
   TaskEither<L, R2> chain,
 ) =>
+    flatMap((_) => chain);
+
+TaskEither<L, R2> Function(TaskEither<L, R1> task) replace<L, R1, R2>(
+  TaskEither<L, R2> chain,
+) =>
     T.call(chain);
 
 /// If the given [TaskEither] is an [Right], then unwrap the result and transform
