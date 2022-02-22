@@ -1,3 +1,7 @@
+## 0.0.53
+
+- Rename `call` to `replace`
+
 ## 0.0.52
 
 - Add `tapLeft`
