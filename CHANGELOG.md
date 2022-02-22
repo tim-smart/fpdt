@@ -1,3 +1,7 @@
+## 0.0.51
+
+- State machine docs and internal refactor
+
 ## 0.0.50
 
 - Add riverpod helpers for state machines
