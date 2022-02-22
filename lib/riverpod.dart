@@ -1,19 +1,17 @@
 import 'package:fpdt/fpdt.dart';
 
 /// Helper for creating riverpod providers
-SM Function(SM sm) stateMachineProvider<SM extends StateMachineBase>(
+SM Function<SM extends StateMachineBase>(SM sm) stateMachineProvider(
   dynamic ref,
 ) =>
-    (sm) {
+    <SM extends StateMachineBase>(SM sm) {
       ref.onDispose(sm.close);
       return sm;
     };
 
 /// Helper for creating riverpod providers
-S Function(SM sm) stateMachineStateProvider<SM extends StateMachineBase<S>, S>(
-  dynamic ref,
-) =>
-    (sm) {
+S Function<S>(StateMachineBase<S> sm) stateMachineStateProvider(dynamic ref) =>
+    <S>(sm) {
       ref.onDispose(sm.stream.listen((s) => ref.state = s).cancel);
       return sm.state;
     };

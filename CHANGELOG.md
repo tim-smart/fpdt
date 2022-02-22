@@ -1,3 +1,7 @@
+## 0.0.50
+
+- Add riverpod helpers for state machines
+
 ## 0.0.49
 
 - `StateRTEMachine` refactor
