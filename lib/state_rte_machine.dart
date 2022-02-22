@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:fpdt/either.dart' as E;
 import 'package:fpdt/fpdt.dart';
-import 'package:fpdt/state_machine.dart';
 
 /// A state machine for [StateReaderTaskEither].
 class StateRTEMachine<S, C, L> implements StateMachineBase<S> {
