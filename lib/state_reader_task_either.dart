@@ -5,6 +5,7 @@ import 'package:fpdt/either.dart' as Ei;
 import 'package:fpdt/reader.dart' as Rd;
 import 'package:fpdt/reader_task.dart' as RT;
 import 'package:fpdt/reader_task_either.dart' as RTE;
+import 'package:fpdt/state.dart' as St;
 import 'package:fpdt/task.dart' as T;
 import 'package:fpdt/task_either.dart' as TE;
 
@@ -93,12 +94,35 @@ StateReaderTaskEither<S, C, L, R> fromTask<S, C, L, R>(Task<R> task) =>
 
 /// Returns a [StateReaderTaskEither] that resolves to the given [TaskEither].
 StateReaderTaskEither<S, C, L, R> fromTaskEither<S, C, L, R>(
-        TaskEither<L, R> taskEither) =>
+  TaskEither<L, R> taskEither,
+) =>
     (s) => RTE.fromTaskEither(taskEither.chain(TE.map((a) => tuple2(a, s))));
+
+StateReaderTaskEither<S, C, L, R2> Function(StateReaderTaskEither<S, C, L, R1>)
+    call<S, C, L, R1, R2>(
+  StateReaderTaskEither<S, C, L, R2> chain,
+) =>
+        (fa) => (s) => fa(s).chain(RTE.call(chain(s)));
 
 StateReaderTaskEither<S, R, E, B> Function(StateReaderTaskEither<S, R, E, A>)
     map<S, R, E, A, B>(B Function(A a) f) =>
         (fa) => fa.compose(RTE.map((t) => tuple2(f(t.first), t.second)));
+
+/// Run a side effect on a [Right] value. The side effect can optionally return
+/// a [Future].
+StateReaderTaskEither<S, C, L, R> Function(StateReaderTaskEither<S, C, L, R>)
+    tap<S, C, L, R>(
+  FutureOr<void> Function(R r) f,
+) =>
+        flatMapFirstTask((r) => () => Future.value(f(r)));
+
+/// Run a side effect on a [Left] value. The side effect can optionally return
+/// a [Future].
+StateReaderTaskEither<S, C, L, R> Function(StateReaderTaskEither<S, C, L, R>)
+    tapLeft<S, C, L, R>(
+  FutureOr<void> Function(L value) f,
+) =>
+        (fa) => fa.compose(RTE.tapLeft(f));
 
 StateReaderTaskEither<S, C, L2, R> Function(StateReaderTaskEither<S, C, L1, R>)
     mapLeft<S, C, L1, L2, R>(L2 Function(L1 a) f) =>
@@ -198,6 +222,12 @@ StateReaderTaskEither<S, C, L, R> Function(StateReaderTaskEither<S, C, L, R>)
   Either<L, dynamic> Function(R a) f,
 ) =>
         flatMapFirst(f.compose(fromEither));
+
+StateReaderTaskEither<S, C, L, R> Function(StateReaderTaskEither<S, C, L, R>)
+    flatMapFirstReaderTaskEither<S, C, L, R>(
+  ReaderTaskEither<C, L, dynamic> Function(R a) f,
+) =>
+        flatMapFirst(f.compose(fromReaderTaskEither));
 
 StateReaderTaskEither<S, C, L, R> flatten<S, C, L, R>(
         StateReaderTaskEither<S, C, L, StateReaderTaskEither<S, C, L, R>>

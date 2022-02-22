@@ -117,7 +117,8 @@ ReaderTaskEither<C, L, R> fromTask<C, L, R>(Task<R> task) =>
 
 /// Returns a [ReaderTaskEither] that resolves to the given [TaskEither].
 ReaderTaskEither<C, L, R> fromTaskEither<C, L, R>(
-        TaskEither<L, R> taskEither) =>
+  TaskEither<L, R> taskEither,
+) =>
     (c) => taskEither;
 
 /// Runs the given task, and returns the result as an [Right].
@@ -144,6 +145,12 @@ ReaderTask<R, B> Function(ReaderTaskEither<R, L, A>) fold<R, L, A, B>(
   B Function(A right) onRight,
 ) =>
     RT.map(E.fold(onLeft, onRight));
+
+ReaderTaskEither<C, L, R2> Function(ReaderTaskEither<C, L, R1> task)
+    call<C, L, R1, R2>(
+  ReaderTaskEither<C, L, R2> chain,
+) =>
+        RT.call(chain);
 
 /// Composes computations in sequence, using the return value from the previous
 /// computation.
@@ -284,9 +291,17 @@ ReaderTaskEither<C, L, R> Function(ReaderTaskEither<C, L, R>) tap<C, L, R>(
 ) =>
     RT.tap(E.fold(identity, f));
 
+/// Run a side effect on a [Left] value. The side effect can optionally return
+/// a [Future].
+ReaderTaskEither<C, L, R> Function(ReaderTaskEither<C, L, R>) tapLeft<C, L, R>(
+  FutureOr<void> Function(L value) f,
+) =>
+    RT.tap(E.fold(f, identity));
+
 /// Pause execution of the task by the given [Duration].
 ReaderTaskEither<C, L, R> Function(ReaderTaskEither<C, L, R>) delay<C, L, R>(
-        Duration d) =>
+  Duration d,
+) =>
     (f) => f.compose(TE.delay(d));
 
 ReaderTaskEither<C, L, IList<R>> Function(Iterable<A>)
@@ -302,9 +317,11 @@ ReaderTaskEither<C, L, IList<R>> Function(Iterable<A>)
         (as) => (c) => as.map((a) => f(a)(c)).chain(TE.sequenceSeq);
 
 ReaderTaskEither<C, L, IList<R>> sequence<C, L, R>(
-        Iterable<ReaderTaskEither<C, L, R>> arr) =>
+  Iterable<ReaderTaskEither<C, L, R>> arr,
+) =>
     arr.chain(traverseIterable(identity));
 
 ReaderTaskEither<C, L, IList<R>> sequenceSeq<C, L, R>(
-        Iterable<ReaderTaskEither<C, L, R>> arr) =>
+  Iterable<ReaderTaskEither<C, L, R>> arr,
+) =>
     arr.chain(traverseIterableSeq(identity));

@@ -102,6 +102,35 @@ void main() {
     });
   });
 
+  group('tap', () {
+    test('runs the effect', () async {
+      final completer = Completer<int>();
+      final r =
+          asks((Context c) => c.value).chain(tap((a) => completer.complete(a)));
+
+      expect(
+        await r(StateEnum.one)(kContext)(),
+        E.right(tuple2(123, StateEnum.one)),
+      );
+
+      expect(await completer.future, 123);
+    });
+  });
+
+  group('tapLeft', () {
+    test('runs the effect', () async {
+      final completer = Completer<String>();
+      final r = left('fail').chain(tapLeft((a) => completer.complete(a)));
+
+      expect(
+        await r(StateEnum.one)(kContext)(),
+        E.left('fail'),
+      );
+
+      expect(await completer.future, 'fail');
+    });
+  });
+
   group('flatMap', () {
     test('transforms the StateReaderTaskEither', () async {
       final r =

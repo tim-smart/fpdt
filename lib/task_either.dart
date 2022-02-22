@@ -185,6 +185,11 @@ TaskEither<L, R2> Function(TaskEither<L, R> taskEither) flatMap<L, R, R2>(
 ) =>
     T.flatMap(E.fold(left, f));
 
+TaskEither<L, R2> Function(TaskEither<L, R1> task) call<L, R1, R2>(
+  TaskEither<L, R2> chain,
+) =>
+    T.call(chain);
+
 /// If the given [TaskEither] is an [Right], then unwrap the result and transform
 /// it into another [TaskEither] - but only keep [Left] results.
 ///
@@ -354,6 +359,13 @@ TaskEither<L, R> Function(TaskEither<L, R> taskEither) tap<L, R>(
   FutureOr<void> Function(R value) f,
 ) =>
     T.tap(E.fold(identity, f));
+
+/// Run a side effect on a [Left] value. The side effect can optionally return
+/// a [Future].
+TaskEither<L, R> Function(TaskEither<L, R> taskEither) tapLeft<L, R>(
+  FutureOr<void> Function(L value) f,
+) =>
+    T.tap(E.fold(f, identity));
 
 /// Conditionally filter the [TaskEither], transforming [Right] values to [Left].
 ///
