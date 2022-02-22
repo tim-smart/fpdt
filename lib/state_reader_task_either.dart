@@ -5,7 +5,6 @@ import 'package:fpdt/either.dart' as Ei;
 import 'package:fpdt/reader.dart' as Rd;
 import 'package:fpdt/reader_task.dart' as RT;
 import 'package:fpdt/reader_task_either.dart' as RTE;
-import 'package:fpdt/state.dart' as St;
 import 'package:fpdt/task.dart' as T;
 import 'package:fpdt/task_either.dart' as TE;
 
