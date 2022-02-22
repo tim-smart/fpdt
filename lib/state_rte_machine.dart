@@ -22,8 +22,7 @@ class StateRTEMachine<S, C, L> implements StateMachineBase<S> {
 
   final C context;
 
-  late Future<Either<L, Tuple2<dynamic, S>>> _future =
-      Future.value(E.right(tuple2(null, _state)));
+  late var _future = Future.value();
 
   var _closed = false;
   bool get closed => _closed;
@@ -45,7 +44,7 @@ class StateRTEMachine<S, C, L> implements StateMachineBase<S> {
 
     _future = future.then(
       _handleResult,
-      onError: (err, st) => tuple2(null, _state),
+      onError: (err, st) => null,
     );
 
     return future;
