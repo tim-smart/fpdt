@@ -4,7 +4,7 @@ import 'package:fpdt/fpdt.dart';
 SM Function<SM extends StateMachineBase>(SM sm) stateMachineProvider(
   dynamic ref,
 ) =>
-    <SM extends StateMachineBase>(SM sm) {
+    <SM extends StateMachineBase>(sm) {
       ref.onDispose(sm.close);
       return sm;
     };
