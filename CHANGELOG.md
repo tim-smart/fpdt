@@ -1,3 +1,7 @@
+## 0.0.55
+
+- Add equality checks to state machines
+
 ## 0.0.54
 
 - Improve riverpod helpers
