@@ -1,3 +1,7 @@
+## 0.0.57
+
+- Add `pure` and `call` to more monads
+
 ## 0.0.56
 
 - Use `Future.sync` where possible
