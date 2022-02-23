@@ -15,6 +15,11 @@ StateReaderTaskEither<S, R, E, A> left<S, R, E, A>(E e) => (s) => RTE.left(e);
 StateReaderTaskEither<S, R, E, A> right<S, R, E, A>(A a) =>
     (s) => RTE.right(tuple2(a, s));
 
+/// Replace the [StateReaderTaskEither] with one that resolves to an [Right] containing
+/// the given value.
+StateReaderTaskEither<S, C, L, R2> Function(StateReaderTaskEither<S, C, L, R>)
+    pure<S, C, L, R, R2>(R2 a) => (_) => right(a);
+
 StateReaderTaskEither<S, C, L, S> get<S, C, L>() =>
     (s) => RTE.right(tuple2(s, s));
 
@@ -27,7 +32,7 @@ StateReaderTaskEither<S, C, L, void> put<S, C, L>(S s) =>
 StateReaderTaskEither<S, C, L, void> Function(
     StateReaderTaskEither<S, C, L, dynamic>) chainPut<S, C, L>(
         S s) =>
-    flatMap((_) => put(s));
+    call(put(s));
 
 StateReaderTaskEither<S, C, L, void> modify<S, C, L, R>(S Function(S s) f) =>
     (s) => RTE.right(tuple2(null, f(s)));
@@ -35,7 +40,7 @@ StateReaderTaskEither<S, C, L, void> modify<S, C, L, R>(S Function(S s) f) =>
 StateReaderTaskEither<S, C, L, void> Function(
     StateReaderTaskEither<S, C, L, dynamic>) chainModify<S, C, L>(
         S Function(S s) f) =>
-    flatMap((_) => modify(f));
+    call(modify(f));
 
 /// Projects a value from the global context in a [StateReaderTaskEither].
 StateReaderTaskEither<S, C, L, C> ask<S, C, L>() =>
@@ -96,6 +101,12 @@ StateReaderTaskEither<S, C, L, R> fromTaskEither<S, C, L, R>(
   TaskEither<L, R> taskEither,
 ) =>
     (s) => RTE.fromTaskEither(taskEither.chain(TE.map((a) => tuple2(a, s))));
+
+StateReaderTaskEither<S, C, L, R2> Function(StateReaderTaskEither<S, C, L, R1>)
+    call<S, C, L, R1, R2>(
+  StateReaderTaskEither<S, C, L, R2> chain,
+) =>
+        flatMap((_) => chain);
 
 StateReaderTaskEither<S, C, L, R2> Function(StateReaderTaskEither<S, C, L, R1>)
     replace<S, C, L, R1, R2>(
