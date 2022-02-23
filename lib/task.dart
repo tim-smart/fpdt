@@ -7,7 +7,7 @@ import 'package:fpdt/fpdt.dart';
 typedef Task<A> = Future<A> Function();
 
 /// Create a [Task] that wraps the given value.
-Task<A> value<A>(A value) => lazy(Future.value(value));
+Task<A> value<A>(A value) => lazy(Future.sync(() => value));
 
 /// Create a [Task] from a thunk / lazy value. A thunk is a function without
 /// arguments that returns a value.
@@ -68,7 +68,7 @@ Task<A> Function(Task<A> task) flatMapFirst<A>(
 /// );
 /// ```
 Task<A> Function(Task<A> task) tap<A>(FutureOr<void> Function(A value) f) =>
-    flatMapFirst((a) => () => Future.value(f(a)));
+    flatMapFirst((a) => value(f(a)));
 
 Task<B> Function(Task<A> task) call<A, B>(Task<B> chain) =>
     flatMap((_) => chain);
@@ -77,7 +77,7 @@ Task<IList<B>> Function(Iterable<A>) traverseIterableSeq<A, B>(
   Task<B> Function(A a) f,
 ) =>
     (as) => () => as.fold(
-          Future.value(IList()),
+          Future.sync(() => IList()),
           (acc, a) => acc.then((bs) => f(a)().then((b) => bs.add(b))),
         );
 

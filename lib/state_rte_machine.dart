@@ -23,7 +23,7 @@ class StateRTEMachine<S, C, L> implements StateMachineBase<S> {
   /// The context / environment passed to the [StateReaderTaskEither]'s.
   final C context;
 
-  var _future = Future.value();
+  Future<dynamic> _future = Future.sync(() {});
 
   var _closed = false;
 

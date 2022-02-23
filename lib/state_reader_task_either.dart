@@ -113,7 +113,7 @@ StateReaderTaskEither<S, C, L, R> Function(StateReaderTaskEither<S, C, L, R>)
     tap<S, C, L, R>(
   FutureOr<void> Function(R r) f,
 ) =>
-        flatMapFirstTask((r) => () => Future.value(f(r)));
+        flatMapFirstTask((r) => () => Future.sync(() => f(r)));
 
 /// Run a side effect on a [Left] value. The side effect can optionally return
 /// a [Future].
@@ -132,7 +132,7 @@ StateReaderTaskEither<S, R, E, IList<B>> Function(
   StateReaderTaskEither<S, R, E, B> Function(A a) f,
 ) =>
     (as) => (s) => (r) => () => as.fold<Future<Either<E, Tuple2<IList<B>, S>>>>(
-          Future.value(Ei.right(tuple2(IList(), s))),
+          Future.sync(() => Ei.right(tuple2(IList(), s))),
           (acc, a) => acc.then(Ei.fold(
             (e) => acc,
             (bs) => f(a)(bs.second)(r)().then((eb) => eb.chain(Ei.fold(

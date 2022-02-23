@@ -101,8 +101,7 @@ TaskEither<L, R2> Function(
 ///   E.right('hello'),
 /// );
 /// ```
-TaskEither<L, R> fromEither<L, R>(Either<L, R> either) =>
-    () => Future.value(either);
+TaskEither<L, R> fromEither<L, R>(Either<L, R> either) => T.value(either);
 
 /// Runs the given task, and returns the result as an [Right].
 /// If it throws an error, the the error is passed to `onError`, which determines
@@ -405,7 +404,7 @@ TaskEither<L, IList<B>> Function(Iterable<A>) traverseIterableSeq<L, A, B>(
   TaskEither<L, B> Function(A a) f,
 ) =>
     (as) => () => as.fold<Future<Either<L, IList<B>>>>(
-        Future.value(E.right(IList())),
+        Future.sync(() => E.right(IList())),
         (acc, a) => acc.then((eb) => eb.chain(E.fold(
               (_) => acc,
               (bs) => f(a)().then(E.fold(
