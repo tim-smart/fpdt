@@ -72,13 +72,15 @@ class StateRTEMachine<S, C, L> implements StateMachineBase<S> {
       sequence(arr).then(E.map((arr) => arr.map((t) => t.second).toIList()));
 
   Either<L, Tuple2<R, S>> _handleResult<R>(Either<L, Tuple2<R, S>> result) {
+    final previous = _state;
+
     _state = result.chain(E.fold(
       (_) => _state,
       (r) => r.second,
     ));
 
-    if (E.isRight(result)) {
-      _controller?.add(_state);
+    if (E.isRight(result) && _controller != null && previous != _state) {
+      _controller!.add(_state);
     }
 
     return result;

@@ -33,8 +33,13 @@ class StateMachine<S> implements StateMachineBase<S> {
   /// Run the computation and returns a tuple of the result and state.
   Tuple2<A, S> run<A>(State<S, A> state) {
     final next = state(_state);
+    final previous = _state;
+
     _state = next.second;
-    _controller?.add(next.second);
+    if (_controller != null && previous != _state) {
+      _controller!.add(_state);
+    }
+
     return next;
   }
 
