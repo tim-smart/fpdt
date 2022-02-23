@@ -1,3 +1,7 @@
+## 0.0.56
+
+- Use `Future.sync` where possible
+
 ## 0.0.55
 
 - Add equality checks to state machines
