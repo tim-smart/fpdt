@@ -168,6 +168,42 @@ void main() {
     });
   });
 
+  group('pure', () {
+    test('transforms the StateReaderTaskEither', () async {
+      final r = TE.right(123).chain(TE.pure(124));
+      expect(
+        await r(),
+        E.right(124),
+      );
+    });
+
+    test('does not transform left', () async {
+      final r = TE.left('fail').chain(TE.call(TE.left('asdf')));
+      expect(
+        await r(),
+        E.left('fail'),
+      );
+    });
+  });
+
+  group('call', () {
+    test('transforms the StateReaderTaskEither', () async {
+      final r = TE.right(123).chain(TE.call(TE.right(124)));
+      expect(
+        await r(),
+        E.right(124),
+      );
+    });
+
+    test('resolves left values', () async {
+      final r = TE.right(123).chain(TE.call(TE.left('fail')));
+      expect(
+        await r(),
+        E.left('fail'),
+      );
+    });
+  });
+
   group('flatMapFirst', () {
     test('runs the function on right, and discards the result', () async {
       final r =

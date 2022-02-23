@@ -15,7 +15,7 @@ Task<A> value<A>(A value) => lazy(Future.sync(() => value));
 /// ```
 /// expect(await fromThunk(() => 'hello')(), equals('hello'));
 /// ```
-Task<A> fromThunk<A>(Lazy<A> f) => () => Future.microtask(f);
+Task<A> fromThunk<A>(Lazy<A> f) => () => Future.sync(f);
 
 /// Pause execution of the task by the given [Duration].
 Task<A> Function(Task<A> task) delay<A>(Duration d) =>

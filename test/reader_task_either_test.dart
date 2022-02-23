@@ -72,6 +72,43 @@ void main() {
     });
   });
 
+  group('pure', () {
+    test('transforms the StateReaderTaskEither', () async {
+      final r = asks((Context c) => c.value).chain(pure(124));
+      expect(
+        await r(kContext)(),
+        E.right(124),
+      );
+    });
+
+    test('does not transform left', () async {
+      final r = left('fail').chain(call(left('asdf')));
+      expect(
+        await r(kContext)(),
+        E.left('fail'),
+      );
+    });
+  });
+
+  group('call', () {
+    test('transforms the StateReaderTaskEither', () async {
+      final r = asks((Context c) => c.value).chain(call(right(124)));
+      expect(
+        await r(kContext)(),
+        E.right(124),
+      );
+    });
+
+    test('resolves left values', () async {
+      final r =
+          asks<Context, String, int>((c) => c.value).chain(call(left('fail')));
+      expect(
+        await r(kContext)(),
+        E.left('fail'),
+      );
+    });
+  });
+
   group('flatMapFirst', () {
     test('runs the computation and discards the result', () async {
       final r =
