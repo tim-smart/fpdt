@@ -1,3 +1,7 @@
+## 0.0.60
+
+- Use `Future.sync` for tryCatch
+
 ## 0.0.59
 
 - Use unit instead of void where it makes sense
