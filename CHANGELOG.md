@@ -1,3 +1,7 @@
+## 0.0.58
+
+- Add `memo` function helpers, for memoizing functions.
+
 ## 0.0.57
 
 - Add `pure` and `call` to more monads
