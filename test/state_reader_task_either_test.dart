@@ -31,7 +31,7 @@ void main() {
     test('sets the state', () async {
       final f = put(StateEnum.one);
       final r = await f(StateEnum.two)(kContext)();
-      expect(r, E.right(tuple2(null, StateEnum.one)));
+      expect(r, E.right(tuple2(unit, StateEnum.one)));
     });
   });
 
@@ -40,7 +40,7 @@ void main() {
       final f = put(StateEnum.one)
           .chain(flatMap((_) => modify((_) => StateEnum.two)));
       final r = await f(StateEnum.three)(kContext)();
-      expect(r, E.right(tuple2(null, StateEnum.two)));
+      expect(r, E.right(tuple2(unit, StateEnum.two)));
     });
   });
 

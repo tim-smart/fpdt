@@ -204,7 +204,7 @@ Either<L, R2> Function(Either<L, R> value) chainTryCatchK<L, R, R2>(
     flatMap(tryCatchK(f, onError));
 
 /// Recieves an [Either], and if it is a [Left] value replaces it with an
-/// \[alt\]ernative [Either] determined by executing the `onLeft` callback.
+/// [alt]ernative [Either] determined by executing the `onLeft` callback.
 ///
 /// ```
 /// expect(

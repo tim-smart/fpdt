@@ -35,7 +35,7 @@ void main() {
 
       final r = await s.evaluate(put(StateEnum.two));
       expect(s.state, StateEnum.two);
-      expect(r, E.right(null));
+      expect(r, E.right(unit));
 
       expect(
         await s.evaluate((_) => RTE.right(tuple2(123, StateEnum.three))),
@@ -85,8 +85,8 @@ void main() {
           (_) => RTE.right(tuple2(123, StateEnum.four)),
         ]),
         E.right(const IListConst([
-          Tuple2(null, StateEnum.two),
-          Tuple2(null, StateEnum.three),
+          Tuple2(unit, StateEnum.two),
+          Tuple2(unit, StateEnum.three),
           Tuple2(123, StateEnum.four),
         ])),
       );
