@@ -121,13 +121,10 @@ TaskEither<L, R> tryCatch<L, R>(
   Lazy<FutureOr<R>> task,
   L Function(dynamic err, StackTrace stackTrace) onError,
 ) =>
-    () async {
-      try {
-        return E.right(await task());
-      } catch (err, stack) {
-        return E.left(onError(err, stack));
-      }
-    };
+    () => Future.sync(task).then(
+          E.right,
+          onError: (err, stack) => E.left<L, R>(onError(err, stack)),
+        );
 
 /// Transforms a [Task] into a [TaskEither], wrapping the result in an [Right].
 ///

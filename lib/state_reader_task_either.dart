@@ -259,13 +259,7 @@ StateReaderTaskEither<S, C, L, R> tryCatch<S, C, L, R>(
   FutureOr<R> Function() task,
   L Function(dynamic err, StackTrace stackTrace) onError,
 ) =>
-    (s) => (r) => () async {
-          try {
-            return Ei.right(tuple2(await task(), s));
-          } catch (err, stack) {
-            return Ei.left(onError(err, stack));
-          }
-        };
+    (s) => (r) => TE.tryCatch(task, onError).p(TE.map((r) => tuple2(r, s)));
 
 /// A variant of [tryCatch] that accepts an external parameter.
 StateReaderTaskEither<S, C, L, R> Function(A value) tryCatchK<S, C, A, L, R>(

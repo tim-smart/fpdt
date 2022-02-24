@@ -128,13 +128,7 @@ ReaderTaskEither<C, L, R> tryCatch<C, L, R>(
   FutureOr<R> Function() task,
   L Function(dynamic err, StackTrace stackTrace) onError,
 ) =>
-    (r) => () async {
-          try {
-            return E.right(await task());
-          } catch (err, stack) {
-            return E.left(onError(err, stack));
-          }
-        };
+    (r) => TE.tryCatch(task, onError);
 
 /// Unwraps the [Either] value, returning a [ReaderTask] that resolves to the
 /// result.

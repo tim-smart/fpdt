@@ -163,13 +163,11 @@ Task<B> Function(TaskOption<A> taskOption) fold<A, B>(
 ///   O.none(),
 /// );
 /// ```
-TaskOption<A> tryCatch<A>(Lazy<FutureOr<A>> task) => () async {
-      try {
-        return O.some(await task());
-      } catch (_) {
-        return O.none();
-      }
-    };
+TaskOption<A> tryCatch<A>(Lazy<FutureOr<A>> task) =>
+    () => Future.sync(task).then(
+          O.some,
+          onError: (err, stack) => kNone,
+        );
 
 /// Transform the given [TaskOption] into a new [TaskOption], if it resolves to
 /// a [Some] value.
