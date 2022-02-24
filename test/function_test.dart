@@ -82,4 +82,20 @@ void main() {
       expect(r, 4);
     });
   });
+
+  group('memo', () {
+    test('it caches the return result', () {
+      var count = 1;
+      final unsafeMemo = memo1((int i) => i + count);
+
+      expect(unsafeMemo(1), 2);
+      expect(unsafeMemo(1), 2);
+      expect(unsafeMemo(2), 3);
+
+      count++;
+      expect(unsafeMemo(1), 2);
+      expect(unsafeMemo(2), 3);
+      expect(unsafeMemo(3), 5);
+    });
+  });
 }

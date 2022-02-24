@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 /// Represents a lazy value, which is a value returned from a function without
 /// arguments.
 typedef Lazy<A> = A Function();
@@ -130,4 +132,29 @@ extension ComposeExtension4<A, B, C, D, E> on E Function(A, B, C, D) {
   /// ```
   F Function(A a, B b, C c, D d) c<F>(F Function(E e) f) =>
       (a, b, c, d) => f(this(a, b, c, d));
+}
+
+/// **memo**-ize the given function, caching the return result.
+R Function(A) memo1<A, R>(R Function(A) f) {
+  final cache = HashMap<A, R>();
+  return (A a) => cache.putIfAbsent(a, () => f(a));
+}
+
+/// **memo**-ize the given function, caching the return result.
+R Function(A, B) memo2<A, B, R>(R Function(A, B) f) {
+  final mf = memo1((A a) => memo1((B b) => f(a, b)));
+  return (A a, B b) => mf(a)(b);
+}
+
+/// **memo**-ize the given function, caching the return result.
+R Function(A, B, C) memo3<A, B, C, R>(R Function(A, B, C) f) {
+  final mf = memo1((A a) => memo1((B b) => memo1((C c) => f(a, b, c))));
+  return (A a, B b, C c) => mf(a)(b)(c);
+}
+
+/// **memo**-ize the given function, caching the return result.
+R Function(A, B, C, D) memo4<A, B, C, D, R>(R Function(A, B, C, D) f) {
+  final mf = memo1(
+      (A a) => memo1((B b) => memo1((C c) => memo1((D d) => f(a, b, c, d)))));
+  return (A a, B b, C c, D d) => mf(a)(b)(c)(d);
 }
