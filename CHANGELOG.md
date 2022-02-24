@@ -1,3 +1,7 @@
+## 0.0.59
+
+- Use unit instead of void where it makes sense
+
 ## 0.0.58
 
 - Add `memo` function helpers, for memoizing functions.
