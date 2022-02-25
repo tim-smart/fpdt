@@ -1,3 +1,7 @@
+## 0.0.61
+
+- Use `identical` for state machine equality checks
+
 ## 0.0.60
 
 - Use `Future.sync` for tryCatch

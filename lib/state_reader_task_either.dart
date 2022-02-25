@@ -79,6 +79,10 @@ StateReaderTaskEither<S, C, L, R> fromReaderTaskEither<S, C, L, R>(
     (s) => rte.chain((RTE.map((a) => tuple2(a, s))));
 
 /// Returns a [StateReaderTaskEither] that resolves to the given [Either].
+StateReaderTaskEither<S, C, L, R> fromState<S, C, L, R>(State<S, R> f) =>
+    (s) => RTE.right(f(s));
+
+/// Returns a [StateReaderTaskEither] that resolves to the given [Either].
 StateReaderTaskEither<S, C, L, R> fromEither<S, C, L, R>(Either<L, R> either) =>
     either.chain(Ei.fold(left, right));
 
@@ -190,6 +194,12 @@ StateReaderTaskEither<S, C, L, R2> Function(StateReaderTaskEither<S, C, L, R1>)
         flatMap(f.compose(fromEither));
 
 StateReaderTaskEither<S, C, L, R2> Function(StateReaderTaskEither<S, C, L, R1>)
+    flatMapState<S, C, L, R1, R2>(
+  State<S, R2> Function(R1 a) f,
+) =>
+        flatMap(f.compose(fromState));
+
+StateReaderTaskEither<S, C, L, R2> Function(StateReaderTaskEither<S, C, L, R1>)
     flatMapReader<S, C, L, R1, R2>(
   Reader<C, R2> Function(R1 a) f,
 ) =>
@@ -232,6 +242,18 @@ StateReaderTaskEither<S, C, L, R> Function(StateReaderTaskEither<S, C, L, R>)
   Either<L, dynamic> Function(R a) f,
 ) =>
         flatMapFirst(f.compose(fromEither));
+
+StateReaderTaskEither<S, C, L, R> Function(StateReaderTaskEither<S, C, L, R>)
+    flatMapFirstState<S, C, L, R>(
+  State<S, dynamic> Function(R a) f,
+) =>
+        flatMapFirst(f.compose(fromState));
+
+StateReaderTaskEither<S, C, L, R> Function(StateReaderTaskEither<S, C, L, R>)
+    flatMapFirstReader<S, C, L, R>(
+  Reader<C, dynamic> Function(R a) f,
+) =>
+        flatMapFirst(f.compose(fromReader));
 
 StateReaderTaskEither<S, C, L, R> Function(StateReaderTaskEither<S, C, L, R>)
     flatMapFirstReaderTaskEither<S, C, L, R>(
