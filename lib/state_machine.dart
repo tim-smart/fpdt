@@ -36,7 +36,7 @@ class StateMachine<S> implements StateMachineBase<S> {
     final previous = _state;
 
     _state = next.second;
-    if (_controller != null && previous != _state) {
+    if (_controller != null && !identical(previous, _state)) {
       _controller!.add(_state);
     }
 

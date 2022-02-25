@@ -79,7 +79,7 @@ class StateRTEMachine<S, C, L> implements StateMachineBase<S> {
       (r) => r.second,
     ));
 
-    if (_controller != null && previous != _state) {
+    if (_controller != null && !identical(previous, _state)) {
       _controller!.add(_state);
     }
 
