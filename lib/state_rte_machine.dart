@@ -58,17 +58,20 @@ class StateRTEMachine<S, C, L> implements StateMachineBase<S> {
 
   /// Run the computations in sequence
   Future<Either<L, IList<Tuple2<dynamic, S>>>> sequence(
-          Iterable<StateReaderTaskEither<S, C, L, dynamic>> arr) =>
+    Iterable<StateReaderTaskEither<S, C, L, dynamic>> arr,
+  ) =>
       Future.wait(arr.map(run)).then(E.sequence);
 
   /// Run the computations in sequence, only returning the results
   Future<Either<L, IList<dynamic>>> evaluateSeq(
-          Iterable<StateReaderTaskEither<S, C, L, dynamic>> arr) =>
+    Iterable<StateReaderTaskEither<S, C, L, dynamic>> arr,
+  ) =>
       sequence(arr).then(E.map((arr) => arr.map((t) => t.first).toIList()));
 
   /// Run the computations in sequence, only returning the new states
   Future<Either<L, IList<S>>> executeSeq(
-          Iterable<StateReaderTaskEither<S, C, L, dynamic>> arr) =>
+    Iterable<StateReaderTaskEither<S, C, L, dynamic>> arr,
+  ) =>
       sequence(arr).then(E.map((arr) => arr.map((t) => t.second).toIList()));
 
   Either<L, Tuple2<R, S>> _handleResult<R>(Either<L, Tuple2<R, S>> result) {
