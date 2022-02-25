@@ -1,6 +1,7 @@
 ## 0.0.61
 
 - Use `identical` for state machine equality checks
+- Add state transformations to StateReaderTaskEither
 
 ## 0.0.60
 
