@@ -140,6 +140,24 @@ void main() {
     });
   });
 
+  group('flatMapTuple2', () {
+    test('appends the result to a tuple2', () async {
+      final r =
+          await TO.some(123).chain(TO.flatMapTuple2((i) => TO.some(i * 2)))();
+      expect(r, O.some(tuple2(123, 246)));
+    });
+  });
+
+  group('flatMapTuple3', () {
+    test('appends the result to a tuple', () async {
+      final r = await TO
+          .some(123)
+          .chain(TO.flatMapTuple2((i) => TO.some(i * 2)))
+          .chain(TO.flatMapTuple3((a) => TO.some(a.second - a.first)))();
+      expect(r, O.some(tuple3(123, 246, 123)));
+    });
+  });
+
   group('flatMapFirst', () {
     test('runs the task then returns the result of the first', () async {
       final r =

@@ -193,6 +193,19 @@ TaskOption<B> Function(TaskOption<A> taskOption) flatMap<A, B>(
 ) =>
     T.flatMap(O.fold(none, f));
 
+/// A variant of [flatMap] that appends the result to a tuple.
+TaskOption<Tuple2<A, A2>> Function(TaskOption<A> o) flatMapTuple2<A, A2>(
+  TaskOption<A2> Function(A a) f,
+) =>
+    flatMap((a) => f(a).p(map((b) => tuple2(a, b))));
+
+/// A variant of [flatMap] that appends the result to a tuple.
+TaskOption<Tuple3<A, A2, A3>> Function(TaskOption<Tuple2<A, A2>> o)
+    flatMapTuple3<A, A2, A3>(
+  TaskOption<A3> Function(Tuple2<A, A2> a) f,
+) =>
+        flatMap((a) => f(a).p(map((a3) => tuple3(a.first, a.second, a3))));
+
 /// Similar to [flatMap], except [Some] values are discarded.
 ///
 /// expect(

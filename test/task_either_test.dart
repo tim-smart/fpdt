@@ -168,6 +168,31 @@ void main() {
     });
   });
 
+  group('flatMapTuple2', () {
+    test('appends the result to a tuple', () async {
+      final r =
+          await TE.right(123).chain(TE.flatMapTuple2((i) => TE.right(i * 2)))();
+      expect(r, E.right(tuple2(123, 246)));
+    });
+
+    test('does nothing on left', () async {
+      final r = await TE
+          .left('left')
+          .chain(TE.flatMapTuple2((i) => TE.right(i * 2)))();
+      expect(r, E.left('left'));
+    });
+  });
+
+  group('flatMapTuple3', () {
+    test('appends the result to a tuple', () async {
+      final r = await TE
+          .right(123)
+          .chain(TE.flatMapTuple2((i) => TE.right(i * 2)))
+          .chain(TE.flatMapTuple3((a) => TE.right(a.second - a.first)))();
+      expect(r, E.right(tuple3(123, 246, 123)));
+    });
+  });
+
   group('pure', () {
     test('transforms the StateReaderTaskEither', () async {
       final r = TE.right(123).chain(TE.pure(124));

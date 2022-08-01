@@ -281,6 +281,19 @@ Option<B> Function(Option<A> option) flatMap<A, B>(
 ) =>
     (o) => o._bindSome(f);
 
+/// A variant of [flatMap] that appends the result to a tuple.
+Option<Tuple2<A, A2>> Function(Option<A> o) flatMapTuple2<A, A2>(
+  Option<A2> Function(A a) f,
+) =>
+    flatMap((a) => f(a).p(map((b) => tuple2(a, b))));
+
+/// A variant of [flatMap] that appends the result to a tuple.
+Option<Tuple3<A, A2, A3>> Function(Option<Tuple2<A, A2>> o)
+    flatMapTuple3<A, A2, A3>(
+  Option<A3> Function(Tuple2<A, A2> a) f,
+) =>
+        flatMap((a) => f(a).p(map((a3) => tuple3(a.first, a.second, a3))));
+
 /// Using the given `predicate`, conditionally convert the [Option] to a [None].
 ///
 /// ```

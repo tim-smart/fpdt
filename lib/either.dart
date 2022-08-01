@@ -123,6 +123,19 @@ Either<L, NR> Function(Either<L, R> either) flatMap<L, R, NR>(
 ) =>
     fold(left, f);
 
+/// A variant of [flatMap] that appends the result to a tuple.
+Either<L, Tuple2<R, R2>> Function(Either<L, R> either) flatMapTuple2<L, R, R2>(
+  Either<L, R2> Function(R value) f,
+) =>
+    fold(left, (r) => f(r).p(map((r2) => tuple2(r, r2))));
+
+/// A variant of [flatMap] that appends the result to a tuple.
+Either<L, Tuple3<R, R2, R3>> Function(Either<L, Tuple2<R, R2>> either)
+    flatMapTuple3<L, R, R2, R3>(
+  Either<L, R3> Function(Tuple2<R, R2> a) f,
+) =>
+        fold(left, (t) => f(t).p(map((r3) => tuple3(t.first, t.second, r3))));
+
 /// Runs the given function, and the result is wrapped in a [Right].
 /// If it raises an error, then the `onError` callback determines the [Left]
 /// value.

@@ -163,6 +163,56 @@ void main() {
     });
   });
 
+  group('flatMapTuple2', () {
+    test('appends the result to a tuple', () {
+      expect(
+        O.some(123).chain(O.flatMapTuple2((i) => O.some(i * 2))),
+        O.some(tuple2(123, 246)),
+      );
+    });
+
+    test('returns None if predicate returns None', () {
+      expect(
+        O.some(123).chain(O.flatMapTuple2((i) => O.none())),
+        O.none(),
+      );
+    });
+
+    test('does nothing if None', () {
+      expect(
+        O.none<int>().chain(O.flatMapTuple2((i) => O.some(i * 2))),
+        O.none(),
+      );
+    });
+  });
+
+  group('flatMapTuple3', () {
+    test('appends the result to a tuple', () {
+      expect(
+        O
+            .some(tuple2(1, 2))
+            .chain(O.flatMapTuple3((t) => O.some(t.first + t.second))),
+        O.some(tuple3(1, 2, 3)),
+      );
+    });
+
+    test('returns None if predicate returns None', () {
+      expect(
+        O.some(tuple2(1, 2)).chain(O.flatMapTuple3((i) => O.none())),
+        O.none(),
+      );
+    });
+
+    test('does nothing if None', () {
+      expect(
+        O
+            .none<Tuple2<int, int>>()
+            .chain(O.flatMapTuple3((i) => O.some(i.first + i.second))),
+        O.none(),
+      );
+    });
+  });
+
   group('filter', () {
     test('does nothing if predicate passes', () {
       expect(

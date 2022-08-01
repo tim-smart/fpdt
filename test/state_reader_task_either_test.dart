@@ -151,6 +151,48 @@ void main() {
     });
   });
 
+  group('flatMapTuple2', () {
+    test('appends the result to a tuple', () async {
+      final r = asks((Context c) => c.value)
+          .chain(flatMapTuple2((a) => right(a + 1)));
+      expect(
+        await r(StateEnum.one)(kContext)(),
+        E.right(tuple2(tuple2(123, 124), StateEnum.one)),
+      );
+    });
+
+    test('resolves left values', () async {
+      final r = asks<StateEnum, Context, String, int>((c) => c.value)
+          .chain(flatMapTuple2((a) => left('fail')));
+      expect(
+        await r(StateEnum.one)(kContext)(),
+        E.left('fail'),
+      );
+    });
+  });
+
+  group('flatMapTuple3', () {
+    test('appends the result to a tuple', () async {
+      final r = asks((Context c) => c.value)
+          .chain(flatMapTuple2((a) => right(a + 1)))
+          .chain(flatMapTuple3((t) => right(t.second - t.first)));
+      expect(
+        await r(StateEnum.one)(kContext)(),
+        E.right(tuple2(tuple3(123, 124, 1), StateEnum.one)),
+      );
+    });
+
+    test('resolves left values', () async {
+      final r = asks<StateEnum, Context, String, int>((c) => c.value)
+          .chain(flatMapTuple2((a) => right(a + 1)))
+          .chain(flatMapTuple3((t) => left('fail')));
+      expect(
+        await r(StateEnum.one)(kContext)(),
+        E.left('fail'),
+      );
+    });
+  });
+
   group('pure', () {
     test('transforms the StateReaderTaskEither', () async {
       final r = asks((Context c) => c.value).chain(pure(124));

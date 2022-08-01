@@ -176,6 +176,20 @@ ReaderTaskEither<C, L, R2> Function(ReaderTaskEither<C, L, R1>)
 ) =>
         RT.flatMap(E.fold(left, f));
 
+/// A variant of [flatMap] that appends the result to a tuple.
+ReaderTaskEither<C, L, Tuple2<R, R2>> Function(ReaderTaskEither<C, L, R> fa)
+    flatMapTuple2<C, L, R, R2>(
+  ReaderTaskEither<C, L, R2> Function(R value) f,
+) =>
+        flatMap((r) => f(r).p(map((r2) => tuple2(r, r2))));
+
+/// A variant of [flatMap] that appends the result to a tuple.
+ReaderTaskEither<C, L, Tuple3<R, R2, R3>> Function(
+    ReaderTaskEither<C, L, Tuple2<R, R2>> fa) flatMapTuple3<C, L, R, R2, R3>(
+  ReaderTaskEither<C, L, R3> Function(Tuple2<R, R2> a) f,
+) =>
+    flatMap((r) => f(r).p(map((r3) => tuple3(r.first, r.second, r3))));
+
 ReaderTaskEither<C, L, R2> Function(ReaderTaskEither<C, L, R1>)
     flatMapReader<C, L, R1, R2>(
   Reader<C, R2> Function(R1 a) f,

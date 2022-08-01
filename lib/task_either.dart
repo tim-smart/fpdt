@@ -181,6 +181,14 @@ TaskEither<L, R2> Function(TaskEither<L, R> taskEither) flatMap<L, R, R2>(
 ) =>
     T.flatMap(E.fold(left, f));
 
+TaskEither<E, Tuple2<A, B>> Function(TaskEither<E, A>) flatMapTuple2<E, A, B>(
+        TaskEither<E, B> Function(A a) f) =>
+    flatMap((a) => f(a).p(map((b) => tuple2(a, b))));
+
+TaskEither<E, Tuple3<A, B, C>> Function(TaskEither<E, Tuple2<A, B>>)
+    flatMapTuple3<E, A, B, C>(TaskEither<E, C> Function(Tuple2<A, B> a) f) =>
+        flatMap((a) => f(a).p(map((c) => tuple3(a.first, a.second, c))));
+
 TaskEither<L, R2> Function(TaskEither<L, R1> task) call<L, R1, R2>(
   TaskEither<L, R2> chain,
 ) =>
