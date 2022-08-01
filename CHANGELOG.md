@@ -1,3 +1,7 @@
+## 0.0.62
+
+- Add tuple `flatMap` variants
+
 ## 0.0.61
 
 - Use `identical` for state machine equality checks
