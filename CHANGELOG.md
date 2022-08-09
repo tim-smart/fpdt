@@ -1,3 +1,8 @@
+## 0.0.63
+
+- Add `StateReader`
+- Add `StateReaderMachine`
+
 ## 0.0.62
 
 - Add tuple `flatMap` variants
