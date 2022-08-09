@@ -2,21 +2,11 @@ import 'dart:async';
 
 import 'package:fpdt/fpdt.dart';
 
-abstract class StateMachineBase<S> {
-  /// A [Stream] of state changes
-  Stream<S> get stream;
+/// A state machine for [StateReader].
+class StateReaderMachine<S, C> implements StateMachineBase<S> {
+  StateReaderMachine(this.context, this._state);
 
-  /// The current state ([S]) of the machine
-  S get state;
-
-  /// Closes the internal [StreamController]
-  void close();
-}
-
-/// A state machine for [State].
-class StateMachine<S> implements StateMachineBase<S> {
-  StateMachine(this._state);
-
+  final C context;
   S _state;
 
   @override
@@ -31,8 +21,8 @@ class StateMachine<S> implements StateMachineBase<S> {
   }
 
   /// Run the computation and returns a tuple of the result and state.
-  Tuple2<A, S> run<A>(State<S, A> state) {
-    final next = state(_state);
+  Tuple2<A, S> run<A>(StateReader<S, C, A> state) {
+    final next = state(_state)(context);
     final previous = _state;
 
     _state = next.second;
@@ -44,21 +34,22 @@ class StateMachine<S> implements StateMachineBase<S> {
   }
 
   /// Run the computation and returns the result only.
-  A evaluate<A>(State<S, A> state) => run(state).first;
+  A evaluate<A>(StateReader<S, C, A> state) => run(state).first;
 
   /// Run the computation and returns the state only.
-  S execute(State<S, dynamic> state) => run(state).second;
+  S execute(StateReader<S, C, dynamic> state) => run(state).second;
 
   /// Run the iterable of [State]'s in sequence
-  IList<Tuple2<dynamic, S>> sequence(Iterable<State<S, dynamic>> arr) =>
+  IList<Tuple2<dynamic, S>> sequence(
+          Iterable<StateReader<S, C, dynamic>> arr) =>
       arr.map(run).toIList();
 
   /// Run the iterable of [State]'s in sequence, only returning the results.
-  IList<dynamic> evaluateSeq(Iterable<State<S, dynamic>> arr) =>
+  IList<dynamic> evaluateSeq(Iterable<StateReader<S, C, dynamic>> arr) =>
       arr.map(run).map((t) => t.first).toIList();
 
   /// Run the iterable of [State]'s in sequence, only returning the new states.
-  IList<S> executeSeq(Iterable<State<S, dynamic>> arr) =>
+  IList<S> executeSeq(Iterable<StateReader<S, C, dynamic>> arr) =>
       arr.map(run).map((t) => t.second).toIList();
 
   @override
