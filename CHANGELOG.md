@@ -1,3 +1,7 @@
+## 0.0.64
+
+- Add `StateReaderTaskEither` `fromOption`
+
 ## 0.0.63
 
 - Add `StateReader`
