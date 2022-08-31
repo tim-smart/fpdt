@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:fpdt/fpdt.dart';
 import 'package:fpdt/either.dart' as E;
+import 'package:fpdt/option.dart' as O;
 import 'package:fpdt/task_either.dart' as TE;
 import 'package:fpdt/state_reader_task_either.dart';
 import 'package:test/test.dart';
@@ -328,6 +329,24 @@ void main() {
         (err, stack) => 'fail',
       )))(StateEnum.one)(kContext)();
       expect(r, E.left('left'));
+    });
+  });
+
+  group('fromOption', () {
+    test('return right on some', () async {
+      final o = O.some(123);
+      final s = o.p(fromOption(() => 'fail'));
+
+      final a = await s(StateEnum.one)(kContext)();
+      expect(a, E.right(tuple2(123, StateEnum.one)));
+    });
+
+    test('return left on none', () async {
+      final o = O.none<int>();
+      final s = o.p(fromOption(() => 'fail'));
+
+      final a = await s(StateEnum.one)(kContext)();
+      expect(a, E.left('fail'));
     });
   });
 }

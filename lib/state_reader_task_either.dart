@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:fpdt/fpdt.dart';
 import 'package:fpdt/either.dart' as Ei;
+import 'package:fpdt/option.dart' as O;
 import 'package:fpdt/reader.dart' as Rd;
 import 'package:fpdt/reader_task.dart' as RT;
 import 'package:fpdt/reader_task_either.dart' as RTE;
@@ -85,6 +86,11 @@ StateReaderTaskEither<S, C, L, R> fromState<S, C, L, R>(State<S, R> f) =>
 /// Returns a [StateReaderTaskEither] that resolves to the given [Either].
 StateReaderTaskEither<S, C, L, R> fromEither<S, C, L, R>(Either<L, R> either) =>
     either.chain(Ei.fold(left, right));
+
+StateReaderTaskEither<S, C, E, A> Function(Option<A> fa) fromOption<S, C, E, A>(
+  E Function() onNone,
+) =>
+    (fa) => fa.chain(O.fold(() => left(onNone()), (a) => right(a)));
 
 /// Transforms a [Reader] into a [StateReaderTaskEither], wrapping the result in an [Right].
 StateReaderTaskEither<S, C, L, R> fromReader<S, C, L, R>(Reader<C, R> f) =>
