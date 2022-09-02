@@ -206,6 +206,11 @@ TaskOption<Tuple3<A, A2, A3>> Function(TaskOption<Tuple2<A, A2>> o)
 ) =>
         flatMap((a) => f(a).p(map((a3) => tuple3(a.first, a.second, a3))));
 
+TaskOption<B> Function(TaskOption<A> taskOption) flatMapTask<A, B>(
+  Task<B> Function(A value) f,
+) =>
+    flatMap((a) => fromTask(f(a)));
+
 /// Similar to [flatMap], except [Some] values are discarded.
 ///
 /// expect(
