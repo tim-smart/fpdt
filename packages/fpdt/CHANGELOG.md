@@ -1,3 +1,7 @@
+## 0.0.65
+
+- Add `flatMapTask` to `TaskOption`
+
 ## 0.0.64
 
 - Add `StateReaderTaskEither` `fromOption`
