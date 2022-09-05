@@ -6,18 +6,23 @@ import 'package:fpdt/reader_task_either.dart' as RTE;
 import 'package:fpdt_flutter/fpdt_flutter.dart';
 
 class FlutterOpContext {
-  const FlutterOpContext(this.context, this._ref);
+  const FlutterOpContext(this.context, this._container);
+
+  factory FlutterOpContext.from(BuildContext context) => FlutterOpContext(
+        context,
+        ProviderScope.containerOf(context, listen: false),
+      );
 
   final BuildContext context;
-  final WidgetRef _ref;
+  final ProviderContainer _container;
 
-  T Function<T>(ProviderBase<T> provider) get read => _ref.read;
-  T Function<T>(ProviderBase<T> provider) get refresh => _ref.refresh;
+  T Function<T>(ProviderBase<T> provider) get read => _container.read;
+  T Function<T>(ProviderBase<T> provider) get refresh => _container.refresh;
   void Function<T>(
     ProviderListenable<T> provider,
     void Function(T?, T) listener, {
     void Function(Object, StackTrace)? onError,
-  }) get listen => _ref.listen;
+  }) get listen => _container.listen;
 }
 
 typedef FlutterOp<E, A> = ReaderTaskEither<FlutterOpContext, E, A>;
@@ -30,7 +35,7 @@ TaskEither<E, A> useFlutterOp<E, A>(
 ]) {
   final context = useContext();
   return useMemoized(
-    () => op(FlutterOpContext(context, ref)),
+    () => op(FlutterOpContext.from(context)),
     [context, ...deps],
   );
 }
