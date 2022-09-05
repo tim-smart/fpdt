@@ -1,3 +1,8 @@
+## 0.0.66
+
+- Clean up `ReaderTaskEither` api surface.
+- Add `flatMapOption` to RTE and SRTE
+
 ## 0.0.65
 
 - Add `flatMapTask` to `TaskOption`

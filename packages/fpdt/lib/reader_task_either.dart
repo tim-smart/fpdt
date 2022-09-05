@@ -70,32 +70,32 @@ ReaderTaskEither<C, L, R> Function(R r) fromPredicateK<C, L, R>(
 /// [ReaderTaskEither] will resolve to a [Left] containing the result from executing
 /// `onNone`.
 ReaderTaskEither<C, L, R> Function(Option<R> option) fromOption<C, L, R>(
-  L Function(C) onNone,
+  L Function() onNone,
 ) =>
-    (o) => (c) => o.chain(TE.fromOption(() => onNone(c)));
+    (o) => (c) => o.chain(TE.fromOption(onNone));
 
 /// Create a [TaskEither] from a nullable value. `onNone` is executed if the
 /// given value is `null`.
 ReaderTaskEither<C, L, R> fromNullable<C, L, R>(
-  R? Function(C) value,
-  L Function(C) onNone,
+  R? value,
+  L Function() onNone,
 ) =>
-    (r) => TE.fromNullable(value(r), () => onNone(r));
+    (_) => TE.fromNullable(value, onNone);
 
 /// Create a [TaskEither] from a nullable value. `onNone` is executed if the
 /// value (given to the returned function) is `null`.
-ReaderTaskEither<C, L, R> Function(A value) fromNullableK<C, A, L, R>(
-  R? Function(A value) Function(C) f,
-  L Function(A value) Function(C) onNone,
+ReaderTaskEither<C, L, R> Function(A value) fromNullableK<C, L, R, A>(
+  R? Function(A value) f,
+  L Function(A value) onNone,
 ) =>
-    (a) => fromNullable((r) => f(r)(a), (c) => onNone(c)(a));
+    (a) => fromNullable(f(a), () => onNone(a));
 
 /// Chainable variant of [fromNullableK].
 ReaderTaskEither<C, L, R2> Function(
   ReaderTaskEither<C, L, R> taskEither,
 ) chainNullableK<C, L, R, R2>(
-  R2? Function(R right) Function(C) f,
-  L Function(R right) Function(C) onNone,
+  R2? Function(R right) f,
+  L Function(R right) onNone,
 ) =>
     flatMap(fromNullableK(f, onNone));
 
@@ -219,6 +219,13 @@ ReaderTaskEither<C, L, R2> Function(ReaderTaskEither<C, L, R1>)
   Either<L, R2> Function(R1 a) f,
 ) =>
         flatMap(f.compose(fromEither));
+
+ReaderTaskEither<C, L, B> Function(ReaderTaskEither<C, L, A>)
+    flatMapOption<C, L, A, B>(
+  Option<B> Function(A a) f,
+  L Function(A a) onNone,
+) =>
+        flatMap((a) => f(a).p(fromOption(() => onNone(a))));
 
 /// Composes computations in sequence, using the return value from the previous
 /// computation. Discarding the result.

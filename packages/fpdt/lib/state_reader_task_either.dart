@@ -210,6 +210,13 @@ StateReaderTaskEither<S, C, L, R2> Function(StateReaderTaskEither<S, C, L, R1>)
 ) =>
         flatMap(f.compose(fromEither));
 
+StateReaderTaskEither<S, C, L, B> Function(StateReaderTaskEither<S, C, L, A>)
+    flatMapOption<S, C, L, A, B>(
+  Option<B> Function(A a) f,
+  L Function(A a) onNone,
+) =>
+        flatMap((a) => f(a).p(fromOption(() => onNone(a))));
+
 StateReaderTaskEither<S, C, L, R2> Function(StateReaderTaskEither<S, C, L, R1>)
     flatMapState<S, C, L, R1, R2>(
   State<S, R2> Function(R1 a) f,
