@@ -1,3 +1,7 @@
+## 0.0.3
+
+- Directly return value from useFlutterOpWithState
+
 ## 0.0.2
 
 - Improve FlutterOpContext construction
