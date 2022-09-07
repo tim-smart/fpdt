@@ -40,8 +40,7 @@ TaskEither<E, A> useFlutterOp<E, A>(
   );
 }
 
-Tuple2<ValueNotifier<TypedAsyncValue<E, A>>, TaskEither<E, A>>
-    useFlutterOpWithState<E, A>(
+Tuple2<TypedAsyncValue<E, A>, TaskEither<E, A>> useFlutterOpWithState<E, A>(
   WidgetRef ref,
   FlutterOp<E, A> op, [
   List<dynamic> deps = const [],
@@ -53,5 +52,5 @@ Tuple2<ValueNotifier<TypedAsyncValue<E, A>>, TaskEither<E, A>>
     return TypedAsyncValue.withValueNotifier(state, task);
   }, deps);
 
-  return tuple2(state, fn);
+  return tuple2(state.value, fn);
 }
