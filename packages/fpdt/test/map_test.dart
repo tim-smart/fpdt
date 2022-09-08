@@ -23,8 +23,10 @@ void main() {
       );
     });
 
-    test('returns none if key does not exist', () {
-      expect({'test': 123}.lookup('foo'), none());
+    test('works with plain maps', () {
+      expect({'test': 123}.extract<String>('foo'), none());
+      expect({'test': 123}.extract<String>('test'), none());
+      expect({'test': 123}.extract<int>('test'), some(123));
     });
   });
 

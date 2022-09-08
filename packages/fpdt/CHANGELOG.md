@@ -1,3 +1,7 @@
+## 0.0.67
+
+- Add `extract` to MapExtension
+
 ## 0.0.66
 
 - Clean up `ReaderTaskEither` api surface.

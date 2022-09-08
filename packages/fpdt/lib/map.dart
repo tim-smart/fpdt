@@ -15,6 +15,34 @@ extension MapExtension<K, V> on Map<K, V> {
   /// );
   /// ```
   Option<V> lookup(K key) => fromNullable(this[key]);
+
+  /// Return an [Option] that conditionally accesses map keys, if they match the
+  /// given type.
+  /// Useful for accessing nested JSON.
+  ///
+  /// ```
+  /// expect(
+  ///   { 'test': 123 }.extract<int>('test'),
+  ///   some(123),
+  /// );
+  /// ```
+  Option<T> extract<T>(K key) {
+    final value = this[key];
+    if (value is T) return some(value);
+    return none();
+  }
+
+  /// Return an [Option] that conditionally accesses map keys, if they contain a map
+  /// with the same key type.
+  /// Useful for accessing nested JSON.
+  ///
+  /// ```
+  /// expect(
+  ///   { 'test': { 'foo': 'bar' } }.extractMap('test'),
+  ///   some({ 'foo': 'bar' }),
+  /// );
+  /// ```
+  Option<Map<K, dynamic>> extractMap(K key) => extract<Map<K, dynamic>>(key);
 }
 
 extension MapOptionExtension<K> on Option<Map<K, dynamic>> {
@@ -28,11 +56,7 @@ extension MapOptionExtension<K> on Option<Map<K, dynamic>> {
   ///   some(123),
   /// );
   /// ```
-  Option<T> extract<T>(K key) => chain(flatMap((map) {
-        final value = map[key];
-        if (value is T) return some(value);
-        return none();
-      }));
+  Option<T> extract<T>(K key) => chain(flatMap((map) => map.extract(key)));
 
   /// Return an [Option] that conditionally accesses map keys, if they contain a map
   /// with the same key type.
