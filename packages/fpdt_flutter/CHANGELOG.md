@@ -1,3 +1,7 @@
+## 0.0.5
+
+- Add either extension to AsyncValue
+
 ## 0.0.4
 
 - Add useValueListenableOption

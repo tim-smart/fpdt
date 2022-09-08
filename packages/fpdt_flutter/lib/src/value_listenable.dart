@@ -13,6 +13,7 @@ Option<A> useValueListenableOption<A>(Option<ValueListenable<A>> notifier) {
       }
 
       n.addListener(onChange);
+      onChange();
       return () => n.removeListener(onChange);
     })),
     [notifier],
