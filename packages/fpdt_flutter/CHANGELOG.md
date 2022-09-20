@@ -1,3 +1,7 @@
+## 0.1.0
+
+- Add support for the nucleus package
+
 ## 0.0.5
 
 - Add either extension to AsyncValue

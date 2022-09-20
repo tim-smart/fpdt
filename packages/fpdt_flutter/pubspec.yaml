@@ -1,6 +1,6 @@
 name: fpdt_flutter
 description: Helpers for using fpdt with flutter.
-version: 0.0.5
+version: 0.1.0
 homepage: https://github.com/tim-smart/fpdt/tree/main/packages/fpdt_flutter
 
 environment:
@@ -11,6 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_hooks: ">=0.18.0 <1.0.0"
+  flutter_nucleus: ">=0.0.0 <1.0.0"
   flutter_riverpod: ">=1.0.0 <2.0.0"
   fpdt: any
   freezed_annotation: any
