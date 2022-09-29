@@ -1,3 +1,9 @@
+## 0.2.1
+
+- Add none() for TaskEitherValue
+- Add isLoading for TaskEitherValue
+- Add isLoadingOrNone for TaskEitherValue
+
 ## 0.2.0
 
 - Replace TypedAsyncValue with TaskEitherValue

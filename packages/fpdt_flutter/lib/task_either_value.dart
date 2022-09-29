@@ -8,6 +8,8 @@ import 'package:fpdt/option.dart' as O;
 /// The tuple includes a boolean indicating the loading state.
 typedef TaskEitherValue<L, R> = Either<L, Tuple2<Option<R>, bool>>;
 
+TaskEitherValue<L, R> none<L, R>() => Ei.right(tuple2(kNone, false));
+
 TaskEitherValue<L, R> fromEither<L, R>(
   Either<L, R> either, {
   bool loading = false,
@@ -23,6 +25,12 @@ TaskEitherValue<L, R> asLoading<L, R>(
   TaskEitherValue<L, R> tev,
 ) =>
     tev.p(Ei.map((t) => t.withItem2(true)));
+
+bool isLoading<L, R>(TaskEitherValue<L, R> tev) =>
+    tev.p(Ei.fold((_) => false, (t) => t.second));
+
+bool isLoadingOrNone<L, R>(TaskEitherValue<L, R> tev) =>
+    tev.p(Ei.fold((_) => false, (t) => t.second || O.isNone(t.first)));
 
 TaskEitherValue<L, R> putData<L, R>(
   TaskEitherValue<L, R> tev,
