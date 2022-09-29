@@ -1,3 +1,7 @@
+## 0.1.2
+
+- Export atoms.dart
+
 ## 0.1.1
 
 - Add taskEitherAtom
