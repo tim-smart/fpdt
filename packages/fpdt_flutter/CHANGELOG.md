@@ -1,3 +1,7 @@
+## 0.2.0
+
+- Replace TypedAsyncValue with TaskEitherValue
+
 ## 0.1.2
 
 - Export atoms.dart
