@@ -1,3 +1,8 @@
+## 0.2.2
+
+- Remove riverpod dep
+- Remove extras from FlutterOpContext
+
 ## 0.2.1
 
 - Add none() for TaskEitherValue
