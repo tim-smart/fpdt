@@ -511,16 +511,18 @@ class Right<L, R> extends Either<L, R> {
   int get hashCode => value.hashCode;
 }
 
-typedef DoAdapter = A Function<E, A>(Either<E, A>);
+typedef _DoAdapter<E> = A Function<A>(Either<E, A>);
 
-A _doAdapter<E, A>(Either<E, A> either) {
-  return either._fold((e) => throw UnwrapException(e), (value) => value);
-}
+_DoAdapter<E> _doAdapter<E>() => <A>(either) {
+      return either._fold((e) => throw UnwrapException(e), (value) => value);
+    };
+
+typedef DoFunction<E, A> = A Function(_DoAdapter<E> $);
 
 // ignore: non_constant_identifier_names
-Either<E, A> Do<E, A>(A Function(DoAdapter $) f) {
+Either<E, A> Do<E, A>(DoFunction<E, A> f) {
   try {
-    return right(f(_doAdapter));
+    return right(f(_doAdapter<E>()));
   } on UnwrapException<E> catch (e) {
     return left(e.value);
   }

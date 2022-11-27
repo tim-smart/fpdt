@@ -388,10 +388,12 @@ _DoAdapter<S, C, L> _doAdapter<S, C, L>(S s, C c) {
   };
 }
 
+typedef DoFunction<S, C, L, R> = Future<Tuple2<R, S>> Function(
+  _DoAdapter<S, C, L> $,
+);
+
 // ignore: non_constant_identifier_names
-StateReaderTaskEither<S, C, L, R> Do<S, C, L, R>(
-  Future<Tuple2<R, S>> Function(_DoAdapter<S, C, L> $) f,
-) =>
+StateReaderTaskEither<S, C, L, R> Do<S, C, L, R>(DoFunction<S, C, L, R> f) =>
     (s) => (c) => () {
           final adapter = _doAdapter<S, C, L>(s, c);
           return f(adapter).then(

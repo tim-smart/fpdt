@@ -439,8 +439,10 @@ _DoAdapter<L> _doAdapter<L>() => <A>(task) => task().then(E.fold(
       (a) => Future.value(a),
     ));
 
+typedef DoFunction<L, A> = Future<A> Function(_DoAdapter<L> $);
+
 // ignore: non_constant_identifier_names
-TaskEither<L, A> Do<L, A>(Future<A> Function(_DoAdapter<L> $) f) {
+TaskEither<L, A> Do<L, A>(DoFunction<L, A> f) {
   final adapter = _doAdapter<L>();
   return () => f(adapter).then(
         (a) => E.right<L, A>(a),
