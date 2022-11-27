@@ -1,3 +1,7 @@
+## 0.2.3
+
+- Add do notation for flutter ops
+
 ## 0.2.2
 
 - Remove riverpod dep

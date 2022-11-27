@@ -1,6 +1,6 @@
 name: fpdt_flutter
 description: Helpers for using fpdt with flutter.
-version: 0.2.2
+version: 0.2.3
 homepage: https://github.com/tim-smart/fpdt/tree/main/packages/fpdt_flutter
 
 environment:
