@@ -1,3 +1,7 @@
+## 0.0.70
+
+- DoFunction typedef for wrapping do notation
+
 ## 0.0.69
 
 - Do notation refactor
