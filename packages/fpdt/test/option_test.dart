@@ -387,4 +387,23 @@ void main() {
       );
     });
   });
+
+  group('Do', () {
+    test('returns some on success', () {
+      final a = O.Do<int>(($) {
+        return $(O.some(123));
+      });
+
+      expect(a, O.some(123));
+    });
+
+    test('returns none on failure', () {
+      final a = O.Do<int>(($) {
+        $(O.none());
+        return $(O.some(123));
+      });
+
+      expect(a, kNone);
+    });
+  });
 }
