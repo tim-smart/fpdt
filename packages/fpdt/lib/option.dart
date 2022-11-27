@@ -500,3 +500,18 @@ class None<A> extends Option<A> {
   @override
   int get hashCode => 0;
 }
+
+typedef DoAdapter = A Function<A>(Option<A>);
+
+A _doAdapter<A>(Option<A> option) {
+  return option._fold(() => throw "none", (value) => value);
+}
+
+// ignore: non_constant_identifier_names
+Option<A> Do<A>(A Function(DoAdapter $) f) {
+  try {
+    return Some(f(_doAdapter));
+  } catch (_) {
+    return kNone;
+  }
+}
