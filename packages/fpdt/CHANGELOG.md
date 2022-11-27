@@ -1,3 +1,7 @@
+## 0.0.68
+
+- Add Do notation
+
 ## 0.0.67
 
 - Add `extract` to MapExtension
