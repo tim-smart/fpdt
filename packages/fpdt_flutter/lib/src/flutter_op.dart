@@ -11,6 +11,8 @@ class FlutterOpContext {
 
 typedef FlutterOp<E, A> = ReaderTaskEither<FlutterOpContext, E, A>;
 FlutterOp<E, FlutterOpContext> askFlutterOp<E>() => RTE.ask();
+FlutterOp<E, A> flutterOpDo<E, A>(RTE.DoFunction<FlutterOpContext, E, A> f) =>
+    RTE.Do(f);
 
 TaskEither<E, A> useFlutterOp<E, A>(
   FlutterOp<E, A> op, [
