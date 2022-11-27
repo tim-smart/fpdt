@@ -1,3 +1,7 @@
+## 0.0.69
+
+- Do notation refactor
+
 ## 0.0.68
 
 - Add Do notation
