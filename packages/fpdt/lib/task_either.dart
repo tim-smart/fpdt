@@ -431,3 +431,14 @@ TaskEither<L, IList<A>> sequenceSeq<L, A>(
 /// Pause execution of the task by the given [Duration].
 TaskEither<L, R> Function(TaskEither<L, R>) delay<L, R>(Duration d) =>
     flatMap((r) => () => Future.delayed(d, () => E.right(r)));
+
+typedef DoAdapter = Future<A> Function<E, A>(TaskEither<E, A>);
+
+Future<A> _doAdapter<L, A>(TaskEither<L, A> task) => task().then(E.fold(
+      (l) => Future.error(l as Object),
+      (a) => Future.value(a),
+    ));
+
+// ignore: non_constant_identifier_names
+TaskEither<L, A> Do<L, A>(Future<A> Function(DoAdapter $) f) =>
+    () => f(_doAdapter).then(E.right, onError: (e) => E.left<L, A>(e));

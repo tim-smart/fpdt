@@ -331,4 +331,21 @@ void main() {
       ]);
     });
   });
+
+  group('Do', () {
+    test('returns some on success', () async {
+      final result = await TO.Do<int>(($) async {
+        return $(TO.some(123));
+      })();
+      expect(result, O.some(123));
+    });
+
+    test('returns left on failure', () async {
+      final result = await TO.Do<int>(($) async {
+        await $(TO.none());
+        return $(TO.some(123));
+      })();
+      expect(result, O.none());
+    });
+  });
 }

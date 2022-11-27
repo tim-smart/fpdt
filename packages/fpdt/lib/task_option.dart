@@ -334,3 +334,14 @@ TaskOption<A> Function(TaskOption<A> taskOption) filter<A>(
   bool Function(A value) predicate,
 ) =>
     T.map(O.filter(predicate));
+
+typedef DoAdapter = Future<A> Function<A>(TaskOption<A>);
+
+Future<A> _doAdapter<A>(TaskOption<A> task) => task().then(O.fold(
+      () => Future.error("none"),
+      (a) => Future.value(a),
+    ));
+
+// ignore: non_constant_identifier_names
+TaskOption<A> Do<A>(Future<A> Function(DoAdapter $) f) =>
+    () => f(_doAdapter).then(O.some, onError: (_) => kNone);

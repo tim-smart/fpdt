@@ -64,4 +64,23 @@ void main() {
       );
     });
   });
+
+  group('Do', () {
+    test('returns right on success', () {
+      final a = E.Do<String, int>(($) {
+        return $(E.right(123));
+      });
+
+      expect(a, E.right(123));
+    });
+
+    test('returns left on failure', () {
+      final a = E.Do<String, int>(($) {
+        $(E.left("fail"));
+        return $(E.right(123));
+      });
+
+      expect(a, E.left("fail"));
+    });
+  });
 }

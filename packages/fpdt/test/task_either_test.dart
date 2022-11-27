@@ -440,4 +440,21 @@ void main() {
       expect(result, E.left('fail'));
     });
   });
+
+  group('Do', () {
+    test('returns right on success', () async {
+      final result = await TE.Do<String, int>(($) async {
+        return $(TE.right(123));
+      })();
+      expect(result, E.right(123));
+    });
+
+    test('returns left on failure', () async {
+      final result = await TE.Do<String, int>(($) async {
+        await $(TE.left("fail"));
+        return $(TE.right(123));
+      })();
+      expect(result, E.left("fail"));
+    });
+  });
 }

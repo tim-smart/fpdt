@@ -346,3 +346,19 @@ ReaderTaskEither<C, L, IList<R>> sequenceSeq<C, L, R>(
   Iterable<ReaderTaskEither<C, L, R>> arr,
 ) =>
     arr.chain(traverseIterableSeq(identity));
+
+typedef DoAdapter<C> = Future<R> Function<L, R>(ReaderTaskEither<C, L, R>);
+
+Future<R> Function<L, R>(ReaderTaskEither<C, L, R>) _doAdapter<C>(C c) =>
+    <L, R>(task) => task(c)().then(E.fold(
+          (l) => Future.error(l as Object),
+          (a) => Future.value(a),
+        ));
+
+// ignore: non_constant_identifier_names
+ReaderTaskEither<C, L, R> Do<C, L, R>(Future<R> Function(DoAdapter<C> $) f) =>
+    (c) => () {
+          final adapter = _doAdapter(c);
+          return f(adapter)
+              .then((a) => E.right<L, R>(a), onError: (e) => E.left<L, R>(e));
+        };

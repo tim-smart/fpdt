@@ -514,14 +514,14 @@ class Right<L, R> extends Either<L, R> {
 typedef DoAdapter = A Function<E, A>(Either<E, A>);
 
 A _doAdapter<E, A>(Either<E, A> either) {
-  return either._fold((e) => throw either, (value) => value);
+  return either._fold((e) => throw UnwrapException(e), (value) => value);
 }
 
 // ignore: non_constant_identifier_names
 Either<E, A> Do<E, A>(A Function(DoAdapter $) f) {
   try {
-    return Right(f(_doAdapter));
-  } catch (left) {
-    return left as Left<E, A>;
+    return right(f(_doAdapter));
+  } on UnwrapException<E> catch (e) {
+    return left(e.value);
   }
 }

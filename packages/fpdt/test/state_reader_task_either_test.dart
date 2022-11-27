@@ -349,4 +349,22 @@ void main() {
       expect(a, E.left('fail'));
     });
   });
+
+  group('Do', () {
+    test('returns right on success', () async {
+      final result = await Do<StateEnum, Context, String, int>(($) async {
+        await $(put(StateEnum.two));
+        return $(right(123));
+      })(StateEnum.one)(kContext)();
+      expect(result, E.right(tuple2(123, StateEnum.two)));
+    });
+
+    test('returns left on failure', () async {
+      final result = await Do<StateEnum, Context, String, int>(($) async {
+        await $(left("fail"));
+        return $(right(123));
+      })(StateEnum.one)(kContext)();
+      expect(result, E.left("fail"));
+    });
+  });
 }

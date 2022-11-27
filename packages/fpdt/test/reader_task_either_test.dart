@@ -222,4 +222,21 @@ void main() {
       expect(r, E.left('left'));
     });
   });
+
+  group('Do', () {
+    test('returns right on success', () async {
+      final result = await Do<Context, String, int>(($) async {
+        return $(right(123));
+      })(kContext)();
+      expect(result, E.right(123));
+    });
+
+    test('returns left on failure', () async {
+      final result = await Do<Context, String, int>(($) async {
+        await $(left("fail"));
+        return $(right(123));
+      })(kContext)();
+      expect(result, E.left("fail"));
+    });
+  });
 }

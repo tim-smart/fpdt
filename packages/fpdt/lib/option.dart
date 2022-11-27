@@ -510,7 +510,7 @@ A _doAdapter<A>(Option<A> option) {
 // ignore: non_constant_identifier_names
 Option<A> Do<A>(A Function(DoAdapter $) f) {
   try {
-    return Some(f(_doAdapter));
+    return some(f(_doAdapter));
   } catch (_) {
     return kNone;
   }
