@@ -352,7 +352,7 @@ void main() {
 
   group('Do', () {
     test('returns right on success', () async {
-      final result = await Do<StateEnum, Context, String, int>(($) async {
+      final result = await Do<StateEnum, Context, String, int>(($, s, c) async {
         await $(put(StateEnum.two));
         return $(right(123));
       })(StateEnum.one)(kContext)();
@@ -360,7 +360,7 @@ void main() {
     });
 
     test('returns left on failure', () async {
-      final result = await Do<StateEnum, Context, String, int>(($) async {
+      final result = await Do<StateEnum, Context, String, int>(($, s, c) async {
         await $(left("fail"));
         return $(right(123));
       })(StateEnum.one)(kContext)();

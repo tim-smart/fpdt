@@ -225,14 +225,14 @@ void main() {
 
   group('Do', () {
     test('returns right on success', () async {
-      final result = await Do<Context, String, int>(($) async {
+      final result = await Do<Context, String, int>(($, context) async {
         return $(right(123));
       })(kContext)();
       expect(result, E.right(123));
     });
 
     test('returns left on failure', () async {
-      final result = await Do<Context, String, int>(($) async {
+      final result = await Do<Context, String, int>(($, context) async {
         await $(left("fail"));
         return $(right(123));
       })(kContext)();
