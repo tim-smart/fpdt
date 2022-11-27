@@ -1,3 +1,7 @@
+## 0.0.71
+
+- Expose initial state and context to do notation
+
 ## 0.0.70
 
 - DoFunction typedef for wrapping do notation
