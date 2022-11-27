@@ -432,13 +432,18 @@ TaskEither<L, IList<A>> sequenceSeq<L, A>(
 TaskEither<L, R> Function(TaskEither<L, R>) delay<L, R>(Duration d) =>
     flatMap((r) => () => Future.delayed(d, () => E.right(r)));
 
-typedef DoAdapter = Future<A> Function<E, A>(TaskEither<E, A>);
+typedef _DoAdapter<E> = Future<A> Function<A>(TaskEither<E, A>);
 
-Future<A> _doAdapter<L, A>(TaskEither<L, A> task) => task().then(E.fold(
+_DoAdapter<L> _doAdapter<L>() => <A>(task) => task().then(E.fold(
       (l) => Future.error(l as Object),
       (a) => Future.value(a),
     ));
 
 // ignore: non_constant_identifier_names
-TaskEither<L, A> Do<L, A>(Future<A> Function(DoAdapter $) f) =>
-    () => f(_doAdapter).then(E.right, onError: (e) => E.left<L, A>(e));
+TaskEither<L, A> Do<L, A>(Future<A> Function(_DoAdapter<L> $) f) {
+  final adapter = _doAdapter<L>();
+  return () => f(adapter).then(
+        (a) => E.right<L, A>(a),
+        onError: (e) => E.left<L, A>(e),
+      );
+}

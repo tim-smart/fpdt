@@ -366,34 +366,34 @@ StateReaderTaskEither<S, C, L, R> Function(StateReaderTaskEither<S, C, L, R>)
               (t) => orElse(t.first),
             ));
 
-typedef DoAdapter<S, C, L> = Future<Tuple2<R, S>> Function<R>(
-    StateReaderTaskEither<S, C, L, R>);
+typedef _DoAdapter<S, C, L> = Future<Tuple2<R, S>> Function<R>(
+  StateReaderTaskEither<S, C, L, R>,
+);
 
-Future<Tuple2<R, S>> Function<R>(StateReaderTaskEither<S, C, L, R> srte)
-    Function(C context) _doAdapter<S, C, L>(S s) {
+_DoAdapter<S, C, L> _doAdapter<S, C, L>(S s, C c) {
   var state = s;
   var counter = 0;
-  return (C c) => <R>(task) {
-        final taskId = counter++;
-        return task(state)(c)().then(Ei.fold(
-          (l) => Future.error(l as Object),
-          (a) {
-            // Prevents cases were result is not await'ed
-            if (taskId == (counter - 1)) {
-              state = a.second;
-            }
-            return Future.value(a);
-          },
-        ));
-      };
+  return <R>(task) {
+    final taskId = counter++;
+    return task(state)(c)().then(Ei.fold(
+      (l) => Future.error(l as Object),
+      (a) {
+        // Prevents cases were result is not await'ed
+        if (taskId == (counter - 1)) {
+          state = a.second;
+        }
+        return Future.value(a);
+      },
+    ));
+  };
 }
 
 // ignore: non_constant_identifier_names
 StateReaderTaskEither<S, C, L, R> Do<S, C, L, R>(
-  Future<Tuple2<R, S>> Function(DoAdapter<S, C, L> $) f,
+  Future<Tuple2<R, S>> Function(_DoAdapter<S, C, L> $) f,
 ) =>
     (s) => (c) => () {
-          final adapter = _doAdapter<S, C, L>(s)(c);
+          final adapter = _doAdapter<S, C, L>(s, c);
           return f(adapter).then(
             (a) => Ei.right<L, Tuple2<R, S>>(a),
             onError: (e) => Ei.left<L, Tuple2<R, S>>(e),
