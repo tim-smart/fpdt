@@ -513,9 +513,10 @@ class Right<L, R> extends Either<L, R> {
 
 typedef _DoAdapter<E> = A Function<A>(Either<E, A>);
 
-_DoAdapter<E> _doAdapter<E>() => <A>(either) {
-      return either._fold((e) => throw UnwrapException(e), (value) => value);
-    };
+_DoAdapter<E> _doAdapter<E>() => <A>(either) => either._fold(
+      (e) => throw Left<E, A>(e),
+      (value) => value,
+    );
 
 typedef DoFunction<E, A> = A Function(_DoAdapter<E> $);
 
@@ -523,7 +524,7 @@ typedef DoFunction<E, A> = A Function(_DoAdapter<E> $);
 Either<E, A> Do<E, A>(DoFunction<E, A> f) {
   try {
     return right(f(_doAdapter<E>()));
-  } on UnwrapException<E> catch (e) {
+  } on Left catch (e) {
     return left(e.value);
   }
 }

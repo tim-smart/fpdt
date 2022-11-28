@@ -435,17 +435,16 @@ TaskEither<L, R> Function(TaskEither<L, R>) delay<L, R>(Duration d) =>
 typedef _DoAdapter<E> = Future<A> Function<A>(TaskEither<E, A>);
 
 _DoAdapter<L> _doAdapter<L>() => <A>(task) => task().then(E.fold(
-      (l) => Future.error(l as Object),
-      (a) => Future.value(a),
+      (l) => throw Left(l),
+      (a) => a,
     ));
 
 typedef DoFunction<L, A> = Future<A> Function(_DoAdapter<L> $);
 
 // ignore: non_constant_identifier_names
 TaskEither<L, A> Do<L, A>(DoFunction<L, A> f) {
-  final adapter = _doAdapter<L>();
-  return () => f(adapter).then(
-        (a) => E.right<L, A>(a),
-        onError: (e) => E.left<L, A>(e),
+  return () => f(_doAdapter<L>()).then(
+        (a) => E.right(a),
+        onError: (e) => E.left<L, A>(e.value),
       );
 }
