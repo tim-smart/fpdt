@@ -122,16 +122,11 @@ TaskEither<L, R> tryCatch<L, R>(
   Lazy<FutureOr<R>> task,
   L Function(dynamic err, StackTrace stackTrace) onError,
 ) =>
-    () {
-      try {
-        return task().flatMap(
-          either.right,
+    () => fromThrowable(
+          task,
+          onSuccess: either.right,
           onError: (err, stack) => either.left<L, R>(onError(err, stack)),
         );
-      } catch (err, stack) {
-        return either.left<L, R>(onError(err, stack));
-      }
-    };
 
 /// Transforms a [Task] into a [TaskEither], wrapping the result in an [Right].
 ///
@@ -443,7 +438,7 @@ typedef _DoAdapter<E> = FutureOr<A> Function<A>(TaskEither<E, A>);
 
 _DoAdapter<L> _doAdapter<L>() => <A>(task) => task().flatMap(either.fold(
       (l) => Future.error(Left(l)),
-      (a) => a,
+      identity,
     ));
 
 typedef DoFunction<L, A> = Future<A> Function(_DoAdapter<L> $);

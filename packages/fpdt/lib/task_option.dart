@@ -164,9 +164,10 @@ Task<B> Function(TaskOption<A> taskOption) fold<A, B>(
 ///   O.none(),
 /// );
 /// ```
-TaskOption<A> tryCatch<A>(Lazy<FutureOr<A>> task) => () => task().flatMap(
-      O.some,
-      onError: (err, stack) => kNone,
+TaskOption<A> tryCatch<A>(Lazy<FutureOr<A>> task) => () => fromThrowable(
+      task,
+      onSuccess: O.some,
+      onError: (error, stackTrace) => kNone,
     );
 
 /// Transform the given [TaskOption] into a new [TaskOption], if it resolves to
