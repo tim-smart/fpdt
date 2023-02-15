@@ -8,6 +8,7 @@ import 'package:fpdt/reader_task.dart' as RT;
 import 'package:fpdt/reader_task_either.dart' as RTE;
 import 'package:fpdt/task.dart' as T;
 import 'package:fpdt/task_either.dart' as TE;
+import 'package:fpdt/future_or.dart';
 
 typedef StateReaderTaskEither<S, C, L, R> = ReaderTaskEither<C, L, Tuple2<R, S>>
     Function(S s);
@@ -134,7 +135,7 @@ StateReaderTaskEither<S, C, L, R> Function(StateReaderTaskEither<S, C, L, R>)
     tap<S, C, L, R>(
   FutureOr<void> Function(R r) f,
 ) =>
-        flatMapFirstTask((r) => () => Future.sync(() => f(r)));
+        flatMapFirstTask((r) => () => f(r));
 
 /// Run a side effect on a [Left] value. The side effect can optionally return
 /// a [Future].
@@ -152,16 +153,17 @@ StateReaderTaskEither<S, R, E, IList<B>> Function(
     Iterable<A>) traverseIterable<S, R, E, A, B>(
   StateReaderTaskEither<S, R, E, B> Function(A a) f,
 ) =>
-    (as) => (s) => (r) => () => as.fold<Future<Either<E, Tuple2<IList<B>, S>>>>(
-          Future.sync(() => Ei.right(tuple2(IList(), s))),
-          (acc, a) => acc.then(Ei.fold(
-            (e) => acc,
-            (bs) => f(a)(bs.second)(r)().then((eb) => eb.chain(Ei.fold(
-                  (e) => Ei.left(e),
-                  (t) => Ei.right(tuple2(bs.first.add(t.first), t.second)),
-                ))),
-          )),
-        );
+    (as) =>
+        (s) => (r) => () => as.fold<FutureOr<Either<E, Tuple2<IList<B>, S>>>>(
+              Ei.right(tuple2(IList(), s)),
+              (acc, a) => acc.flatMap(Ei.fold(
+                (e) => acc,
+                (bs) => f(a)(bs.second)(r)().flatMap((eb) => eb.chain(Ei.fold(
+                      (e) => Ei.left(e),
+                      (t) => Ei.right(tuple2(bs.first.add(t.first), t.second)),
+                    ))),
+              )),
+            );
 
 StateReaderTaskEither<S, R, E, IList<A>> sequence<S, R, E, A>(
         Iterable<StateReaderTaskEither<S, R, E, A>> arr) =>
@@ -366,7 +368,7 @@ StateReaderTaskEither<S, C, L, R> Function(StateReaderTaskEither<S, C, L, R>)
               (t) => orElse(t.first),
             ));
 
-typedef _DoAdapter<S, C, L> = Future<Tuple2<R, S>> Function<R>(
+typedef _DoAdapter<S, C, L> = FutureOr<Tuple2<R, S>> Function<R>(
   StateReaderTaskEither<S, C, L, R>,
 );
 
@@ -375,14 +377,14 @@ _DoAdapter<S, C, L> _doAdapter<S, C, L>(S s, C c) {
   var counter = 0;
   return <R>(task) {
     final taskId = counter++;
-    return task(state)(c)().then(Ei.fold(
+    return task(state)(c)().flatMap(Ei.fold(
       (l) => Future.error(l as Object),
       (a) {
         // Prevents cases were result is not await'ed
         if (taskId == (counter - 1)) {
           state = a.second;
         }
-        return Future.value(a);
+        return a;
       },
     ));
   };

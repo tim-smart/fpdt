@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:fpdt/fpdt.dart';
 import 'package:fpdt/option.dart' as O;
 import 'package:fpdt/task.dart' as T;
+import 'package:fpdt/future_or.dart';
 
 export 'package:fpdt/task.dart' show delay, sequence, sequenceSeq;
 
@@ -10,7 +11,7 @@ export 'package:fpdt/task.dart' show delay, sequence, sequenceSeq;
 /// Useful for creating async operations that might return nothing.
 ///
 /// Can also be represented by `Task<Option<A>>`.
-typedef TaskOption<A> = Future<Option<A>> Function();
+typedef TaskOption<A> = FutureOr<Option<A>> Function();
 
 /// Returns a [TaskOption] that resolves to [Some].
 TaskOption<A> some<A>(A a) => T.value(O.some(a));
@@ -163,11 +164,10 @@ Task<B> Function(TaskOption<A> taskOption) fold<A, B>(
 ///   O.none(),
 /// );
 /// ```
-TaskOption<A> tryCatch<A>(Lazy<FutureOr<A>> task) =>
-    () => Future.sync(task).then(
-          O.some,
-          onError: (err, stack) => kNone,
-        );
+TaskOption<A> tryCatch<A>(Lazy<FutureOr<A>> task) => () => task().flatMap(
+      O.some,
+      onError: (err, stack) => kNone,
+    );
 
 /// Transform the given [TaskOption] into a new [TaskOption], if it resolves to
 /// a [Some] value.
@@ -335,11 +335,11 @@ TaskOption<A> Function(TaskOption<A> taskOption) filter<A>(
 ) =>
     T.map(O.filter(predicate));
 
-typedef _DoAdapter = Future<A> Function<A>(TaskOption<A>);
+typedef _DoAdapter = FutureOr<A> Function<A>(TaskOption<A>);
 
-Future<A> _doAdapter<A>(TaskOption<A> task) => task().then(O.fold(
+FutureOr<A> _doAdapter<A>(TaskOption<A> task) => task().flatMap(O.fold(
       () => Future.error("none"),
-      (a) => Future.value(a),
+      identity,
     ));
 
 typedef DoFunction<A> = Future<A> Function(_DoAdapter $);

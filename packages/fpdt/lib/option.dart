@@ -507,12 +507,10 @@ class _NoneException {
   const _NoneException();
 }
 
-A _doAdapter<A>(Option<A> option) {
-  return option._fold(
-    () => throw const _NoneException(),
-    (value) => value,
-  );
-}
+A _doAdapter<A>(Option<A> option) => option._fold(
+      () => throw const _NoneException(),
+      (value) => value,
+    );
 
 typedef DoFunction<A> = A Function(_DoAdapter $);
 

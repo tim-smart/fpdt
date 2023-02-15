@@ -1,7 +1,8 @@
 import 'dart:async';
 
-import 'package:fpdt/fpdt.dart';
 import 'package:fpdt/either.dart' as E;
+import 'package:fpdt/fpdt.dart';
+import 'package:fpdt/future_or.dart';
 import 'package:fpdt/reader.dart' as Rd;
 import 'package:fpdt/reader_task.dart' as RT;
 import 'package:fpdt/task_either.dart' as TE;
@@ -21,11 +22,11 @@ ReaderTaskEither<R, E, A> right<R, E, A>(A a) => Rd.of(TE.right(a));
 /// Projects a [TE.left] value in a [ReaderTaskEither].
 ReaderTaskEither<R, E, A> left<R, E, A>(E e) => Rd.of(TE.left(e));
 
-Future<A> Function(R r) toFuture<R, A>(ReaderTaskEither<R, dynamic, A> f) =>
-    (r) => f(r).chain(TE.fold(
+Future<A> Function(R r) toFutureOr<R, A>(ReaderTaskEither<R, dynamic, A> f) =>
+    (r) => Future.sync(f(r).chain(TE.fold(
           (l) => throw l,
           identity,
-        ))();
+        )));
 
 /// Convert a [ReaderTaskEither] into a [Future<void>], that runs the side effect on
 /// [Left].
@@ -33,10 +34,10 @@ Future<void> Function(C) Function(ReaderTaskEither<C, L, dynamic>)
     toFutureVoid<C, L>(
   void Function(L value) onLeft,
 ) =>
-        (f) => (c) => f(c).chain(TE.fold(
+        (f) => (c) => Future.sync(f(c).chain(TE.fold(
               onLeft,
               (_) {},
-            ))();
+            )));
 
 /// Replace the [ReaderTaskEither] with one that resolves to an [Right] containing
 /// the given value.
@@ -347,11 +348,11 @@ ReaderTaskEither<C, L, IList<R>> sequenceSeq<C, L, R>(
 ) =>
     arr.chain(traverseIterableSeq(identity));
 
-typedef _DoAdapter<C, L> = Future<R> Function<R>(ReaderTaskEither<C, L, R>);
+typedef _DoAdapter<C, L> = FutureOr<R> Function<R>(ReaderTaskEither<C, L, R>);
 
-_DoAdapter<C, L> _doAdapter<C, L>(C c) => <R>(task) => task(c)().then(E.fold(
+_DoAdapter<C, L> _doAdapter<C, L>(C c) => <R>(task) => task(c)().flatMap(E.fold(
       (l) => Future.error(l as Object),
-      (a) => Future.value(a),
+      identity,
     ));
 
 typedef DoFunction<C, L, R> = Future<R> Function(
