@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:fpdt/either.dart' as Ei;
 import 'package:fpdt/fpdt.dart';
@@ -53,12 +55,13 @@ Either<L, R> Function(TaskEitherValue<L, R> tev) toEither<L, R>(
 ) =>
     Ei.flatMap((t) => t.first.p(Ei.fromOption(onNone)));
 
-Future<Either<L, R>> withValueNotifier<L, R>(
+FutureOr<Either<L, R>> withValueNotifier<L, R>(
   ValueNotifier<TaskEitherValue<L, R>> notifier,
   TaskEither<L, R> task,
-) async {
+) {
   notifier.value = asLoading(notifier.value);
-  final either = await task();
-  notifier.value = fromEither(either);
-  return either;
+  return task().flatMap((a) {
+    notifier.value = fromEither(a);
+    return a;
+  });
 }
