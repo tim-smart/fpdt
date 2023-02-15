@@ -503,22 +503,18 @@ class None<A> extends Option<A> {
 
 typedef _DoAdapter = A Function<A>(Option<A>);
 
-class _NoneException {
-  const _NoneException();
-}
-
 A _doAdapter<A>(Option<A> option) => option._fold(
-      () => throw const _NoneException(),
+      () => throw kNone,
       (value) => value,
     );
 
 typedef DoFunction<A> = A Function(_DoAdapter $);
 
 // ignore: non_constant_identifier_names
-Option<A> Do<A>(A Function(_DoAdapter $) f) {
+Option<A> Do<A>(DoFunction<A> f) {
   try {
     return some(f(_doAdapter));
-  } on _NoneException catch (_) {
+  } on None catch (_) {
     return kNone;
   }
 }

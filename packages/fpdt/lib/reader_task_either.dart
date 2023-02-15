@@ -351,8 +351,8 @@ ReaderTaskEither<C, L, IList<R>> sequenceSeq<C, L, R>(
 typedef _DoAdapter<C, L> = FutureOr<R> Function<R>(ReaderTaskEither<C, L, R>);
 
 _DoAdapter<C, L> _doAdapter<C, L>(C c) => <R>(task) => task(c)().flatMap(E.fold(
-      (l) => Future.error(l as Object),
-      identity,
+      (l) => Future.error(Left(l)),
+      (a) => a,
     ));
 
 typedef DoFunction<C, L, R> = Future<R> Function(
@@ -361,10 +361,8 @@ typedef DoFunction<C, L, R> = Future<R> Function(
 );
 
 // ignore: non_constant_identifier_names
-ReaderTaskEither<C, L, R> Do<C, L, R>(DoFunction<C, L, R> f) => (c) => () {
-      final adapter = _doAdapter<C, L>(c);
-      return f(adapter, c).then(
-        (a) => E.right<L, R>(a),
-        onError: (e) => E.left<L, R>(e),
-      );
-    };
+ReaderTaskEither<C, L, R> Do<C, L, R>(DoFunction<C, L, R> f) =>
+    (c) => () => f(_doAdapter<C, L>(c), c).then(
+          (a) => E.right(a),
+          onError: (e) => E.left<L, R>(e.value),
+        );
