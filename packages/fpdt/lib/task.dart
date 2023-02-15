@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:fpdt/fpdt.dart';
-import 'package:fpdt/future_or.dart';
 
 /// Type alias representing a [Task]. It is a lazy future - a function that
 /// returns a [FutureOr].
@@ -78,15 +77,15 @@ Task<IList<B>> Function(Iterable<A>) traverseIterableSeq<A, B>(
   Task<B> Function(A a) f,
 ) =>
     (as) => () => as.fold(
-          Future.sync(() => IList()),
+          IList(),
           (acc, a) => acc.flatMap((bs) => f(a)().flatMap((b) => bs.add(b))),
         );
 
 Task<IList<B>> Function(Iterable<A>) traverseIterable<A, B>(
   Task<B> Function(A a) f,
 ) =>
-    (as) => () => Future.wait(as.map((a) => Future.value(f(a)())))
-        .then((bs) => IList(bs));
+    (as) => () =>
+        Future.wait(as.map((a) => Future.sync(f(a)))).then((bs) => IList(bs));
 
 /// Returns a task that maps an [Iterable] of [Task]'s, into a list of results.
 ///

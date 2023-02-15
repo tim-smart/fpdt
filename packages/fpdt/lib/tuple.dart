@@ -28,7 +28,7 @@ class Tuple3<T1, T2, T3> extends Tuple {
         return third;
     }
 
-    throw IndexError(i, this);
+    throw IndexError.withLength(i, 3, indexable: this);
   }
 
   /// Create a new tuple value with the specified list [items].
@@ -99,7 +99,7 @@ class Tuple4<T1, T2, T3, T4> extends Tuple {
         return fourth;
     }
 
-    throw IndexError(i, this);
+    throw IndexError.withLength(i, 4, indexable: this);
   }
 
   /// Create a new tuple value with the specified list [items].

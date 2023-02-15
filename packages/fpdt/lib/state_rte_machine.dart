@@ -23,7 +23,7 @@ class StateRTEMachine<S, C, L> implements StateMachineBase<S> {
   /// The context / environment passed to the [StateReaderTaskEither]'s.
   final C context;
 
-  Future<dynamic> _future = Future.sync(() {});
+  FutureOr<dynamic> _future;
 
   var _closed = false;
 
@@ -31,48 +31,56 @@ class StateRTEMachine<S, C, L> implements StateMachineBase<S> {
   bool get closed => _closed;
 
   /// Run the computation and returns the result only.
-  Future<Either<L, R>> evaluate<R>(StateReaderTaskEither<S, C, L, R> state) =>
-      run(state).then(E.map((t) => t.first));
+  FutureOr<Either<L, R>> evaluate<R>(StateReaderTaskEither<S, C, L, R> state) =>
+      run(state).flatMap(E.map((t) => t.first));
 
   /// Run the computation and returns the state only.
-  Future<Either<L, S>> execute<R>(StateReaderTaskEither<S, C, L, R> state) =>
-      run(state).then(E.map((t) => t.second));
+  FutureOr<Either<L, S>> execute<R>(StateReaderTaskEither<S, C, L, R> state) =>
+      run(state).flatMap(E.map((t) => t.second));
 
   /// Run the computation and returns a tuple of the result and state.
-  Future<Either<L, Tuple2<R, S>>> run<R>(
+  FutureOr<Either<L, Tuple2<R, S>>> run<R>(
     StateReaderTaskEither<S, C, L, R> state,
   ) {
     if (_closed) {
       return Future.error('closed');
     }
 
-    final future = _future.then((_) => state(_state)(context)());
+    final future = _future.flatMap((_) => state(_state)(context)());
 
-    _future = future.then(
+    _future = future.flatMap(
       _handleResult,
-      onError: (err, st) => null,
     );
 
     return future;
   }
 
   /// Run the computations in sequence
-  Future<Either<L, IList<Tuple2<dynamic, S>>>> sequence(
+  FutureOr<Either<L, IList<Tuple2<dynamic, S>>>> sequence(
     Iterable<StateReaderTaskEither<S, C, L, dynamic>> arr,
   ) =>
-      Future.wait(arr.map(run)).then(E.sequence);
+      arr.fold<FutureOr<Either<L, IList<Tuple2<dynamic, S>>>>>(
+        E.right(IList()),
+        (acc, _) => acc.flatMap(E.fold(
+          (l) => E.left(l),
+          (list) => run(_).flatMap(E.fold(
+            (l) => E.left(l),
+            (a) => E.right(list.add(a)),
+          )),
+        )),
+      );
 
   /// Run the computations in sequence, only returning the results
-  Future<Either<L, IList<dynamic>>> evaluateSeq(
+  FutureOr<Either<L, IList<dynamic>>> evaluateSeq(
     Iterable<StateReaderTaskEither<S, C, L, dynamic>> arr,
   ) =>
-      sequence(arr).then(E.map((arr) => arr.map((t) => t.first).toIList()));
+      sequence(arr).flatMap(E.map((arr) => arr.map((t) => t.first).toIList()));
 
   /// Run the computations in sequence, only returning the new states
-  Future<Either<L, IList<S>>> executeSeq(
+  FutureOr<Either<L, IList<S>>> executeSeq(
     Iterable<StateReaderTaskEither<S, C, L, dynamic>> arr,
   ) =>
-      sequence(arr).then(E.map((arr) => arr.map((t) => t.second).toIList()));
+      sequence(arr).flatMap(E.map((arr) => arr.map((t) => t.second).toIList()));
 
   Either<L, Tuple2<R, S>> _handleResult<R>(Either<L, Tuple2<R, S>> result) {
     final previous = _state;
@@ -93,6 +101,6 @@ class StateRTEMachine<S, C, L> implements StateMachineBase<S> {
   void close() {
     if (_closed) return;
     _closed = true;
-    _future.whenComplete(() => _controller?.close());
+    _future.flatMap((_) => _controller?.close());
   }
 }

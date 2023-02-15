@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:fpdt/either.dart' as E;
 import 'package:fpdt/fpdt.dart';
-import 'package:fpdt/future_or.dart';
 import 'package:fpdt/reader.dart' as Rd;
 import 'package:fpdt/reader_task.dart' as RT;
 import 'package:fpdt/task_either.dart' as TE;
@@ -22,7 +21,7 @@ ReaderTaskEither<R, E, A> right<R, E, A>(A a) => Rd.of(TE.right(a));
 /// Projects a [TE.left] value in a [ReaderTaskEither].
 ReaderTaskEither<R, E, A> left<R, E, A>(E e) => Rd.of(TE.left(e));
 
-Future<A> Function(R r) toFutureOr<R, A>(ReaderTaskEither<R, dynamic, A> f) =>
+Future<A> Function(R r) toFuture<R, A>(ReaderTaskEither<R, dynamic, A> f) =>
     (r) => Future.sync(f(r).chain(TE.fold(
           (l) => throw l,
           identity,

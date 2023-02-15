@@ -8,7 +8,6 @@ import 'package:fpdt/reader_task.dart' as RT;
 import 'package:fpdt/reader_task_either.dart' as RTE;
 import 'package:fpdt/task.dart' as T;
 import 'package:fpdt/task_either.dart' as TE;
-import 'package:fpdt/future_or.dart';
 
 typedef StateReaderTaskEither<S, C, L, R> = ReaderTaskEither<C, L, Tuple2<R, S>>
     Function(S s);
@@ -150,7 +149,8 @@ StateReaderTaskEither<S, C, L2, R> Function(StateReaderTaskEither<S, C, L1, R>)
         (fa) => fa.compose(RTE.mapLeft(f));
 
 StateReaderTaskEither<S, R, E, IList<B>> Function(
-    Iterable<A>) traverseIterable<S, R, E, A, B>(
+  Iterable<A>,
+) traverseIterable<S, R, E, A, B>(
   StateReaderTaskEither<S, R, E, B> Function(A a) f,
 ) =>
     (as) =>

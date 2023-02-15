@@ -10,6 +10,7 @@ library fpdt;
 
 // Common functions and helpers
 export 'function.dart';
+export 'future_or.dart' hide fromThrowable;
 export 'iterable.dart';
 export 'map.dart';
 export 'tuple.dart';
