@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:fpdt/either.dart' as E;
 import 'package:fpdt/fpdt.dart';
 import 'package:fpdt/task_either.dart' as TE;
+import 'package:fpdt/unit.dart' as U;
 
 class ReaderTaskEither<R, E, A> implements Reader<R, TaskEither<E, A>> {
   final TaskEither<E, A> Function(R r) _task;
@@ -25,6 +26,8 @@ ReaderTaskEither<R, E, A> right<R, E, A>(A a) =>
 /// Projects a [TE.left] value in a [ReaderTaskEither].
 ReaderTaskEither<R, E, A> left<R, E, A>(E e) =>
     ReaderTaskEither((r) => TE.left(e));
+
+ReaderTaskEither<R, E, Unit> unit<R, E>() => right(U.unit);
 
 Future<A> Function(R r) toFuture<R, E, A>(ReaderTaskEither<R, E, A> f) =>
     (r) => TE.toFuture(f(r));
@@ -145,6 +148,11 @@ ReaderTaskEither<C, L, R2> Function(
   ReaderTaskEither<C, L, R2> chain,
 ) =>
     flatMap((_) => chain);
+
+ReaderTaskEither<C, L, Unit> asUnit<C, L, R>(
+  ReaderTaskEither<C, L, R> task,
+) =>
+    task.p(zipRight(unit()));
 
 /// Composes computations in sequence, using the return value from the previous
 /// computation.
