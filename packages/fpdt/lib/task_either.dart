@@ -24,7 +24,7 @@ TaskEither<L, R> right<L, R>(R a) =>
 TaskEither<L, R> left<L, R>(L a) =>
     TaskEither(task.value(either.left<L, R>(a)));
 
-TaskEither<L, Unit> unit<L>() => TaskEither(task.value(either.right(U.unit)));
+TaskEither<L, Unit> unit<L>() => right(U.unit);
 
 /// Convert a [TaskEither] into a [Future], that throws an error on [Left].
 Future<R> toFuture<L, R>(TaskEither<L, R> taskEither) =>

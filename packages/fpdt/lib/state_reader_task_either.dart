@@ -440,10 +440,9 @@ typedef DoFunction<S, C, L, R> = Future<Tuple2<R, S>> Function(
 
 // ignore: non_constant_identifier_names
 StateReaderTaskEither<S, C, L, R> Do<S, C, L, R>(DoFunction<S, C, L, R> f) =>
-    StateReaderTaskEither((s) => ReaderTaskEither((c) => TaskEither(Task(() {
-          final adapter = _doAdapter<S, C, L>(s, c);
-          return f(adapter, s, c).then(
+    StateReaderTaskEither((s) => ReaderTaskEither((c) => TaskEither(Task(
+          () => f(_doAdapter(s, c), s, c).then(
             (a) => Ei.right<L, Tuple2<R, S>>(a),
             onError: (e) => Ei.left<L, Tuple2<R, S>>(e),
-          );
-        }))));
+          ),
+        ))));

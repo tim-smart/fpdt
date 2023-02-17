@@ -1,3 +1,7 @@
+## 0.1.2
+
+- Clean up unit / asUnit / as / zipRight
+
 ## 0.1.1
 
 - Add unit methods to SRTE
