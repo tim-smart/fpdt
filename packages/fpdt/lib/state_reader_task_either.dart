@@ -8,6 +8,7 @@ import 'package:fpdt/reader_task.dart' as RT;
 import 'package:fpdt/reader_task_either.dart' as RTE;
 import 'package:fpdt/task.dart' as T;
 import 'package:fpdt/task_either.dart' as TE;
+import 'package:fpdt/unit.dart' as U;
 
 class StateReaderTaskEither<S, C, L, R> {
   StateReaderTaskEither(this._task);
@@ -19,6 +20,9 @@ StateReaderTaskEither<S, R, E, A> left<S, R, E, A>(E e) =>
     StateReaderTaskEither((s) => RTE.left(e));
 StateReaderTaskEither<S, R, E, A> right<S, R, E, A>(A a) =>
     StateReaderTaskEither((s) => RTE.right(tuple2(a, s)));
+
+StateReaderTaskEither<S, R, E, Unit> unit<S, R, E>() =>
+    StateReaderTaskEither((s) => RTE.right(tuple2(U.unit, s)));
 
 /// Replace the [StateReaderTaskEither] with one that resolves to an [Right] containing
 /// the given value.
@@ -32,7 +36,7 @@ StateReaderTaskEither<S, C, L, R> gets<S, C, L, R>(R Function(S s) f) =>
     StateReaderTaskEither((s) => RTE.right(tuple2(f(s), s)));
 
 StateReaderTaskEither<S, C, L, Unit> put<S, C, L>(S s) =>
-    StateReaderTaskEither((_) => RTE.right(tuple2(unit, s)));
+    StateReaderTaskEither((_) => RTE.right(tuple2(U.unit, s)));
 
 StateReaderTaskEither<S, C, L, Unit> Function(
     StateReaderTaskEither<S, C, L, dynamic>) chainPut<S, C, L>(
@@ -40,7 +44,7 @@ StateReaderTaskEither<S, C, L, Unit> Function(
     call(put(s));
 
 StateReaderTaskEither<S, C, L, Unit> modify<S, C, L, R>(S Function(S s) f) =>
-    StateReaderTaskEither((s) => RTE.right(tuple2(unit, f(s))));
+    StateReaderTaskEither((s) => RTE.right(tuple2(U.unit, f(s))));
 
 StateReaderTaskEither<S, C, L, Unit> Function(
     StateReaderTaskEither<S, C, L, dynamic>) chainModify<S, C, L>(
@@ -132,10 +136,14 @@ StateReaderTaskEither<S, C, L, R2> Function(StateReaderTaskEither<S, C, L, R1>)
         flatMap((_) => chain);
 
 StateReaderTaskEither<S, C, L, R2> Function(
-    StateReaderTaskEither<S, C, L, R1>) replace<S, C, L, R1, R2>(
+    StateReaderTaskEither<S, C, L, R1>) zipRight<S, C, L, R1, R2>(
   StateReaderTaskEither<S, C, L, R2> chain,
 ) =>
     (fa) => StateReaderTaskEither((s) => fa(s).chain(RTE.zipRight(chain(s))));
+
+StateReaderTaskEither<S, C, L, Unit> asUnit<S, C, L, R>(
+        StateReaderTaskEither<S, C, L, R> task) =>
+    task.p(zipRight(unit()));
 
 StateReaderTaskEither<S, R, E, B> Function(StateReaderTaskEither<S, R, E, A>)
     map<S, R, E, A, B>(B Function(A a) f) => (fa) => StateReaderTaskEither(
@@ -215,8 +223,8 @@ StateReaderTaskEither<S, C, L, Unit> Function(
   ReaderTaskEither<C, L, S> Function(S s) Function(R a) f,
 ) =>
     flatMap(
-      (a) =>
-          StateReaderTaskEither(f(a).compose(RTE.map((s) => tuple2(unit, s)))),
+      (a) => StateReaderTaskEither(
+          f(a).compose(RTE.map((s) => tuple2(U.unit, s)))),
     );
 
 StateReaderTaskEither<S, C, L, R2> Function(StateReaderTaskEither<S, C, L, R1>)

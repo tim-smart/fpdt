@@ -1,3 +1,7 @@
+## 0.1.1
+
+- Add unit methods to SRTE
+
 ## 0.1.0
 
 - Uses classes to improve type readability
