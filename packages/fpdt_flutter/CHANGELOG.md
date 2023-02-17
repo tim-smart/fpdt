@@ -1,3 +1,7 @@
+## 0.3.0
+
+- Update fpdt
+
 ## 0.2.3
 
 - Add do notation for flutter ops
