@@ -1,10 +1,11 @@
 import 'dart:async';
 
-import 'package:fpdt/fpdt.dart';
 import 'package:fpdt/either.dart' as either;
+import 'package:fpdt/fpdt.dart';
+import 'package:fpdt/future_or.dart';
 import 'package:fpdt/option.dart' as option;
 import 'package:fpdt/task.dart' as task;
-import 'package:fpdt/future_or.dart';
+import 'package:fpdt/unit.dart' as U;
 
 /// Represents a [Task] that resolves to an [Either].
 /// The underlying type is a [Function] that returns a [FutureOr<Either>].
@@ -22,6 +23,8 @@ TaskEither<L, R> right<L, R>(R a) =>
 /// Create a [TaskEither] that resolves to an [Left].
 TaskEither<L, R> left<L, R>(L a) =>
     TaskEither(task.value(either.left<L, R>(a)));
+
+TaskEither<L, Unit> unit<L>() => TaskEither(task.value(either.right(U.unit)));
 
 /// Convert a [TaskEither] into a [Future], that throws an error on [Left].
 Future<R> toFuture<L, R>(TaskEither<L, R> taskEither) =>
@@ -204,10 +207,17 @@ TaskEither<L, R2> Function(TaskEither<L, R1> task) call<L, R1, R2>(
 ) =>
     flatMap((_) => chain);
 
-TaskEither<L, R2> Function(TaskEither<L, R1> task) replace<L, R1, R2>(
+TaskEither<L, R2> Function(TaskEither<L, R1> task) zipRight<L, R1, R2>(
   TaskEither<L, R2> chain,
 ) =>
     (fa) => TaskEither(fa.p(task.call(chain)));
+
+TaskEither<L, R2> Function(TaskEither<L, R1> task) as<L, R1, R2>(
+  R2 r2,
+) =>
+    zipRight(right(r2));
+
+TaskEither<L, Unit> asUnit<L, R>(TaskEither<L, R> task) => task.p(as(U.unit));
 
 /// If the given [TaskEither] is an [Right], then unwrap the result and transform
 /// it into another [TaskEither] - but only keep [Left] results.

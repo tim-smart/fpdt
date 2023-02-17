@@ -149,10 +149,17 @@ ReaderTaskEither<C, L, R2> Function(
 ) =>
     flatMap((_) => chain);
 
+ReaderTaskEither<C, L, R2> Function(
+  ReaderTaskEither<C, L, R1> task,
+) as<C, L, R1, R2>(
+  R2 r2,
+) =>
+    zipRight(right(r2));
+
 ReaderTaskEither<C, L, Unit> asUnit<C, L, R>(
   ReaderTaskEither<C, L, R> task,
 ) =>
-    task.p(zipRight(unit()));
+    task.p(as(U.unit));
 
 /// Composes computations in sequence, using the return value from the previous
 /// computation.

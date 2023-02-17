@@ -141,6 +141,12 @@ StateReaderTaskEither<S, C, L, R2> Function(
 ) =>
     (fa) => StateReaderTaskEither((s) => fa(s).chain(RTE.zipRight(chain(s))));
 
+StateReaderTaskEither<S, C, L, R2> Function(StateReaderTaskEither<S, C, L, R1>)
+    as<S, C, L, R1, R2>(
+  R2 r2,
+) =>
+        zipRight(right(r2));
+
 StateReaderTaskEither<S, C, L, Unit> asUnit<S, C, L, R>(
         StateReaderTaskEither<S, C, L, R> task) =>
     task.p(zipRight(unit()));
