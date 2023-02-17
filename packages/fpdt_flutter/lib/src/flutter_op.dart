@@ -38,5 +38,5 @@ Tuple2<TaskEitherValue<E, A>, TaskEither<E, A>> useFlutterOpWithState<E, A>(
     return withValueNotifier(state, task);
   }, deps);
 
-  return tuple2(state.value, fn);
+  return tuple2(state.value, TaskEither(Task(fn)));
 }
