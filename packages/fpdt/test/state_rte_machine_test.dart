@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:fpdt/either.dart' as E;
 import 'package:fpdt/fpdt.dart';
 import 'package:fpdt/reader_task_either.dart' as RTE;
-import 'package:fpdt/state_reader_task_either.dart';
+import 'package:fpdt/state_reader_task_either.dart' hide unit;
 import 'package:test/test.dart';
 
 enum StateEnum {
