@@ -420,6 +420,20 @@ Option<R> fromEither<L, R>(Either<L, R> either) =>
 /// ```
 Option<A> flatten<A>(Option<Option<A>> option) => option._bindSome(identity);
 
+Option<IList<B>> Function(Iterable<A>) traverse<A, B>(
+  Option<B> Function(A a) f,
+) =>
+    (as) => as.fold(
+          some(IList()),
+          (acc, a) => acc._fold(
+            none,
+            (bs) => f(a)._fold(
+              none,
+              (b) => some(bs.add(b)),
+            ),
+          ),
+        );
+
 /// Represents a value that could be missing - an \[option\]al value.
 ///
 /// If the value is present, then it will be wrapped in a [Some] instance.

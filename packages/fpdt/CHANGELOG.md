@@ -1,3 +1,7 @@
+## 0.1.0
+
+- Uses classes to improve type readability
+
 ## 0.0.71
 
 - Expose initial state and context to do notation

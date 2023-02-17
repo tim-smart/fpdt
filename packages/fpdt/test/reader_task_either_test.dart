@@ -105,7 +105,7 @@ void main() {
     });
 
     test('does not transform left', () async {
-      final r = left('fail').chain(call(left('asdf')));
+      final r = left('fail').chain(zipRight(left('asdf')));
       expect(
         await r(kContext)(),
         E.left('fail'),
@@ -115,7 +115,7 @@ void main() {
 
   group('call', () {
     test('transforms the StateReaderTaskEither', () async {
-      final r = asks((Context c) => c.value).chain(call(right(124)));
+      final r = asks((Context c) => c.value).chain(zipRight(right(124)));
       expect(
         await r(kContext)(),
         E.right(124),
@@ -123,8 +123,8 @@ void main() {
     });
 
     test('resolves left values', () async {
-      final r =
-          asks<Context, String, int>((c) => c.value).chain(call(left('fail')));
+      final r = asks<Context, String, int>((c) => c.value)
+          .chain(zipRight(left('fail')));
       expect(
         await r(kContext)(),
         E.left('fail'),

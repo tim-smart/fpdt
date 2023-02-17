@@ -303,13 +303,7 @@ void main() {
 
       final result = await TO.sequence(input.map(multiplier))();
 
-      expect(result, [
-        O.some(2),
-        O.some(4),
-        O.some(6),
-        O.none(),
-        O.some(10),
-      ]);
+      expect(result, kNone);
     });
   });
 
@@ -325,10 +319,7 @@ void main() {
         TO.some(2).chain(TO.tap((i) => taskTwoComplete = true)),
       ])();
 
-      expect(result, [
-        O.some(1),
-        O.some(2),
-      ]);
+      expect(result, O.some(const IListConst([1, 2])));
     });
   });
 

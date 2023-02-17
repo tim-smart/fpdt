@@ -5,12 +5,13 @@ import 'package:test/test.dart';
 
 enum GumballState { unpaid, paid }
 
-State<GumballState, Option<String>> pay(int amount) => (s) =>
-    amount >= 50 ? tuple2(O.none(), GumballState.paid) : tuple2(kNone, s);
+State<GumballState, Option<String>> pay(int amount) => State((s) =>
+    amount >= 50 ? tuple2(O.none(), GumballState.paid) : tuple2(kNone, s));
 
-State<GumballState, Option<String>> turn() => (s) => s == GumballState.paid
-    ? tuple2(O.some("Gumball"), GumballState.unpaid)
-    : tuple2(kNone, s);
+State<GumballState, Option<String>> turn() =>
+    State((s) => s == GumballState.paid
+        ? tuple2(O.some("Gumball"), GumballState.unpaid)
+        : tuple2(kNone, s));
 
 void main() {
   group('flatMap', () {

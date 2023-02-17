@@ -9,12 +9,16 @@ import 'package:fpdt/reader_task_either.dart' as RTE;
 import 'package:fpdt/task.dart' as T;
 import 'package:fpdt/task_either.dart' as TE;
 
-typedef StateReaderTaskEither<S, C, L, R> = ReaderTaskEither<C, L, Tuple2<R, S>>
-    Function(S s);
+class StateReaderTaskEither<S, C, L, R> {
+  StateReaderTaskEither(this._task);
+  final ReaderTaskEither<C, L, Tuple2<R, S>> Function(S s) _task;
+  ReaderTaskEither<C, L, Tuple2<R, S>> call(S s) => _task(s);
+}
 
-StateReaderTaskEither<S, R, E, A> left<S, R, E, A>(E e) => (s) => RTE.left(e);
+StateReaderTaskEither<S, R, E, A> left<S, R, E, A>(E e) =>
+    StateReaderTaskEither((s) => RTE.left(e));
 StateReaderTaskEither<S, R, E, A> right<S, R, E, A>(A a) =>
-    (s) => RTE.right(tuple2(a, s));
+    StateReaderTaskEither((s) => RTE.right(tuple2(a, s)));
 
 /// Replace the [StateReaderTaskEither] with one that resolves to an [Right] containing
 /// the given value.
@@ -22,13 +26,13 @@ StateReaderTaskEither<S, C, L, R2> Function(StateReaderTaskEither<S, C, L, R>)
     pure<S, C, L, R, R2>(R2 a) => (_) => right(a);
 
 StateReaderTaskEither<S, C, L, S> get<S, C, L>() =>
-    (s) => RTE.right(tuple2(s, s));
+    StateReaderTaskEither((s) => RTE.right(tuple2(s, s)));
 
 StateReaderTaskEither<S, C, L, R> gets<S, C, L, R>(R Function(S s) f) =>
-    (s) => RTE.right(tuple2(f(s), s));
+    StateReaderTaskEither((s) => RTE.right(tuple2(f(s), s)));
 
 StateReaderTaskEither<S, C, L, Unit> put<S, C, L>(S s) =>
-    (_) => RTE.right(tuple2(unit, s));
+    StateReaderTaskEither((_) => RTE.right(tuple2(unit, s)));
 
 StateReaderTaskEither<S, C, L, Unit> Function(
     StateReaderTaskEither<S, C, L, dynamic>) chainPut<S, C, L>(
@@ -36,7 +40,7 @@ StateReaderTaskEither<S, C, L, Unit> Function(
     call(put(s));
 
 StateReaderTaskEither<S, C, L, Unit> modify<S, C, L, R>(S Function(S s) f) =>
-    (s) => RTE.right(tuple2(unit, f(s)));
+    StateReaderTaskEither((s) => RTE.right(tuple2(unit, f(s))));
 
 StateReaderTaskEither<S, C, L, Unit> Function(
     StateReaderTaskEither<S, C, L, dynamic>) chainModify<S, C, L>(
@@ -44,12 +48,13 @@ StateReaderTaskEither<S, C, L, Unit> Function(
     call(modify(f));
 
 /// Projects a value from the global context in a [StateReaderTaskEither].
-StateReaderTaskEither<S, C, L, C> ask<S, C, L>() =>
-    (s) => (c) => TE.right(tuple2(c, s));
+StateReaderTaskEither<S, C, L, C> ask<S, C, L>() => StateReaderTaskEither(
+    (s) => ReaderTaskEither((c) => TE.right(tuple2(c, s))));
 
 /// Projects a value from the global context in a [StateReaderTaskEither].
 StateReaderTaskEither<S, C, L, R> asks<S, C, L, R>(R Function(C c) f) =>
-    (s) => (c) => TE.right(tuple2(f(c), s));
+    StateReaderTaskEither(
+        (s) => ReaderTaskEither((c) => TE.right(tuple2(f(c), s))));
 
 /// If the function returns true, then the resolved [Either] will be a [Right]
 /// containing the given `value`.
@@ -77,11 +82,11 @@ StateReaderTaskEither<S, C, L, R> Function(R r) fromPredicateK<S, C, L, R>(
 /// Returns a [StateReaderTaskEither] that resolves to the given [ReaderTaskEither].
 StateReaderTaskEither<S, C, L, R> fromReaderTaskEither<S, C, L, R>(
         ReaderTaskEither<C, L, R> rte) =>
-    (s) => rte.chain((RTE.map((a) => tuple2(a, s))));
+    StateReaderTaskEither((s) => rte.chain((RTE.map((a) => tuple2(a, s)))));
 
 /// Returns a [StateReaderTaskEither] that resolves to the given [Either].
 StateReaderTaskEither<S, C, L, R> fromState<S, C, L, R>(State<S, R> f) =>
-    (s) => RTE.right(f(s));
+    StateReaderTaskEither((s) => RTE.right(f(s)));
 
 /// Returns a [StateReaderTaskEither] that resolves to the given [Either].
 StateReaderTaskEither<S, C, L, R> fromEither<S, C, L, R>(Either<L, R> either) =>
@@ -94,23 +99,31 @@ StateReaderTaskEither<S, C, E, A> Function(Option<A> fa) fromOption<S, C, E, A>(
 
 /// Transforms a [Reader] into a [StateReaderTaskEither], wrapping the result in an [Right].
 StateReaderTaskEither<S, C, L, R> fromReader<S, C, L, R>(Reader<C, R> f) =>
-    (s) => RTE.fromReader(f.chain(Rd.map((r) => tuple2(r, s))));
+    StateReaderTaskEither(
+        (s) => RTE.fromReader(f.chain(Rd.map((r) => tuple2(r, s)))));
 
 /// Transforms a [ReaderTask] into a [StateReaderTaskEither], wrapping the
 /// result in an [Right].
 StateReaderTaskEither<S, C, L, R> fromReaderTask<S, C, L, R>(
-        ReaderTask<C, R> f) =>
-    (s) => RTE.fromReaderTask(f.chain(RT.map((r) => tuple2(r, s))));
+  ReaderTask<C, R> f,
+) =>
+    StateReaderTaskEither(
+      (s) => RTE.fromReaderTask(f.chain(RT.map((r) => tuple2(r, s)))),
+    );
 
 /// Transforms a [Task] into a [StateReaderTaskEither], wrapping the result in an [Right].
 StateReaderTaskEither<S, C, L, R> fromTask<S, C, L, R>(Task<R> task) =>
-    (s) => RTE.fromTask(task.chain(T.map((a) => tuple2(a, s))));
+    StateReaderTaskEither(
+      (s) => RTE.fromTask(task.chain(T.map((a) => tuple2(a, s)))),
+    );
 
 /// Returns a [StateReaderTaskEither] that resolves to the given [TaskEither].
 StateReaderTaskEither<S, C, L, R> fromTaskEither<S, C, L, R>(
   TaskEither<L, R> taskEither,
 ) =>
-    (s) => RTE.fromTaskEither(taskEither.chain(TE.map((a) => tuple2(a, s))));
+    StateReaderTaskEither(
+      (s) => RTE.fromTaskEither(taskEither.chain(TE.map((a) => tuple2(a, s)))),
+    );
 
 StateReaderTaskEither<S, C, L, R2> Function(StateReaderTaskEither<S, C, L, R1>)
     call<S, C, L, R1, R2>(
@@ -118,15 +131,16 @@ StateReaderTaskEither<S, C, L, R2> Function(StateReaderTaskEither<S, C, L, R1>)
 ) =>
         flatMap((_) => chain);
 
-StateReaderTaskEither<S, C, L, R2> Function(StateReaderTaskEither<S, C, L, R1>)
-    replace<S, C, L, R1, R2>(
+StateReaderTaskEither<S, C, L, R2> Function(
+    StateReaderTaskEither<S, C, L, R1>) replace<S, C, L, R1, R2>(
   StateReaderTaskEither<S, C, L, R2> chain,
 ) =>
-        (fa) => (s) => fa(s).chain(RTE.replace(chain(s)));
+    (fa) => StateReaderTaskEither((s) => fa(s).chain(RTE.zipRight(chain(s))));
 
 StateReaderTaskEither<S, R, E, B> Function(StateReaderTaskEither<S, R, E, A>)
-    map<S, R, E, A, B>(B Function(A a) f) =>
-        (fa) => fa.compose(RTE.map((t) => tuple2(f(t.first), t.second)));
+    map<S, R, E, A, B>(B Function(A a) f) => (fa) => StateReaderTaskEither(
+          fa.call.compose(RTE.map((t) => tuple2(f(t.first), t.second))),
+        );
 
 /// Run a side effect on a [Right] value. The side effect can optionally return
 /// a [Future].
@@ -134,7 +148,7 @@ StateReaderTaskEither<S, C, L, R> Function(StateReaderTaskEither<S, C, L, R>)
     tap<S, C, L, R>(
   FutureOr<void> Function(R r) f,
 ) =>
-        flatMapFirstTask((r) => () => f(r));
+        flatMapFirstTask((r) => Task(() => f(r)));
 
 /// Run a side effect on a [Left] value. The side effect can optionally return
 /// a [Future].
@@ -142,19 +156,19 @@ StateReaderTaskEither<S, C, L, R> Function(StateReaderTaskEither<S, C, L, R>)
     tapLeft<S, C, L, R>(
   FutureOr<void> Function(L value) f,
 ) =>
-        (fa) => fa.compose(RTE.tapLeft(f));
+        (fa) => StateReaderTaskEither(fa.call.compose(RTE.tapLeft(f)));
 
 StateReaderTaskEither<S, C, L2, R> Function(StateReaderTaskEither<S, C, L1, R>)
     mapLeft<S, C, L1, L2, R>(L2 Function(L1 a) f) =>
-        (fa) => fa.compose(RTE.mapLeft(f));
+        (fa) => StateReaderTaskEither(fa.call.compose(RTE.mapLeft(f)));
 
 StateReaderTaskEither<S, R, E, IList<B>> Function(
   Iterable<A>,
 ) traverseIterable<S, R, E, A, B>(
   StateReaderTaskEither<S, R, E, B> Function(A a) f,
 ) =>
-    (as) =>
-        (s) => (r) => () => as.fold<FutureOr<Either<E, Tuple2<IList<B>, S>>>>(
+    (as) => StateReaderTaskEither((s) => ReaderTaskEither((r) =>
+        TaskEither(Task(() => as.fold<FutureOr<Either<E, Tuple2<IList<B>, S>>>>(
               Ei.right(tuple2(IList(), s)),
               (acc, a) => acc.flatMap(Ei.fold(
                 (e) => acc,
@@ -163,7 +177,7 @@ StateReaderTaskEither<S, R, E, IList<B>> Function(
                       (t) => Ei.right(tuple2(bs.first.add(t.first), t.second)),
                     ))),
               )),
-            );
+            )))));
 
 StateReaderTaskEither<S, R, E, IList<A>> sequence<S, R, E, A>(
         Iterable<StateReaderTaskEither<S, R, E, A>> arr) =>
@@ -171,7 +185,9 @@ StateReaderTaskEither<S, R, E, IList<A>> sequence<S, R, E, A>(
 
 StateReaderTaskEither<S, R, E, B> Function(StateReaderTaskEither<S, R, E, A>)
     flatMap<S, R, E, A, B>(StateReaderTaskEither<S, R, E, B> Function(A a) f) =>
-        (fa) => fa.compose(RTE.flatMap((a) => f(a.first)(a.second)));
+        (fa) => StateReaderTaskEither(
+              fa.call.compose(RTE.flatMap((a) => f(a.first)(a.second))),
+            );
 
 StateReaderTaskEither<S, R, E, Tuple2<A, B>> Function(
     StateReaderTaskEither<S, R, E, A>) flatMapTuple2<S, R, E, A, B>(
@@ -187,12 +203,21 @@ StateReaderTaskEither<S, R, E, Tuple3<A, B, C>> Function(
 StateReaderTaskEither<S, C, L, R2> Function(StateReaderTaskEither<S, C, L, R1>)
     flatMapR<S, C, L, R1, R2>(
             ReaderTaskEither<C, L, R2> Function(S s) Function(R1 a) f) =>
-        flatMap((a) => (s) => f(a)(s).chain(RTE.map((b) => tuple2(b, s))));
+        flatMap(
+          (a) => StateReaderTaskEither(
+            (s) => f(a)(s).chain(RTE.map((b) => tuple2(b, s))),
+          ),
+        );
 
-StateReaderTaskEither<S, C, L, Unit> Function(StateReaderTaskEither<S, C, L, R>)
-    flatMapS<S, C, L, R>(
-            ReaderTaskEither<C, L, S> Function(S s) Function(R a) f) =>
-        flatMap((a) => f(a).compose(RTE.map((s) => tuple2(unit, s))));
+StateReaderTaskEither<S, C, L, Unit> Function(
+  StateReaderTaskEither<S, C, L, R>,
+) flatMapS<S, C, L, R>(
+  ReaderTaskEither<C, L, S> Function(S s) Function(R a) f,
+) =>
+    flatMap(
+      (a) =>
+          StateReaderTaskEither(f(a).compose(RTE.map((s) => tuple2(unit, s)))),
+    );
 
 StateReaderTaskEither<S, C, L, R2> Function(StateReaderTaskEither<S, C, L, R1>)
     flatMapTask<S, C, L, R1, R2>(
@@ -294,11 +319,11 @@ StateReaderTaskEither<S, C, L, R> flatten<S, C, L, R>(
 
 ReaderTaskEither<C, L, R> Function(S s) evaluate<S, C, L, R>(
         StateReaderTaskEither<S, C, L, R> f) =>
-    f.compose(RTE.map((a) => a.first));
+    f.call.compose(RTE.map((a) => a.first));
 
 ReaderTaskEither<C, L, S> Function(S s) execute<S, C, L, R>(
         StateReaderTaskEither<S, C, L, R> f) =>
-    f.compose(RTE.map((a) => a.second));
+    f.call.compose(RTE.map((a) => a.second));
 
 /// Runs the given task, and returns the result as an [Right].
 /// If it throws an error, the the error is passed to `onError`, which determines
@@ -307,7 +332,9 @@ StateReaderTaskEither<S, C, L, R> tryCatch<S, C, L, R>(
   FutureOr<R> Function() task,
   L Function(dynamic err, StackTrace stackTrace) onError,
 ) =>
-    (s) => (r) => TE.tryCatch(task, onError).p(TE.map((r) => tuple2(r, s)));
+    StateReaderTaskEither((s) => ReaderTaskEither(
+          (r) => TE.tryCatch(task, onError).p(TE.map((r) => tuple2(r, s))),
+        ));
 
 /// A variant of [tryCatch] that accepts an external parameter.
 StateReaderTaskEither<S, C, L, R> Function(A value) tryCatchK<S, C, A, L, R>(
@@ -337,11 +364,12 @@ StateReaderTaskEither<S, C, L, R2> Function(StateReaderTaskEither<S, C, L, R>)
 
 /// If the given [StateReaderTaskEither] is an [Left], then unwrap the result and transform
 /// it into an [alt]ernative [StateReaderTaskEither].
-StateReaderTaskEither<S, C, L, R> Function(StateReaderTaskEither<S, C, L, R>)
-    alt<S, C, L, R>(
+StateReaderTaskEither<S, C, L, R> Function(
+    StateReaderTaskEither<S, C, L, R>) alt<S, C, L, R>(
   StateReaderTaskEither<S, C, L, R> Function(L left) orElse,
 ) =>
-        (f) => (s) => f(s).chain(RTE.alt((l) => orElse(l)(s)));
+    (f) =>
+        StateReaderTaskEither((s) => f(s).chain(RTE.alt((l) => orElse(l)(s))));
 
 /// Similar to [alt], but the alternative [ReaderTaskEither] is given directly.
 StateReaderTaskEither<S, C, L, R> Function(StateReaderTaskEither<S, C, L, R>)
@@ -355,7 +383,7 @@ StateReaderTaskEither<S, C, L, R> Function(StateReaderTaskEither<S, C, L, R>)
     delay<S, C, L, R>(
   Duration d,
 ) =>
-        (f) => f.compose(RTE.delay(d));
+        (f) => StateReaderTaskEither(f.call.compose(RTE.delay(d)));
 
 /// Conditionally filter the [StateReaderTaskEither], transforming [Right] values to [Left].
 StateReaderTaskEither<S, C, L, R> Function(StateReaderTaskEither<S, C, L, R>)
@@ -363,10 +391,10 @@ StateReaderTaskEither<S, C, L, R> Function(StateReaderTaskEither<S, C, L, R>)
   bool Function(R value) predicate,
   L Function(R value) orElse,
 ) =>
-        (f) => f.compose(RTE.filter(
+        (f) => StateReaderTaskEither(f.call.compose(RTE.filter(
               (t) => predicate(t.first),
               (t) => orElse(t.first),
-            ));
+            )));
 
 typedef _DoAdapter<S, C, L> = FutureOr<Tuple2<R, S>> Function<R>(
   StateReaderTaskEither<S, C, L, R>,
@@ -398,10 +426,10 @@ typedef DoFunction<S, C, L, R> = Future<Tuple2<R, S>> Function(
 
 // ignore: non_constant_identifier_names
 StateReaderTaskEither<S, C, L, R> Do<S, C, L, R>(DoFunction<S, C, L, R> f) =>
-    (s) => (c) => () {
+    StateReaderTaskEither((s) => ReaderTaskEither((c) => TaskEither(Task(() {
           final adapter = _doAdapter<S, C, L>(s, c);
           return f(adapter, s, c).then(
             (a) => Ei.right<L, Tuple2<R, S>>(a),
             onError: (e) => Ei.left<L, Tuple2<R, S>>(e),
           );
-        };
+        }))));

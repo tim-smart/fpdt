@@ -38,7 +38,9 @@ void main() {
       expect(r, E.right(unit));
 
       expect(
-        await s.evaluate((_) => RTE.right(tuple2(123, StateEnum.three))),
+        await s.evaluate(StateReaderTaskEither(
+          (_) => RTE.right(tuple2(123, StateEnum.three)),
+        )),
         E.right(123),
       );
       expect(s.state, StateEnum.three);
@@ -60,7 +62,9 @@ void main() {
 
       s.evaluate(put(StateEnum.two));
       s.evaluate(put(StateEnum.three));
-      await s.evaluate((_) => RTE.right(tuple2(123, StateEnum.four)));
+      await s.evaluate(
+        StateReaderTaskEither((_) => RTE.right(tuple2(123, StateEnum.four))),
+      );
       s.close();
     });
   });
@@ -82,7 +86,7 @@ void main() {
         await s.sequence([
           put(StateEnum.two),
           put(StateEnum.three),
-          (_) => RTE.right(tuple2(123, StateEnum.four)),
+          StateReaderTaskEither((_) => RTE.right(tuple2(123, StateEnum.four))),
         ]),
         E.right(const IListConst([
           Tuple2(unit, StateEnum.two),

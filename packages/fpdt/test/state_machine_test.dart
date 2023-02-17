@@ -17,7 +17,7 @@ void main() {
       s.evaluate(put(StateEnum.two));
       expect(s.state, StateEnum.two);
 
-      expect(s.evaluate((_) => tuple2(123, StateEnum.three)), 123);
+      expect(s.evaluate(State((_) => tuple2(123, StateEnum.three))), 123);
       expect(s.state, StateEnum.three);
     });
   });
@@ -35,7 +35,7 @@ void main() {
       );
 
       s.evaluate(put(StateEnum.two));
-      s.evaluate((_) => tuple2(123, StateEnum.three));
+      s.evaluate(State((_) => tuple2(123, StateEnum.three)));
       s.close();
     });
   });

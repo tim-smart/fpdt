@@ -2,30 +2,32 @@ import 'dart:async';
 
 import 'package:fpdt/either.dart' as E;
 import 'package:fpdt/fpdt.dart';
-import 'package:fpdt/reader.dart' as Rd;
-import 'package:fpdt/reader_task.dart' as RT;
 import 'package:fpdt/task_either.dart' as TE;
 
-typedef ReaderTaskEither<R, E, A> = TaskEither<E, A> Function(R);
+class ReaderTaskEither<R, E, A> implements Reader<R, TaskEither<E, A>> {
+  final TaskEither<E, A> Function(R r) _task;
+  ReaderTaskEither(this._task);
+  @override
+  TaskEither<E, A> call(R r) => _task(r);
+}
 
 /// Projects a value from the global context in a [ReaderTaskEither].
-ReaderTaskEither<R, E, R> ask<R, E>() => Rd.asks(TE.right);
+ReaderTaskEither<R, E, R> ask<R, E>() => ReaderTaskEither((r) => TE.right(r));
 
 /// Projects a value from the global context in a [ReaderTaskEither].
 ReaderTaskEither<R, E, A> asks<R, E, A>(A Function(R r) f) =>
-    (r) => TE.right(f(r));
+    ReaderTaskEither((r) => TE.right(f(r)));
 
 /// Projects a [TE.right] value in a [ReaderTaskEither].
-ReaderTaskEither<R, E, A> right<R, E, A>(A a) => Rd.of(TE.right(a));
+ReaderTaskEither<R, E, A> right<R, E, A>(A a) =>
+    ReaderTaskEither((r) => TE.right(a));
 
 /// Projects a [TE.left] value in a [ReaderTaskEither].
-ReaderTaskEither<R, E, A> left<R, E, A>(E e) => Rd.of(TE.left(e));
+ReaderTaskEither<R, E, A> left<R, E, A>(E e) =>
+    ReaderTaskEither((r) => TE.left(e));
 
-Future<A> Function(R r) toFuture<R, A>(ReaderTaskEither<R, dynamic, A> f) =>
-    (r) => Future.sync(f(r).chain(TE.fold(
-          (l) => throw l,
-          identity,
-        )));
+Future<A> Function(R r) toFuture<R, E, A>(ReaderTaskEither<R, E, A> f) =>
+    (r) => TE.toFuture(f(r));
 
 /// Convert a [ReaderTaskEither] into a [Future<void>], that runs the side effect on
 /// [Left].
@@ -33,10 +35,7 @@ Future<void> Function(C) Function(ReaderTaskEither<C, L, dynamic>)
     toFutureVoid<C, L>(
   void Function(L value) onLeft,
 ) =>
-        (f) => (c) => Future.sync(f(c).chain(TE.fold(
-              onLeft,
-              (_) {},
-            )));
+        (f) => (c) => f(c).p(TE.toFutureVoid(onLeft));
 
 /// Replace the [ReaderTaskEither] with one that resolves to an [Right] containing
 /// the given value.
@@ -72,7 +71,7 @@ ReaderTaskEither<C, L, R> Function(R r) fromPredicateK<C, L, R>(
 ReaderTaskEither<C, L, R> Function(Option<R> option) fromOption<C, L, R>(
   L Function() onNone,
 ) =>
-    (o) => (c) => o.chain(TE.fromOption(onNone));
+    (o) => ReaderTaskEither((c) => o.chain(TE.fromOption(onNone)));
 
 /// Create a [TaskEither] from a nullable value. `onNone` is executed if the
 /// given value is `null`.
@@ -80,7 +79,7 @@ ReaderTaskEither<C, L, R> fromNullable<C, L, R>(
   R? value,
   L Function() onNone,
 ) =>
-    (_) => TE.fromNullable(value, onNone);
+    ReaderTaskEither((_) => TE.fromNullable(value, onNone));
 
 /// Create a [TaskEither] from a nullable value. `onNone` is executed if the
 /// value (given to the returned function) is `null`.
@@ -101,25 +100,25 @@ ReaderTaskEither<C, L, R2> Function(
 
 /// Returns a [ReaderTaskEither] that resolves to the given [Either].
 ReaderTaskEither<C, L, R> fromEither<C, L, R>(Either<L, R> either) =>
-    (r) => TE.fromEither(either);
+    ReaderTaskEither((r) => TE.fromEither(either));
 
 /// Transforms a [Reader] into a [ReaderTaskEither], wrapping the result in an [Right].
 ReaderTaskEither<C, L, R> fromReader<C, L, R>(Reader<C, R> f) =>
-    (r) => TE.right(f(r));
+    ReaderTaskEither((r) => TE.right(f(r)));
 
 /// Transforms a [ReaderTask] into a [ReaderTaskEither], wrapping the result in an [Right].
 ReaderTaskEither<C, L, R> fromReaderTask<C, L, R>(ReaderTask<C, R> f) =>
-    f.compose(TE.fromTask);
+    ReaderTaskEither(f.call.compose(TE.fromTask));
 
 /// Transforms a [Task] into a [ReaderTaskEither], wrapping the result in an [Right].
 ReaderTaskEither<C, L, R> fromTask<C, L, R>(Task<R> task) =>
-    (r) => TE.fromTask(task);
+    ReaderTaskEither((r) => TE.fromTask(task));
 
 /// Returns a [ReaderTaskEither] that resolves to the given [TaskEither].
 ReaderTaskEither<C, L, R> fromTaskEither<C, L, R>(
   TaskEither<L, R> taskEither,
 ) =>
-    (c) => taskEither;
+    ReaderTaskEither((c) => taskEither);
 
 /// Runs the given task, and returns the result as an [Right].
 /// If it throws an error, the the error is passed to `onError`, which determines
@@ -128,7 +127,7 @@ ReaderTaskEither<C, L, R> tryCatch<C, L, R>(
   FutureOr<R> Function() task,
   L Function(dynamic err, StackTrace stackTrace) onError,
 ) =>
-    (r) => TE.tryCatch(task, onError);
+    ReaderTaskEither((r) => TE.tryCatch(task, onError));
 
 /// Unwraps the [Either] value, returning a [ReaderTask] that resolves to the
 /// result.
@@ -138,27 +137,23 @@ ReaderTask<R, B> Function(ReaderTaskEither<R, L, A>) fold<R, L, A, B>(
   B Function(L left) onLeft,
   B Function(A right) onRight,
 ) =>
-    RT.map(E.fold(onLeft, onRight));
+    (fa) => ReaderTask((r) => fa(r).p(TE.fold(onLeft, onRight)));
 
-ReaderTaskEither<C, L, R2> Function(ReaderTaskEither<C, L, R1> task)
-    call<C, L, R1, R2>(
+ReaderTaskEither<C, L, R2> Function(
+  ReaderTaskEither<C, L, R1> task,
+) zipRight<C, L, R1, R2>(
   ReaderTaskEither<C, L, R2> chain,
 ) =>
-        flatMap((_) => chain);
-
-ReaderTaskEither<C, L, R2> Function(ReaderTaskEither<C, L, R1> task)
-    replace<C, L, R1, R2>(
-  ReaderTaskEither<C, L, R2> chain,
-) =>
-        RT.replace(chain);
+    flatMap((_) => chain);
 
 /// Composes computations in sequence, using the return value from the previous
 /// computation.
-ReaderTaskEither<C, L, R2> Function(ReaderTaskEither<C, L, R1>)
-    map<C, L, R1, R2>(
+ReaderTaskEither<C, L, R2> Function(
+  ReaderTaskEither<C, L, R1>,
+) map<C, L, R1, R2>(
   R2 Function(R1 a) f,
 ) =>
-        RT.map(E.map(f));
+    (fa) => ReaderTaskEither(fa.call.compose(TE.map(f)));
 
 /// Composes computations in sequence, using the return value from the previous
 /// computation.
@@ -166,7 +161,7 @@ ReaderTaskEither<C, L2, R> Function(ReaderTaskEither<C, L1, R>)
     mapLeft<C, L1, L2, R>(
   L2 Function(L1 a) f,
 ) =>
-        RT.map(E.mapLeft(f));
+        (fa) => ReaderTaskEither(fa.call.compose(TE.mapLeft(f)));
 
 /// Composes computations in sequence, using the return value from the previous
 /// computation.
@@ -174,7 +169,7 @@ ReaderTaskEither<C, L, R2> Function(ReaderTaskEither<C, L, R1>)
     flatMap<C, L, R1, R2>(
   ReaderTaskEither<C, L, R2> Function(R1 a) f,
 ) =>
-        RT.flatMap(E.fold(left, f));
+        (fa) => ReaderTaskEither((r) => fa(r).p(TE.flatMap((a) => f(a)(r))));
 
 /// A variant of [flatMap] that appends the result to a tuple.
 ReaderTaskEither<C, L, Tuple2<R, R2>> Function(ReaderTaskEither<C, L, R> fa)
@@ -254,19 +249,20 @@ ReaderTaskEither<C, L, R> Function(ReaderTaskEither<C, L, R>)
         flatMapFirst(f.compose(fromEither));
 
 /// Conditionally filter the [ReaderTaskEither], transforming [Right] values to [Left].
-ReaderTaskEither<C, L, R> Function(ReaderTaskEither<C, L, R> taskEither)
-    filter<C, L, R>(
+ReaderTaskEither<C, L, R> Function(
+  ReaderTaskEither<C, L, R> taskEither,
+) filter<C, L, R>(
   bool Function(R value) predicate,
   L Function(R value) orElse,
 ) =>
-        RT.map(E.filter(predicate, orElse));
+    (fa) => ReaderTaskEither((r) => fa(r).p(TE.filter(predicate, orElse)));
 
 /// If the given [ReaderTaskEither] is an [Left], then unwrap the result and transform
 /// it into an [alt]ernative [ReaderTaskEither].
 ReaderTaskEither<C, L, R> Function(ReaderTaskEither<C, L, R>) alt<C, L, R>(
   ReaderTaskEither<C, L, R> Function(L left) orElse,
 ) =>
-    RT.flatMap(E.fold(orElse, right));
+    (fa) => ReaderTaskEither((r) => fa(r).p(TE.alt((l) => orElse(l)(r))));
 
 /// Similar to [alt], but the alternative [ReaderTaskEither] is given directly.
 ReaderTaskEither<C, L, R> Function(ReaderTaskEither<C, L, R>) orElse<C, L, R>(
@@ -281,7 +277,7 @@ ReaderTask<C, R> Function(ReaderTaskEither<C, L, R> taskEither)
     getOrElse<C, L, R>(
   R Function(L left) onLeft,
 ) =>
-        RT.map(E.getOrElse(onLeft));
+        (fa) => ReaderTask(fa.call.c(TE.getOrElse(onLeft)));
 
 /// A variant of [tryCatch] that accepts an external parameter.
 ReaderTaskEither<C, L, R> Function(A value) tryCatchK<C, A, L, R>(
@@ -310,32 +306,33 @@ ReaderTaskEither<C, L, R2> Function(ReaderTaskEither<C, L, R>)
 ReaderTaskEither<C, L, R> Function(ReaderTaskEither<C, L, R>) tap<C, L, R>(
   FutureOr<void> Function(R value) f,
 ) =>
-    RT.tap(E.fold(identity, f));
+    (fa) => ReaderTaskEither(fa.call.compose(TE.tap(f)));
 
 /// Run a side effect on a [Left] value. The side effect can optionally return
 /// a [Future].
 ReaderTaskEither<C, L, R> Function(ReaderTaskEither<C, L, R>) tapLeft<C, L, R>(
   FutureOr<void> Function(L value) f,
 ) =>
-    RT.tap(E.fold(f, identity));
+    (fa) => ReaderTaskEither(fa.call.compose(TE.tapLeft(f)));
 
 /// Pause execution of the task by the given [Duration].
 ReaderTaskEither<C, L, R> Function(ReaderTaskEither<C, L, R>) delay<C, L, R>(
   Duration d,
 ) =>
-    (f) => f.compose(TE.delay(d));
+    (fa) => ReaderTaskEither(fa.call.compose(TE.delay(d)));
 
-ReaderTaskEither<C, L, IList<R>> Function(Iterable<A>)
-    traverseIterable<A, C, L, R>(
+ReaderTaskEither<C, L, IList<R>> Function(
+    Iterable<A>) traverseIterable<A, C, L, R>(
   ReaderTaskEither<C, L, R> Function(A a) f,
 ) =>
-        (as) => (c) => as.map((a) => f(a)(c)).chain(TE.sequence);
+    (as) => ReaderTaskEither((c) => as.map((a) => f(a)(c)).chain(TE.sequence));
 
-ReaderTaskEither<C, L, IList<R>> Function(Iterable<A>)
-    traverseIterableSeq<A, C, L, R>(
+ReaderTaskEither<C, L, IList<R>> Function(
+    Iterable<A>) traverseIterableSeq<A, C, L, R>(
   ReaderTaskEither<C, L, R> Function(A a) f,
 ) =>
-        (as) => (c) => as.map((a) => f(a)(c)).chain(TE.sequenceSeq);
+    (as) =>
+        ReaderTaskEither((c) => as.map((a) => f(a)(c)).chain(TE.sequenceSeq));
 
 ReaderTaskEither<C, L, IList<R>> sequence<C, L, R>(
   Iterable<ReaderTaskEither<C, L, R>> arr,
@@ -361,7 +358,13 @@ typedef DoFunction<C, L, R> = Future<R> Function(
 
 // ignore: non_constant_identifier_names
 ReaderTaskEither<C, L, R> Do<C, L, R>(DoFunction<C, L, R> f) =>
-    (c) => () => f(_doAdapter<C, L>(c), c).then(
-          (a) => E.right(a),
-          onError: (e) => E.left<L, R>(e.value),
-        );
+    ReaderTaskEither(
+      (c) => TaskEither(
+        Task(
+          () => f(_doAdapter<C, L>(c), c).then(
+            (a) => E.right(a),
+            onError: (e) => E.left<L, R>(e.value),
+          ),
+        ),
+      ),
+    );

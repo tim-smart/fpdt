@@ -5,19 +5,22 @@ import 'package:fpdt/option.dart' as O;
 import 'package:fpdt/task.dart' as T;
 import 'package:fpdt/future_or.dart';
 
-export 'package:fpdt/task.dart' show delay, sequence, sequenceSeq;
-
 /// Represents a [Task] that resolves to an [Option].
 /// Useful for creating async operations that might return nothing.
 ///
 /// Can also be represented by `Task<Option<A>>`.
-typedef TaskOption<A> = FutureOr<Option<A>> Function();
+class TaskOption<A> implements Task<Option<A>> {
+  final Task<Option<A>> _task;
+  TaskOption(this._task);
+  @override
+  FutureOr<Option<A>> call() => _task();
+}
 
 /// Returns a [TaskOption] that resolves to [Some].
-TaskOption<A> some<A>(A a) => T.value(O.some(a));
+TaskOption<A> some<A>(A a) => TaskOption(T.value(O.some(a)));
 
 /// Returns a [TaskOption] that resolves to [None].
-TaskOption<A> none<A>() => T.value(O.none());
+TaskOption<A> none<A>() => TaskOption(T.value(O.none<A>()));
 
 /// Create a [TaskOption] from a value that could be `null`. If it is not `null`,
 /// then it will resolve to [Some]. `null` values become [None].
@@ -32,7 +35,7 @@ TaskOption<A> none<A>() => T.value(O.none());
 ///   O.none(),
 /// );
 /// ```
-TaskOption<A> fromNullable<A>(A? a) => T.value(O.fromNullable(a));
+TaskOption<A> fromNullable<A>(A? a) => TaskOption(T.value(O.fromNullable(a)));
 
 /// A [fromNullable] variant that enforces the input type.
 /// Useful for function composition.
@@ -101,7 +104,7 @@ TaskOption<B> Function(TaskOption<A> taskOption) pure<A, B>(B b) =>
     (taskOption) => some(b);
 
 /// Returns a [TaskOption] that resolves to the given [Option].
-TaskOption<A> fromOption<A>(Option<A> option) => T.value(option);
+TaskOption<A> fromOption<A>(Option<A> option) => TaskOption(T.value(option));
 
 /// Returns a [Some] or [None] if the predicate returns `true` or `false`
 /// respectively.
@@ -109,7 +112,7 @@ TaskOption<A> fromPredicate<A>(
   A value,
   bool Function(A value) predicate,
 ) =>
-    T.value(O.fromPredicate(value, predicate));
+    TaskOption(T.value(O.fromPredicate(value, predicate)));
 
 /// Returns a [Some] or [None] if the predicate returns `true` or `false`
 /// respectively.
@@ -121,10 +124,11 @@ TaskOption<A> Function(A a) fromPredicateK<A>(
 /// Returns a [TaskOption] that resolves to an [Option] from the given [Either].
 /// [Left] values become [None], [Right] values are wrapped in [Some].
 TaskOption<R> fromEither<L, R>(Either<L, R> either) =>
-    T.value(O.fromEither(either));
+    TaskOption(T.value(O.fromEither(either)));
 
 /// Wraps the value from a [Task] in a [Some].
-TaskOption<A> fromTask<A>(Task<A> task) => task.chain(T.map(O.some));
+TaskOption<A> fromTask<A>(Task<A> task) =>
+    TaskOption(task.chain(T.map(O.some)));
 
 /// Transforms the [TaskOption] into a [Task], using the given `onNone` and `onSome`
 /// callbacks.
@@ -164,11 +168,12 @@ Task<B> Function(TaskOption<A> taskOption) fold<A, B>(
 ///   O.none(),
 /// );
 /// ```
-TaskOption<A> tryCatch<A>(Lazy<FutureOr<A>> task) => () => fromThrowable(
-      task,
-      onSuccess: O.some,
-      onError: (error, stackTrace) => kNone,
-    );
+TaskOption<A> tryCatch<A>(Lazy<FutureOr<A>> task) =>
+    TaskOption(Task(() => fromThrowable(
+          task,
+          onSuccess: O.some,
+          onError: (error, stackTrace) => kNone,
+        )));
 
 /// Transform the given [TaskOption] into a new [TaskOption], if it resolves to
 /// a [Some] value.
@@ -192,7 +197,7 @@ TaskOption<A> tryCatch<A>(Lazy<FutureOr<A>> task) => () => fromThrowable(
 TaskOption<B> Function(TaskOption<A> taskOption) flatMap<A, B>(
   TaskOption<B> Function(A value) f,
 ) =>
-    T.flatMap(O.fold(none, f));
+    (t) => TaskOption(t.p(T.flatMap(O.fold(() => none<B>(), f))));
 
 /// A variant of [flatMap] that appends the result to a tuple.
 TaskOption<Tuple2<A, A2>> Function(TaskOption<A> o) flatMapTuple2<A, A2>(
@@ -242,7 +247,26 @@ TaskOption<A> Function(TaskOption<A> taskOption) flatMapFirst<A>(
 TaskOption<A> Function(TaskOption<A> taskOption) alt<A>(
   TaskOption<A> Function() onNone,
 ) =>
-    T.flatMap(O.fold(onNone, some));
+    (fa) => TaskOption(fa.p(T.flatMap(O.fold(onNone, some))));
+
+TaskOption<A> Function(TaskOption<A> taskOption) delay<A>(
+  Duration duration,
+) =>
+    (fa) => TaskOption(fa.p(T.delay(duration)));
+
+TaskOption<IList<A>> sequence<A>(
+  Iterable<TaskOption<A>> tasks,
+) =>
+    TaskOption(
+      T.sequence(tasks.map((_) => _._task)).p(T.map(O.traverse(identity))),
+    );
+
+TaskOption<IList<A>> sequenceSeq<A>(
+  Iterable<TaskOption<A>> tasks,
+) =>
+    TaskOption(
+      T.sequenceSeq(tasks.map((_) => _._task)).p(T.map(O.traverse(identity))),
+    );
 
 /// A variant of [alt], which accepts the replacement [TaskOption] directly.
 TaskOption<A> Function(TaskOption<A> taskOption) orElse<A>(
@@ -310,13 +334,13 @@ TaskOption<B> Function(TaskOption<A> taskOption) chainTryCatchK<A, B>(
 TaskOption<B> Function(TaskOption<A> taskOption) map<A, B>(
   B Function(A value) f,
 ) =>
-    T.map(O.map(f));
+    (fa) => TaskOption(fa.p(T.map(O.map(f))));
 
 /// Perform a side effect if the [TaskOption] is a [Some].
 TaskOption<A> Function(TaskOption<A> taskOption) tap<A>(
   FutureOr<void> Function(A value) f,
 ) =>
-    T.tap(O.fold(() {}, f));
+    (fa) => TaskOption(fa.p(T.tap(O.fold(() {}, f))));
 
 /// Conditionally transform the [TaskOption] to a [None], using the given
 /// predicate.
@@ -334,7 +358,7 @@ TaskOption<A> Function(TaskOption<A> taskOption) tap<A>(
 TaskOption<A> Function(TaskOption<A> taskOption) filter<A>(
   bool Function(A value) predicate,
 ) =>
-    T.map(O.filter(predicate));
+    (fa) => TaskOption(fa.p(T.map(O.filter(predicate))));
 
 typedef _DoAdapter = FutureOr<A> Function<A>(TaskOption<A>);
 
@@ -346,7 +370,8 @@ FutureOr<A> _doAdapter<A>(TaskOption<A> task) => task().flatMap(O.fold(
 typedef DoFunction<A> = Future<A> Function(_DoAdapter $);
 
 // ignore: non_constant_identifier_names
-TaskOption<A> Do<A>(DoFunction<A> f) => () => f(_doAdapter).then(
-      O.some,
-      onError: (_) => kNone,
-    );
+TaskOption<A> Do<A>(DoFunction<A> f) =>
+    TaskOption(Task(() => f(_doAdapter).then(
+          O.some,
+          onError: (_) => kNone,
+        )));

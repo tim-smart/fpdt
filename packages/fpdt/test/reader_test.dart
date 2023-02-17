@@ -31,14 +31,16 @@ void main() {
 
   group('flatMap', () {
     test('transforms the reader', () {
-      final r = ask<Context>().chain(flatMap((_) => (c) => c.value + 1));
+      final r =
+          ask<Context>().chain(flatMap((_) => Reader((c) => c.value + 1)));
       expect(r(kContext), 124);
     });
   });
 
   group('flatMapFirst', () {
     test('runs the computation and discards the result', () {
-      final r = ask<Context>().chain(flatMapFirst((_) => (c) => c.value + 1));
+      final r =
+          ask<Context>().chain(flatMapFirst((_) => Reader((c) => c.value + 1)));
       expect(r(kContext).value, 123);
     });
   });

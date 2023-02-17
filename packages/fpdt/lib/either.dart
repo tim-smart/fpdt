@@ -17,7 +17,7 @@ class UnwrapException<L> implements Exception {
 }
 
 /// Unwraps the value of an [Either], throwing if the value is [Left].
-R unwrap<R>(Either<dynamic, R> either) => either._fold(
+R unwrap<L, R>(Either<L, R> either) => either._fold(
       (l) => throw UnwrapException(l),
       identity,
     );

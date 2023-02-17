@@ -2,12 +2,14 @@ import 'dart:async';
 
 import 'package:fpdt/fpdt.dart';
 
-/// Type alias representing a [Task]. It is a lazy future - a function that
-/// returns a [FutureOr].
-typedef Task<A> = FutureOr<A> Function();
+class Task<A> {
+  final FutureOr<A> Function() _task;
+  Task(this._task);
+  FutureOr<A> call() => _task();
+}
 
 /// Create a [Task] that wraps the given value.
-Task<A> value<A>(A value) => () => value;
+Task<A> value<A>(A value) => Task(() => value);
 
 /// Create a [Task] from a thunk / lazy value. A thunk is a function without
 /// arguments that returns a value.
@@ -15,11 +17,11 @@ Task<A> value<A>(A value) => () => value;
 /// ```
 /// expect(await fromThunk(() => 'hello')(), equals('hello'));
 /// ```
-Task<A> fromThunk<A>(Lazy<A> f) => f;
+Task<A> fromThunk<A>(Lazy<A> f) => Task(f);
 
 /// Pause execution of the task by the given [Duration].
 Task<A> Function(Task<A> task) delay<A>(Duration d) =>
-    (task) => () => Future.delayed(d, task);
+    (task) => Task(() => Future.delayed(d, task));
 
 /// Transform the value of a [Task] with the provided function.
 ///
@@ -30,7 +32,7 @@ Task<A> Function(Task<A> task) delay<A>(Duration d) =>
 /// );
 /// ```
 Task<R> Function(Task<T> task) map<T, R>(R Function(T value) f) =>
-    (t) => () => t().flatMap(f);
+    (t) => Task(() => t().flatMap(f));
 
 /// Transforms a value from a [Task] into another [Task], then flattens the result.
 ///
@@ -42,7 +44,7 @@ Task<R> Function(Task<T> task) map<T, R>(R Function(T value) f) =>
 /// );
 /// ```
 Task<B> Function(Task<A> task) flatMap<A, B>(Task<B> Function(A value) f) =>
-    (t) => () => t().flatMap((v) => f(v)());
+    (t) => Task(() => t().flatMap((v) => f(v)()));
 
 /// Runs the returned [Task], but resolves to the result of the previous task.
 /// I.e. discards the result.
@@ -57,7 +59,7 @@ Task<B> Function(Task<A> task) flatMap<A, B>(Task<B> Function(A value) f) =>
 Task<A> Function(Task<A> task) flatMapFirst<A>(
   Task<dynamic> Function(A value) f,
 ) =>
-    (t) => () => t().flatMap((v) => f(v)().flatMap((_) => v));
+    (t) => Task(() => t().flatMap((v) => f(v)().flatMap((_) => v)));
 
 /// Perform a side effect on the value of a [Task].
 ///
@@ -76,16 +78,16 @@ Task<B> Function(Task<A> task) call<A, B>(Task<B> chain) =>
 Task<IList<B>> Function(Iterable<A>) traverseIterableSeq<A, B>(
   Task<B> Function(A a) f,
 ) =>
-    (as) => () => as.fold(
+    (as) => Task(() => as.fold(
           IList(),
           (acc, a) => acc.flatMap((bs) => f(a)().flatMap((b) => bs.add(b))),
-        );
+        ));
 
 Task<IList<B>> Function(Iterable<A>) traverseIterable<A, B>(
   Task<B> Function(A a) f,
 ) =>
-    (as) => () =>
-        Future.wait(as.map((a) => Future.sync(f(a)))).then((bs) => IList(bs));
+    (as) => Task(() => Future.wait(as.map((a) => Future.sync(f(a).call)))
+        .then((bs) => IList(bs)));
 
 /// Returns a task that maps an [Iterable] of [Task]'s, into a list of results.
 ///
