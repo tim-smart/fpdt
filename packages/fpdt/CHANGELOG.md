@@ -1,3 +1,7 @@
+## 0.1.3
+
+- task.Do
+
 ## 0.1.2
 
 - Clean up unit / asUnit / as / zipRight
