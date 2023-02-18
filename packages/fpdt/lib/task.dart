@@ -118,3 +118,12 @@ Task<IList<A>> sequence<A>(
 /// ```
 Task<IList<A>> sequenceSeq<A>(Iterable<Task<A>> tasks) =>
     tasks.chain(traverseIterableSeq(identity));
+
+typedef _DoAdapter = FutureOr<A> Function<A>(Task<A>);
+
+FutureOr<A> _doAdapter<A>(Task<A> task) => task();
+
+typedef DoFunction<A> = Future<A> Function(_DoAdapter $);
+
+// ignore: non_constant_identifier_names
+Task<A> Do<A>(DoFunction<A> f) => Task(() => f(_doAdapter));
