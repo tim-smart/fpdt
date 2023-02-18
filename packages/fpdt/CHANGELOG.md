@@ -1,3 +1,7 @@
+## 0.1.4
+
+- Do notation factories
+
 ## 0.1.3
 
 - task.Do

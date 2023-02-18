@@ -446,3 +446,8 @@ StateReaderTaskEither<S, C, L, R> Do<S, C, L, R>(DoFunction<S, C, L, R> f) =>
             onError: (e) => Ei.left<L, Tuple2<R, S>>(e),
           ),
         ))));
+
+/// Create a Do notation factory for the given generics
+StateReaderTaskEither<S, C, L, R> Function<R>(
+  DoFunction<S, C, L, R> f,
+) makeDo<S, C, L>() => <R>(f) => Do(f);

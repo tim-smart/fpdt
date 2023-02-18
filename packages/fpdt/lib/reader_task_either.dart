@@ -383,3 +383,7 @@ ReaderTaskEither<C, L, R> Do<C, L, R>(DoFunction<C, L, R> f) =>
         ),
       ),
     );
+
+/// Create a Do notation factory for the given generics
+ReaderTaskEither<C, L, R> Function<R>(DoFunction<C, L, R>) makeDo<C, L>() =>
+    <R>(f) => Do(f);

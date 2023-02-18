@@ -475,3 +475,6 @@ TaskEither<L, A> Do<L, A>(DoFunction<L, A> f) =>
           (a) => either.right(a),
           onError: (e) => either.left<L, A>(e.value),
         )));
+
+/// Create a Do notation factory for the given generics
+TaskEither<L, A> Function<A>(DoFunction<L, A>) makeDo<L>() => <A>(f) => Do(f);
